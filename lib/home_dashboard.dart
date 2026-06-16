@@ -10,73 +10,47 @@ class HomeDashboardScreen extends StatefulWidget {
 
 class _HomeDashboardScreenState
     extends State<HomeDashboardScreen> {
-  String selectedSection = 'Projects';
+  String selectedSection = "Projects";
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isTablet = constraints.maxWidth >= 700;
+        final isTablet = constraints.maxWidth >= 700;
 
         return Scaffold(
           drawer: Drawer(
             child: SafeArea(
               child: Column(
                 children: [
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   const CircleAvatar(
                     radius: 40,
-                    child: Icon(
-                      Icons.person,
-                      size: 40,
-                    ),
+                    child: Icon(Icons.person, size: 40),
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
                   const Text(
-                    'Anime Maker User',
+                    "Anime Maker",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  const Divider(),
+                  const Divider(height: 30),
 
                   Expanded(
                     child: ListView(
                       children: [
-                        _drawerTile(
-                          icon: Icons.person,
-                          title: 'Profile',
-                        ),
-
-                        _drawerTile(
-                          icon: Icons.workspace_premium,
-                          title: 'Go Pro',
-                        ),
-
-                        _drawerTile(
-                          icon: Icons.folder,
-                          title: 'Projects',
-                        ),
-
-                        _drawerTile(
-                          icon: Icons.groups,
-                          title: 'Collaboration',
-                        ),
-
-                        _drawerTile(
-                          icon: Icons.monetization_on,
-                          title: 'Earn Credits',
-                        ),
-
-                        _drawerTile(
-                          icon: Icons.inventory_2,
-                          title: 'Assets',
-                        ),
+                        _item(Icons.person, "Profile"),
+                        _item(Icons.workspace_premium, "Go Pro"),
+                        _item(Icons.folder, "Projects"),
+                        _item(Icons.groups, "Collaboration"),
+                        _item(Icons.monetization_on, "Earn Credits"),
+                        _item(Icons.image, "Assets"),
                       ],
                     ),
                   ),
@@ -88,131 +62,101 @@ class _HomeDashboardScreenState
           body: SafeArea(
             child: Column(
               children: [
+                // TOP BAR
                 Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 24 : 16,
-                    vertical: 12,
-                  ),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
                   child: Row(
                     children: [
                       Builder(
-                        builder: (context) {
-                          return IconButton(
-                            icon: const Icon(Icons.menu),
-                            iconSize: isTablet ? 40 : 34,
-                            onPressed: () {
-                              Scaffold.of(context).openDrawer();
-                            },
-                          );
-                        },
-                      ),
-
-                      Expanded(
-                        child: Center(
-                          child: Text(
-                            'ANIME MAKER',
-                            style: TextStyle(
-                              fontSize: isTablet ? 32 : 24,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 2,
-                            ),
-                          ),
+                        builder: (context) => IconButton(
+                          icon: const Icon(Icons.menu),
+                          iconSize: isTablet ? 38 : 30,
+                          onPressed: () {
+                            Scaffold.of(context).openDrawer();
+                          },
                         ),
                       ),
 
-                      SizedBox(
-                        width: isTablet ? 40 : 34,
+                      const Spacer(),
+
+                      Text(
+                        "ANIME MAKER",
+                        style: TextStyle(
+                          fontSize: isTablet ? 30 : 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 3,
+                          color: Colors.white,
+                        ),
                       ),
+
+                      const Spacer(),
                     ],
                   ),
                 ),
 
-                const Divider(height: 1),
+                const Divider(),
 
+                // BODY
                 Expanded(
-                  child: Center(
-                    child: Text(
-                      selectedSection,
-                      style: TextStyle(
-                        fontSize: isTablet ? 34 : 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  child: selectedSection == "Projects"
+                      ? _projectsEmptyState(isTablet)
+                      : Center(
+                          child: Text(
+                            selectedSection,
+                            style: TextStyle(
+                              fontSize: isTablet ? 34 : 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                 ),
               ],
             ),
           ),
 
+          // ONLY SHOW FOR PROJECTS
           floatingActionButton:
-              selectedSection == 'Projects'
+              selectedSection == "Projects"
                   ? FloatingActionButton.extended(
                       onPressed: () {
                         showModalBottomSheet(
                           context: context,
                           showDragHandle: true,
                           builder: (context) {
-                            return SafeArea(
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.all(16),
-                                child: Column(
-                                  mainAxisSize:
-                                      MainAxisSize.min,
-                                  children: [
-                                    const Text(
-                                      'Create Project',
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight:
-                                            FontWeight.bold,
-                                      ),
+                            return Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: const [
+                                  Text(
+                                    "Create Project",
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
                                     ),
-
-                                    const SizedBox(
-                                      height: 16,
-                                    ),
-
-                                    ListTile(
-                                      leading: const Icon(
-                                        Icons.movie,
-                                      ),
-                                      title: const Text(
-                                        'Anime',
-                                      ),
-                                      onTap: () {},
-                                    ),
-
-                                    ListTile(
-                                      leading: const Icon(
-                                        Icons.menu_book,
-                                      ),
-                                      title: const Text(
-                                        'Manga',
-                                      ),
-                                      onTap: () {},
-                                    ),
-
-                                    ListTile(
-                                      leading: const Icon(
-                                        Icons.landscape,
-                                      ),
-                                      title: const Text(
-                                        'Background',
-                                      ),
-                                      onTap: () {},
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                  SizedBox(height: 20),
+                                  ListTile(
+                                    leading: Icon(Icons.movie),
+                                    title: Text("Anime"),
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.menu_book),
+                                    title: Text("Manga"),
+                                  ),
+                                  ListTile(
+                                    leading: Icon(Icons.landscape),
+                                    title: Text("Background"),
+                                  ),
+                                ],
                               ),
                             );
                           },
                         );
                       },
                       icon: const Icon(Icons.add),
-                      label: const Text(
-                        'Create',
-                      ),
+                      label: const Text("Create"),
                     )
                   : null,
         );
@@ -220,33 +164,60 @@ class _HomeDashboardScreenState
     );
   }
 
-  Widget _drawerTile({
-    required IconData icon,
-    required String title,
-  }) {
-    final bool selected =
-        selectedSection == title;
+  // 🔥 EMPTY PROJECTS UI
+  Widget _projectsEmptyState(bool isTablet) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.folder_open,
+              size: isTablet ? 120 : 90,
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              "You haven't created any projects yet",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              "Click + Create button to get started",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🔥 DRAWER ITEM
+  Widget _item(IconData icon, String title) {
+    final isSelected = selectedSection == title;
 
     return ListTile(
-      leading: Icon(
-        icon,
-        size: selected ? 30 : 24,
-      ),
+      leading: Icon(icon,
+          size: isSelected ? 30 : 24),
       title: Text(
         title,
         style: TextStyle(
-          fontSize: selected ? 22 : 18,
-          fontWeight: selected
+          fontSize: isSelected ? 22 : 18,
+          fontWeight: isSelected
               ? FontWeight.bold
               : FontWeight.normal,
         ),
       ),
-      selected: selected,
+      selected: isSelected,
       onTap: () {
         setState(() {
           selectedSection = title;
         });
-
         Navigator.pop(context);
       },
     );
