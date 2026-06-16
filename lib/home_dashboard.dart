@@ -24,14 +24,11 @@ class _HomeDashboardScreenState
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-
                   const CircleAvatar(
                     radius: 40,
                     child: Icon(Icons.person, size: 40),
                   ),
-
                   const SizedBox(height: 10),
-
                   const Text(
                     "Anime Maker",
                     style: TextStyle(
@@ -39,9 +36,7 @@ class _HomeDashboardScreenState
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-
                   const Divider(height: 30),
-
                   Expanded(
                     child: ListView(
                       children: [
@@ -80,13 +75,31 @@ class _HomeDashboardScreenState
 
                       const Spacer(),
 
-                      Text(
-                        "ANIME MAKER",
-                        style: TextStyle(
-                          fontSize: isTablet ? 30 : 22,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 3,
-                          color: Colors.white,
+                      // 🎨 ANIME MAKER LOGO STYLE TEXT
+                      Transform.scale(
+                        scale: isTablet ? 1.1 : 1.0,
+                        child: Text(
+                          "ANIME MAKER",
+                          style: TextStyle(
+                            fontSize: isTablet ? 34 : 24,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 4,
+                            color: Colors.white,
+
+                            // 🔥 Anime glow + depth effect
+                            shadows: const [
+                              Shadow(
+                                offset: Offset(2, 2),
+                                blurRadius: 6,
+                                color: Colors.black,
+                              ),
+                              Shadow(
+                                offset: Offset(0, 0),
+                                blurRadius: 12,
+                                color: Colors.deepPurple,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
 
@@ -105,7 +118,8 @@ class _HomeDashboardScreenState
                           child: Text(
                             selectedSection,
                             style: TextStyle(
-                              fontSize: isTablet ? 34 : 26,
+                              fontSize:
+                                  isTablet ? 34 : 26,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -115,7 +129,7 @@ class _HomeDashboardScreenState
             ),
           ),
 
-          // ONLY SHOW FOR PROJECTS
+          // ONLY FOR PROJECTS
           floatingActionButton:
               selectedSection == "Projects"
                   ? FloatingActionButton.extended(
@@ -127,13 +141,15 @@ class _HomeDashboardScreenState
                             return Padding(
                               padding: const EdgeInsets.all(16),
                               child: Column(
-                                mainAxisSize: MainAxisSize.min,
+                                mainAxisSize:
+                                    MainAxisSize.min,
                                 children: const [
                                   Text(
                                     "Create Project",
                                     style: TextStyle(
                                       fontSize: 20,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight:
+                                          FontWeight.bold,
                                     ),
                                   ),
                                   SizedBox(height: 20),
@@ -142,11 +158,13 @@ class _HomeDashboardScreenState
                                     title: Text("Anime"),
                                   ),
                                   ListTile(
-                                    leading: Icon(Icons.menu_book),
+                                    leading:
+                                        Icon(Icons.menu_book),
                                     title: Text("Manga"),
                                   ),
                                   ListTile(
-                                    leading: Icon(Icons.landscape),
+                                    leading:
+                                        Icon(Icons.landscape),
                                     title: Text("Background"),
                                   ),
                                 ],
@@ -164,7 +182,7 @@ class _HomeDashboardScreenState
     );
   }
 
-  // 🔥 EMPTY PROJECTS UI
+  // 📂 EMPTY STATE
   Widget _projectsEmptyState(bool isTablet) {
     return Center(
       child: Padding(
@@ -197,13 +215,15 @@ class _HomeDashboardScreenState
     );
   }
 
-  // 🔥 DRAWER ITEM
+  // 📌 DRAWER ITEM
   Widget _item(IconData icon, String title) {
     final isSelected = selectedSection == title;
 
     return ListTile(
-      leading: Icon(icon,
-          size: isSelected ? 30 : 24),
+      leading: Icon(
+        icon,
+        size: isSelected ? 30 : 24,
+      ),
       title: Text(
         title,
         style: TextStyle(
