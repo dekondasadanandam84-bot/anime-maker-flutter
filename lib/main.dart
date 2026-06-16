@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/home_dashboard.dart';
+import 'home_dashboard.dart';
 
 void main() {
   runApp(const AnimeMakerApp());
