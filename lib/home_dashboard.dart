@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'collaboration_screen.dart';
+import 'premium_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -24,11 +26,14 @@ class _HomeDashboardScreenState
               child: Column(
                 children: [
                   const SizedBox(height: 20),
+
                   const CircleAvatar(
                     radius: 40,
                     child: Icon(Icons.person, size: 40),
                   ),
+
                   const SizedBox(height: 10),
+
                   const Text(
                     "Anime Maker",
                     style: TextStyle(
@@ -36,17 +41,105 @@ class _HomeDashboardScreenState
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+
                   const Divider(height: 30),
+
                   Expanded(
                     child: ListView(
                       children: [
-                        _item(Icons.person, "Profile"),
                         _item(Icons.workspace_premium, "Go Pro"),
                         _item(Icons.folder, "Projects"),
                         _item(Icons.groups, "Collaboration"),
                         _item(Icons.monetization_on, "Earn Credits"),
                         _item(Icons.image, "Assets"),
                       ],
+                    ),
+                  ),
+
+                  const Divider(),
+
+                  // 👤 PROFILE BOTTOM SHEET
+                  Padding(
+                    padding: EdgeInsets.only(
+                      bottom: MediaQuery.of(context).size.height * 0.01,
+                    ),
+                    child: ListTile(
+                      leading: Icon(
+                        Icons.person,
+                        size: selectedSection == "Profile" ? 30 : 24,
+                      ),
+                      title: Text(
+                        "Profile",
+                        style: TextStyle(
+                          fontSize: selectedSection == "Profile" ? 22 : 18,
+                          fontWeight: selectedSection == "Profile"
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+
+                        showModalBottomSheet(
+                          context: context,
+                          showDragHandle: true,
+                          builder: (context) {
+                            return Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const ListTile(
+                                    leading: CircleAvatar(
+                                      child: Icon(Icons.person),
+                                    ),
+                                    title: Text("Dhanush"),
+                                    subtitle: Text("dhanush@gmail.com"),
+                                  ),
+
+                                  const Divider(),
+
+                                  const ListTile(
+                                    leading: Icon(Icons.person),
+                                    title: Text("dhanush@gmail.com ✓"),
+                                  ),
+
+                                  const ListTile(
+                                    leading: Icon(Icons.person_outline),
+                                    title: Text("anime@gmail.com"),
+                                  ),
+
+                                  const Divider(),
+
+                                  ListTile(
+                                    leading: const Icon(
+                                      Icons.add,
+                                      color: Colors.green,
+                                    ),
+                                    title: const Text(
+                                      "Add Account",
+                                      style: TextStyle(color: Colors.green),
+                                    ),
+                                    onTap: () {},
+                                  ),
+
+                                  ListTile(
+                                    leading: const Icon(
+                                      Icons.logout,
+                                      color: Colors.redAccent,
+                                    ),
+                                    title: const Text(
+                                      "Logout",
+                                      style: TextStyle(color: Colors.redAccent),
+                                    ),
+                                    onTap: () {},
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -60,7 +153,9 @@ class _HomeDashboardScreenState
                 // TOP BAR
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                   child: Row(
                     children: [
                       Builder(
@@ -75,19 +170,16 @@ class _HomeDashboardScreenState
 
                       const Spacer(),
 
-                      // 🎨 ANIME MAKER LOGO STYLE TEXT
                       Transform.scale(
                         scale: isTablet ? 1.1 : 1.0,
-                        child: Text(
+                        child: const Text(
                           "ANIME MAKER",
                           style: TextStyle(
-                            fontSize: isTablet ? 34 : 24,
+                            fontSize: 24,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 4,
                             color: Colors.white,
-
-                            // 🔥 Anime glow + depth effect
-                            shadows: const [
+                            shadows: [
                               Shadow(
                                 offset: Offset(2, 2),
                                 blurRadius: 6,
@@ -96,7 +188,7 @@ class _HomeDashboardScreenState
                               Shadow(
                                 offset: Offset(0, 0),
                                 blurRadius: 12,
-                                color: Colors.deepPurple,
+                                color: Color.fromARGB(255, 123, 51, 247),
                               ),
                             ],
                           ),
@@ -114,65 +206,37 @@ class _HomeDashboardScreenState
                 Expanded(
                   child: selectedSection == "Projects"
                       ? _projectsEmptyState(isTablet)
-                      : Center(
-                          child: Text(
-                            selectedSection,
-                            style: TextStyle(
-                              fontSize:
-                                  isTablet ? 34 : 26,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+
+                      : selectedSection == "Go Pro"
+                          ? PremiumScreen(
+                              onBackToProjects: () {
+                                setState(() {
+                                  selectedSection = "Projects";
+                                });
+                              },
+                            )
+
+                          : selectedSection == "Collaboration"
+                              ? const CollaborationScreen()
+
+                              : Center(
+                                  child: Text(
+                                    selectedSection,
+                                    style: TextStyle(
+                                      fontSize: isTablet ? 34 : 26,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
                 ),
               ],
             ),
           ),
 
-          // ONLY FOR PROJECTS
           floatingActionButton:
               selectedSection == "Projects"
                   ? FloatingActionButton.extended(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          showDragHandle: true,
-                          builder: (context) {
-                            return Padding(
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                mainAxisSize:
-                                    MainAxisSize.min,
-                                children: const [
-                                  Text(
-                                    "Create Project",
-                                    style: TextStyle(
-                                      fontSize: 20,
-                                      fontWeight:
-                                          FontWeight.bold,
-                                    ),
-                                  ),
-                                  SizedBox(height: 20),
-                                  ListTile(
-                                    leading: Icon(Icons.movie),
-                                    title: Text("Anime"),
-                                  ),
-                                  ListTile(
-                                    leading:
-                                        Icon(Icons.menu_book),
-                                    title: Text("Manga"),
-                                  ),
-                                  ListTile(
-                                    leading:
-                                        Icon(Icons.landscape),
-                                    title: Text("Background"),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        );
-                      },
+                      onPressed: () {},
                       icon: const Icon(Icons.add),
                       label: const Text("Create"),
                     )
@@ -183,37 +247,45 @@ class _HomeDashboardScreenState
   }
 
   // 📂 EMPTY STATE
-  Widget _projectsEmptyState(bool isTablet) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.folder_open,
-              size: isTablet ? 120 : 90,
+Widget _projectsEmptyState(bool isTablet) {
+  return Center(
+    child: Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.folder_open,
+            size: isTablet ? 120 : 90,
+            color: Colors.blueAccent,
+          ),
+
+          const SizedBox(height: 20),
+
+          const Text(
+            "You haven't created any projects yet",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 20),
-            const Text(
-              "You haven't created any projects yet",
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+
+          const SizedBox(height: 10),
+
+          const Text(
+            "Tap the + button to start creating your first anime project",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.grey,
             ),
-            const SizedBox(height: 10),
-            const Text(
-              "Click + Create button to get started",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // 📌 DRAWER ITEM
   Widget _item(IconData icon, String title) {
@@ -228,17 +300,32 @@ class _HomeDashboardScreenState
         title,
         style: TextStyle(
           fontSize: isSelected ? 22 : 18,
-          fontWeight: isSelected
-              ? FontWeight.bold
-              : FontWeight.normal,
+          fontWeight:
+              isSelected ? FontWeight.bold : FontWeight.normal,
         ),
       ),
       selected: isSelected,
       onTap: () {
+        Navigator.pop(context);
+
+        if (title == "Go Pro") {
+          setState(() => selectedSection = "Go Pro");
+          return;
+        }
+
+        if (title == "Collaboration") {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CollaborationScreen(),
+            ),
+          );
+          return;
+        }
+
         setState(() {
           selectedSection = title;
         });
-        Navigator.pop(context);
       },
     );
   }
