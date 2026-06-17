@@ -58,7 +58,7 @@ class _HomeDashboardScreenState
 
                   const Divider(),
 
-                  // 👤 PROFILE BOTTOM SHEET
+                  // PROFILE SECTION
                   Padding(
                     padding: EdgeInsets.only(
                       bottom: MediaQuery.of(context).size.height * 0.01,
@@ -88,51 +88,37 @@ class _HomeDashboardScreenState
                               padding: const EdgeInsets.all(16),
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const ListTile(
+                                children: const [
+                                  ListTile(
                                     leading: CircleAvatar(
                                       child: Icon(Icons.person),
                                     ),
                                     title: Text("Dhanush"),
                                     subtitle: Text("dhanush@gmail.com"),
                                   ),
-
-                                  const Divider(),
-
-                                  const ListTile(
+                                  Divider(),
+                                  ListTile(
                                     leading: Icon(Icons.person),
                                     title: Text("dhanush@gmail.com ✓"),
                                   ),
-
-                                  const ListTile(
+                                  ListTile(
                                     leading: Icon(Icons.person_outline),
                                     title: Text("anime@gmail.com"),
                                   ),
-
-                                  const Divider(),
-
+                                  Divider(),
                                   ListTile(
-                                    leading: const Icon(
-                                      Icons.add,
-                                      color: Colors.green,
-                                    ),
-                                    title: const Text(
+                                    leading: Icon(Icons.add, color: Colors.green),
+                                    title: Text(
                                       "Add Account",
                                       style: TextStyle(color: Colors.green),
                                     ),
-                                    onTap: () {},
                                   ),
-
                                   ListTile(
-                                    leading: const Icon(
-                                      Icons.logout,
-                                      color: Colors.redAccent,
-                                    ),
-                                    title: const Text(
+                                    leading: Icon(Icons.logout, color: Colors.red),
+                                    title: Text(
                                       "Logout",
-                                      style: TextStyle(color: Colors.redAccent),
+                                      style: TextStyle(color: Colors.red),
                                     ),
-                                    onTap: () {},
                                   ),
                                 ],
                               ),
@@ -206,7 +192,6 @@ class _HomeDashboardScreenState
                 Expanded(
                   child: selectedSection == "Projects"
                       ? _projectsEmptyState(isTablet)
-
                       : selectedSection == "Go Pro"
                           ? PremiumScreen(
                               onBackToProjects: () {
@@ -215,10 +200,8 @@ class _HomeDashboardScreenState
                                 });
                               },
                             )
-
                           : selectedSection == "Collaboration"
                               ? const CollaborationScreen()
-
                               : Center(
                                   child: Text(
                                     selectedSection,
@@ -233,59 +216,54 @@ class _HomeDashboardScreenState
             ),
           ),
 
-          floatingActionButton:
-              selectedSection == "Projects"
-                  ? FloatingActionButton.extended(
-                      onPressed: () {},
-                      icon: const Icon(Icons.add),
-                      label: const Text("Create"),
-                    )
-                  : null,
+          floatingActionButton: selectedSection == "Projects"
+              ? FloatingActionButton.extended(
+                  onPressed: () {},
+                  icon: const Icon(Icons.add),
+                  label: const Text("Create"),
+                )
+              : null,
         );
       },
     );
   }
 
   // 📂 EMPTY STATE
-Widget _projectsEmptyState(bool isTablet) {
-  return Center(
-    child: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.folder_open,
-            size: isTablet ? 120 : 90,
-            color: Colors.blueAccent,
-          ),
-
-          const SizedBox(height: 20),
-
-          const Text(
-            "You haven't created any projects yet",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
+  Widget _projectsEmptyState(bool isTablet) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.folder_open,
+              size: isTablet ? 120 : 90,
+              color: Colors.blueAccent,
             ),
-          ),
-
-          const SizedBox(height: 10),
-
-          const Text(
-            "Tap the + button to start creating your first anime project",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey,
+            const SizedBox(height: 20),
+            const Text(
+              "You haven't created any projects yet",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            const Text(
+              "Tap the + button to start creating your first anime project",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // 📌 DRAWER ITEM
   Widget _item(IconData icon, String title) {
@@ -309,6 +287,20 @@ Widget _projectsEmptyState(bool isTablet) {
         Navigator.pop(context);
 
         if (title == "Go Pro") {
+  Navigator.push(
+    context,
+    smoothRoute(
+      PremiumScreen(
+        onBackToProjects: () {
+          setState(() {
+            selectedSection = "Projects";
+          });
+        },
+      ),
+    ),
+  );
+  return;
+}
           setState(() => selectedSection = "Go Pro");
           return;
         }
@@ -329,4 +321,30 @@ Widget _projectsEmptyState(bool isTablet) {
       },
     );
   }
+}
+PageRouteBuilder smoothRoute(Widget page) {
+  return PageRouteBuilder(
+    pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const begin = 0.85;
+      const end = 1.0;
+
+      final scale = Tween(begin: begin, end: end).animate(
+        CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutBack,
+        ),
+      );
+
+      final fade = Tween(begin: 0.0, end: 1.0).animate(animation);
+
+      return FadeTransition(
+        opacity: fade,
+        child: ScaleTransition(
+          scale: scale,
+          child: child,
+        ),
+      );
+    },
+  );
 }
