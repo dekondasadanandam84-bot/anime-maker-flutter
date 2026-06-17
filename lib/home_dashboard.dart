@@ -24,11 +24,14 @@ class _HomeDashboardScreenState
           child: Column(
             children: [
               const SizedBox(height: 20),
+
               const CircleAvatar(
                 radius: 40,
                 child: Icon(Icons.person, size: 40),
               ),
+
               const SizedBox(height: 10),
+
               const Text(
                 "Anime Maker",
                 style: TextStyle(
@@ -36,6 +39,7 @@ class _HomeDashboardScreenState
                   fontWeight: FontWeight.bold,
                 ),
               ),
+
               const Divider(height: 30),
 
               Expanded(
@@ -55,7 +59,98 @@ class _HomeDashboardScreenState
               ListTile(
                 leading: const Icon(Icons.person),
                 title: const Text("Profile"),
-                onTap: () => Navigator.pop(context),
+                onTap: () {
+  Navigator.pop(context);
+
+  showModalBottomSheet(
+    context: context,
+    showDragHandle: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+
+            const Text(
+              "Accounts",
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
+            // 👤 ACCOUNT 1
+            const ListTile(
+              leading: CircleAvatar(
+                child: Icon(Icons.person),
+              ),
+              title: Text("dhanush@gmail.com"),
+              subtitle: Text("Primary Account"),
+            ),
+
+            // 👤 ACCOUNT 2
+            const ListTile(
+              leading: CircleAvatar(
+                child: Icon(Icons.person_outline),
+              ),
+              title: Text("animecreator@gmail.com"),
+              subtitle: Text("Secondary Account"),
+            ),
+
+            // 👤 ACCOUNT 3
+            const ListTile(
+              leading: CircleAvatar(
+                child: Icon(Icons.person_outline),
+              ),
+              title: Text("studio.team@gmail.com"),
+              subtitle: Text("Team Account"),
+            ),
+
+            const Divider(),
+
+            // ➕ ADD ACCOUNT
+            ListTile(
+              leading: const Icon(
+                Icons.add_circle,
+                color: Colors.green,
+              ),
+              title: const Text(
+                "Add Account",
+                style: TextStyle(color: Colors.green),
+              ),
+              onTap: () {
+                // dummy action
+              },
+            ),
+
+            // 🚪 LOGOUT
+            ListTile(
+              leading: const Icon(
+                Icons.logout,
+                color: Colors.red,
+              ),
+              title: const Text(
+                "Logout",
+                style: TextStyle(color: Colors.red),
+              ),
+              onTap: () {
+                // dummy action
+              },
+            ),
+
+            const SizedBox(height: 10),
+          ],
+        ),
+      );
+    },
+  );
+}, 
               ),
             ],
           ),
@@ -77,7 +172,9 @@ class _HomeDashboardScreenState
                           Scaffold.of(context).openDrawer(),
                     ),
                   ),
+
                   const Spacer(),
+
                   const Text(
                     "ANIME MAKER",
                     style: TextStyle(
@@ -86,6 +183,7 @@ class _HomeDashboardScreenState
                       letterSpacing: 3,
                     ),
                   ),
+
                   const Spacer(),
                 ],
               ),
@@ -101,7 +199,7 @@ class _HomeDashboardScreenState
         ),
       ),
 
-      // 💎 FLOATING + CREATE BUTTON (RESTORED)
+      // + CREATE BUTTON (ONLY FOR PROJECTS)
       floatingActionButton: selectedSection == "Projects"
           ? FloatingActionButton.extended(
               onPressed: () {
@@ -160,8 +258,14 @@ class _HomeDashboardScreenState
           },
         );
 
-      case "Collaboration":
-        return const CollaborationScreen();
+     case "Collaboration":
+  return CollaborationScreen(
+    onBack: () {
+      setState(() {
+        selectedSection = "Projects";
+      });
+    },
+  );
 
       default:
         return Center(
@@ -187,7 +291,9 @@ class _HomeDashboardScreenState
             size: isTablet ? 110 : 80,
             color: Colors.grey,
           ),
+
           const SizedBox(height: 15),
+
           const Text(
             "You haven't created a project yet",
             textAlign: TextAlign.center,
@@ -196,7 +302,9 @@ class _HomeDashboardScreenState
               fontWeight: FontWeight.bold,
             ),
           ),
+
           const SizedBox(height: 8),
+
           const Text(
             "Use the + button below to start creating",
             textAlign: TextAlign.center,
