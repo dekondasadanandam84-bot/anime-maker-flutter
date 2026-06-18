@@ -263,6 +263,7 @@ class _HomeDashboardScreenState
     onBack: () {
       setState(() {
         selectedSection = "Projects";
+      
       });
     },
   );
