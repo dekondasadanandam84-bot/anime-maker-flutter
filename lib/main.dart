@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/earn_credits_screen.dart';
-import 'home_dashboard.dart';
-import 'collaboration_screen.dart';
-import 'premium_screen.dart';
+import 'package:flutter_application_1/Screens/earn_credits_screen.dart';
+import 'Screens/home_dashboard.dart';
+import 'Screens/collaboration_screen.dart';
+import 'Screens/premium_screen.dart';
 
 void main() {
   runApp(const AnimeMakerApp());
