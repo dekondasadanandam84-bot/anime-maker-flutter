@@ -1,12 +1,7 @@
 import 'package:flutter/material.dart';
 
 class PremiumScreen extends StatelessWidget {
-  final Function onBackToProjects;
-
-  const PremiumScreen({
-    super.key,
-    required this.onBackToProjects,
-  });
+  const PremiumScreen({super.key});
 
   Widget planCard({
     required String title,
@@ -121,12 +116,12 @@ class PremiumScreen extends StatelessWidget {
         title: const Text("Anime Maker Plans"),
 
         // BACK BUTTON
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            onBackToProjects(); // 🔥 switch back to Projects
-          },
-        ),
+       leading: IconButton(
+  icon: const Icon(Icons.arrow_back),
+  onPressed: () {
+    Navigator.pop(context);
+  },
+),
       ),
 
       body: SingleChildScrollView(

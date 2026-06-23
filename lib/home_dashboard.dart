@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'collaboration_screen.dart';
-import 'premium_screen.dart';
+import 'package:flutter_application_1/anime_editor_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -12,7 +11,10 @@ class HomeDashboardScreen extends StatefulWidget {
 
 class _HomeDashboardScreenState
     extends State<HomeDashboardScreen> {
+
   String selectedSection = "Projects";
+
+  List<Map<String, dynamic>> projects = [];
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +51,6 @@ class _HomeDashboardScreenState
                     _item(Icons.folder, "Projects"),
                     _item(Icons.groups, "Collaboration"),
                     _item(Icons.monetization_on, "Earn Credits"),
-                    _item(Icons.image, "Assets"),
                   ],
                 ),
               ),
@@ -200,74 +201,63 @@ class _HomeDashboardScreenState
       ),
 
       // + CREATE BUTTON (ONLY FOR PROJECTS)
-      floatingActionButton: selectedSection == "Projects"
-          ? FloatingActionButton.extended(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  showDragHandle: true,
-                  builder: (context) {
-                    return Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          Text(
-                            "Create Project",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 20),
-                          ListTile(
-                            leading: Icon(Icons.movie),
-                            title: Text("Anime"),
-                          ),
-                          ListTile(
-                            leading: Icon(Icons.menu_book),
-                            title: Text("Manga"),
-                          ),
-                          ListTile(
-                            leading: Icon(Icons.landscape),
-                            title: Text("Background"),
-                          ),
-                        ],
+floatingActionButton: selectedSection == "Projects"
+    ? FloatingActionButton.extended(
+        icon: const Icon(Icons.add),
+        label: const Text("Create"),
+        onPressed: () {
+          showModalBottomSheet(
+            context: context,
+            builder: (bottomSheetContext) {
+              return Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Create Project",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                    );
-                  },
-                );
-              },
-              icon: const Icon(Icons.add),
-              label: const Text("Create"),
-            )
-          : null,
-    );
-  }
+                    ),
+                    const SizedBox(height: 20),
+
+ListTile(
+  leading: const Icon(Icons.movie),
+  title: const Text("Anime"),
+  onTap: () {
+    Navigator.pop(context); // closes bottom sheet
+    _openAnimePopup(this.context); // opens popup using home screen context
+  },
+),
+                    ListTile(
+                      leading: const Icon(Icons.menu_book),
+                      title: const Text("Manga"),
+                      onTap: () {},
+                    ),
+
+                    ListTile(
+                      leading: const Icon(Icons.file_upload),
+                      title: const Text("Import Project"),
+                      onTap: () {},
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      )
+    : null,
+  );
+}
 
   // 🎯 BODY SWITCH
   Widget _buildBody(bool isTablet) {
     switch (selectedSection) {
       case "Projects":
         return _projectsEmptyState(isTablet);
-
-      case "Go Pro":
-        return PremiumScreen(
-          onBackToProjects: () {
-            setState(() => selectedSection = "Projects");
-          },
-        );
-
-     case "Collaboration":
-  return CollaborationScreen(
-    onBack: () {
-      setState(() {
-        selectedSection = "Projects";
-      
-      });
-    },
-  );
-
       default:
         return Center(
           child: Text(
@@ -282,7 +272,8 @@ class _HomeDashboardScreenState
   }
 
   // 📂 EMPTY STATE
-  Widget _projectsEmptyState(bool isTablet) {
+Widget _projectsEmptyState(bool isTablet) {
+  if (projects.isEmpty) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -292,51 +283,260 @@ class _HomeDashboardScreenState
             size: isTablet ? 110 : 80,
             color: Colors.grey,
           ),
-
           const SizedBox(height: 15),
-
           const Text(
             "You haven't created a project yet",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          const Text(
-            "Use the + button below to start creating",
-            textAlign: TextAlign.center,
-            style: TextStyle(color: Colors.grey),
+            style: TextStyle(fontSize: 18),
           ),
         ],
       ),
     );
   }
 
-  // 📌 DRAWER ITEM
-  Widget _item(IconData icon, String title) {
-    final isSelected = selectedSection == title;
+  return GridView.builder(
+    padding: const EdgeInsets.all(12),
+    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      crossAxisCount: isTablet ? 3 : 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 0.8,
+    ),
+    itemCount: projects.length,
+    itemBuilder: (context, index) {
+      final project = projects[index];
 
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isSelected ? Colors.blue : null,
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight:
-              isSelected ? FontWeight.bold : FontWeight.normal,
+      return Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
+        child: Padding(
+          padding: const EdgeInsets.all(10),
+          child: Column(
+            children: [
+              // Thumbnail
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade800,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Icon(
+                    Icons.movie,
+                    size: 60,
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              Text(
+                project["name"]?.toString() ?? "Untitled",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () {},
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: () {},
+                  ),
+                  PopupMenuButton(
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: "delete",
+                        child: Text("Delete"),
+                      ),
+                      const PopupMenuItem(
+                        value: "location",
+                        child: Text("Show Location"),
+                      ),
+                    ],
+                    onSelected: (value) {
+                      if (value == "delete") {
+                        setState(() {
+                          projects.removeAt(index);
+                        });
+                      }
+
+                      if (value == "location") {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Storage/emulated/0/AnimeMaker/",
+                            ),
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+  // 📌 DRAWER ITEM
+Widget _item(IconData icon, String title) {
+  final isSelected = selectedSection == title;
+
+  return ListTile(
+    leading: Icon(
+      icon,
+      color: isSelected ? Colors.blue : null,
+    ),
+    title: Text(
+      title,
+      style: TextStyle(
+        fontWeight:
+            isSelected ? FontWeight.bold : FontWeight.normal,
       ),
-      selected: isSelected,
-      onTap: () {
-        Navigator.pop(context);
-        setState(() => selectedSection = title);
-      },
-    );
-  }
+    ),
+    selected: isSelected,
+    onTap: () {
+      Navigator.pop(context);
+
+      if (title == "Collaboration") {
+        Navigator.pushNamed(context, '/collaboration');
+        return;
+      }
+
+      if (title == "Go Pro") {
+        Navigator.pushNamed(context, '/premium');
+        return;
+      }
+
+      if (title == "Earn Credits") {
+        Navigator.pushNamed(context, '/earn-credits');
+        return;
+      }
+
+      setState(() => selectedSection = title);
+    },
+  );
+}
+
+void _openAnimePopup(BuildContext context) {
+  final nameController = TextEditingController();
+  String selectedRatio = "16:9";
+  int frames = 24;
+
+  showDialog(
+    context: context,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          return AlertDialog(
+            title: const Text("Create Anime Project"),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: "Animation Name",
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  DropdownButton<String>(
+                    value: selectedRatio,
+                    isExpanded: true,
+                    items: const [
+                      DropdownMenuItem(
+                        value: "16:9",
+                        child: Text("16:9"),
+                      ),
+                      DropdownMenuItem(
+                        value: "1:1",
+                        child: Text("1:1"),
+                      ),
+                      DropdownMenuItem(
+                        value: "9:16",
+                        child: Text("9:16"),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      setDialogState(() {
+                        selectedRatio = value!;
+                      });
+                    },
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  Row(
+                    mainAxisAlignment:
+                        MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Frames"),
+                      IconButton(
+                        onPressed: () {
+                          if (frames > 1) {
+                            setDialogState(() {
+                              frames--;
+                            });
+                          }
+                        },
+                        icon: const Icon(Icons.remove),
+                      ),
+                      Text("$frames"),
+                      IconButton(
+                        onPressed: () {
+                          setDialogState(() {
+                            frames++;
+                          });
+                        },
+                        icon: const Icon(Icons.add),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () async {
+                  Navigator.pop(dialogContext);
+
+final Map<String, dynamic>? result = await Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => AnimeEditorScreen(
+      projectName: nameController.text.trim().isEmpty
+          ? "Untitled"
+          : nameController.text.trim(),
+    ),
+  ),
+);
+if (result != null) {
+  setState(() {
+    projects.add(Map<String, dynamic>.from(result));
+  });
+}                },
+                child: const Text("Create Project"),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
 }
