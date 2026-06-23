@@ -13,6 +13,34 @@ class HomeDashboardScreen extends StatefulWidget {
 }
 
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
+  Widget _accountTile({
+  required String name,
+  bool isActive = false,
+}) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 10),
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: isActive ? Colors.deepPurple : Colors.grey.shade900,
+      borderRadius: BorderRadius.circular(12),
+      border: Border.all(
+        color: isActive ? Colors.purple : Colors.transparent,
+      ),
+    ),
+    child: Row(
+      children: [
+        const CircleAvatar(
+          child: Icon(Icons.person),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          name,
+          style: const TextStyle(fontSize: 16),
+        ),
+      ],
+    ),
+  );
+}
   String selectedSection = "Projects";
   List<Map<String, dynamic>> projects = [];
 
@@ -21,33 +49,56 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final isTablet = MediaQuery.of(context).size.width >= 700;
 
     return Scaffold(
-      drawer: Drawer(
-        child: SafeArea(
-          child: Column(
-            children: [
-              const SizedBox(height: 20),
-              const CircleAvatar(
-                radius: 40,
-                child: Icon(Icons.person, size: 40),
-              ),
-              const SizedBox(height: 10),
-              const Text("Anime Maker"),
-              const Divider(height: 30),
+drawer: Drawer(
+  child: SafeArea(
+    child: Column(
+      children: [
+        const SizedBox(height: 20),
 
-              Expanded(
-                child: ListView(
-                  children: [
-                    _item(Icons.workspace_premium, "Go Pro"),
-                    _item(Icons.folder, "Projects"),
-                    _item(Icons.groups, "Collaboration"),
-                    _item(Icons.monetization_on, "Earn Credits"),
-                  ],
-                ),
-              ),
+        const CircleAvatar(
+          radius: 40,
+          child: Icon(Icons.person, size: 40),
+        ),
+
+        const SizedBox(height: 10),
+        const Text("Anime Maker"),
+
+        const Divider(),
+
+        // 📌 MAIN MENU (TAKES AVAILABLE SPACE)
+        Expanded(
+          child: ListView(
+            padding: EdgeInsets.zero,
+            children: [
+              _item(Icons.workspace_premium, "Go Pro"),
+              _item(Icons.folder, "Projects"),
+              _item(Icons.groups, "Collaboration"),
+              _item(Icons.monetization_on, "Earn Credits"),
             ],
           ),
         ),
-      ),
+
+        // 🔥 PUSH PROFILE TO TRUE BOTTOM
+        Container(
+          width: double.infinity,
+          decoration: const BoxDecoration(
+            border: Border(
+              top: BorderSide(color: Colors.grey),
+            ),
+          ),
+          child: ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text("Profile"),
+            onTap: () {
+              Navigator.pop(context);
+              _showProfileSheet(context);
+            },
+          ),
+        ),
+      ],
+    ),
+  ),
+),
 
       body: SafeArea(
         child: Column(
@@ -78,17 +129,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
             ),
 
             const Divider(),
-
-            const Divider(),
-
-ListTile(
-  leading: const Icon(Icons.person),
-  title: const Text("Profile"),
-  onTap: () {
-    Navigator.pop(context);
-    _showProfileSheet(context);
-  },
-),
 
             Expanded(child: _buildBody(isTablet)),
           ],
@@ -387,170 +427,101 @@ ListTile(
     );
   }
   
- void _showProfileSheet(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (context) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // HANDLE BAR
-            Container(
-              width: 50,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey,
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // 👤 CURRENT ACCOUNT
-            Row(
-              children: const [
-                CircleAvatar(
-                  radius: 25,
-                  child: Icon(Icons.person),
-                ),
-                SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Current Account",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      "Dhanush",
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 25),
-
-            // ➕ ADD ACCOUNT (GREEN)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  _addAccountFlow(context);
-                },
-                icon: const Icon(Icons.add),
-                label: const Text("Add Account"),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // 🚪 LOGOUT (RED)
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                  _logoutAccount(context);
-                },
-                icon: const Icon(Icons.logout),
-                label: const Text("Logout"),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-          ],
+void _showProfileSheet(BuildContext context) {
+showModalBottomSheet(
+  context: context,
+  isScrollControlled: true,
+  backgroundColor: Colors.transparent,
+  builder: (context) {
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.5,
+      decoration: const BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(25),
         ),
-      );
-    },
-  );
-}
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // HANDLE BAR
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
 
-  void _addAccountFlow(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      final controller = TextEditingController();
+              const SizedBox(height: 15),
 
-      return AlertDialog(
-        title: const Text("Add Account"),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: "Enter username",
+              const Text(
+                "Accounts",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 15),
+
+              // ACCOUNTS HERE
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    children: [
+                      _accountTile(
+                        name: "Dhanush (Current)",
+                        isActive: true,
+                      ),
+                      _accountTile(name: "Anime Creator 1"),
+                      _accountTile(name: "Studio Account"),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // BUTTONS
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.add),
+                  label: const Text("Add Account"),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              SizedBox(
+                width: double.infinity,
+                height: 55,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                  ),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.logout),
+                  label: const Text("Logout"),
+                ),
+              ),
+            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final name = controller.text.trim();
-
-              Navigator.pop(context);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text("Account '$name' created"),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text("Create"),
-          ),
-        ],
-      );
-    },
-  );
-}
-  
-  void _logoutAccount(BuildContext context) {
-  showDialog(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: const Text("Logout"),
-        content: const Text("Are you sure you want to logout?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Logged out"),
-                ),
-              );
-            },
-            child: const Text("Logout"),
-          ),
-        ],
-      );
-    },
-  );
-}
-}
+      ),
+    );
+  },
+);}}
