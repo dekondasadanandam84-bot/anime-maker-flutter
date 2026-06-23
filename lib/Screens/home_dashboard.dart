@@ -79,6 +79,17 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
             const Divider(),
 
+            const Divider(),
+
+ListTile(
+  leading: const Icon(Icons.person),
+  title: const Text("Profile"),
+  onTap: () {
+    Navigator.pop(context);
+    _showProfileSheet(context);
+  },
+),
+
             Expanded(child: _buildBody(isTablet)),
           ],
         ),
@@ -375,4 +386,171 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       },
     );
   }
+  
+ void _showProfileSheet(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // HANDLE BAR
+            Container(
+              width: 50,
+              height: 5,
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // 👤 CURRENT ACCOUNT
+            Row(
+              children: const [
+                CircleAvatar(
+                  radius: 25,
+                  child: Icon(Icons.person),
+                ),
+                SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Current Account",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      "Dhanush",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 25),
+
+            // ➕ ADD ACCOUNT (GREEN)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _addAccountFlow(context);
+                },
+                icon: const Icon(Icons.add),
+                label: const Text("Add Account"),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+
+            // 🚪 LOGOUT (RED)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  _logoutAccount(context);
+                },
+                icon: const Icon(Icons.logout),
+                label: const Text("Logout"),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+  void _addAccountFlow(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      final controller = TextEditingController();
+
+      return AlertDialog(
+        title: const Text("Add Account"),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: "Enter username",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final name = controller.text.trim();
+
+              Navigator.pop(context);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text("Account '$name' created"),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            },
+            child: const Text("Create"),
+          ),
+        ],
+      );
+    },
+  );
+}
+  
+  void _logoutAccount(BuildContext context) {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Logged out"),
+                ),
+              );
+            },
+            child: const Text("Logout"),
+          ),
+        ],
+      );
+    },
+  );
+}
 }
