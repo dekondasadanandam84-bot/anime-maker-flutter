@@ -1,8 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/anime_editor_screen.dart';
-import 'package:flutter_application_1/Screens/manga_editor_screen.dart';
-import 'package:flutter_application_1/Widgets/project_dialog.dart';
-import 'package:flutter_application_1/Widgets/project_card.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -64,6 +60,8 @@ drawer: Drawer(
         const Text("Anime Maker"),
 
         const Divider(),
+
+        
 
         // 📌 MAIN MENU (TAKES AVAILABLE SPACE)
         Expanded(
@@ -135,13 +133,11 @@ drawer: Drawer(
         ),
       ),
 
-      floatingActionButton: selectedSection == "Projects"
-          ? FloatingActionButton.extended(
-              icon: const Icon(Icons.add),
-              label: const Text("Create"),
-              onPressed: () => _openCreateSheet(context),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton(
+  onPressed: _openCreateSheet,
+  child: const Icon(Icons.add),
+),
+          key: null,
     );
   }
 
@@ -183,18 +179,9 @@ drawer: Drawer(
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) {
-        final project = projects[index];
+        return null;
 
-        return ProjectCard(
-          project: project,
-          onOpen: () {},
-          onEdit: () {},
-          onDelete: () {
-            setState(() {
-              projects.removeAt(index);
-            });
-          },
-        );
+
       },
     );
   }
@@ -232,200 +219,46 @@ drawer: Drawer(
       },
     );
   }
+  void _openCreateSheet() {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              "Create Project",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
 
-  // ================= CREATE SHEET =================
-  void _openCreateSheet(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (bottomContext) {
-        return Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                "Create Project",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+            const SizedBox(height: 15),
 
-              ListTile(
-                leading: const Icon(Icons.movie),
-                title: const Text("Anime"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _openAnimePopup(context);
-                },
-              ),
-
-              ListTile(
-                leading: const Icon(Icons.menu_book),
-                title: const Text("Manga"),
-                onTap: () {
-                  Navigator.pop(context);
-                  _openMangaPopup(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  // ================= ANIME POPUP =================
-  void _openAnimePopup(BuildContext context) {
-    final nameController = TextEditingController();
-    String selectedRatio = "16:9";
-    int frames = 24;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return CreateProjectDialog(
-              title: "Create Anime Project",
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(controller: nameController),
-
-                  DropdownButton(
-                    value: selectedRatio,
-                    items: const [
-                      DropdownMenuItem(value: "16:9", child: Text("16:9")),
-                      DropdownMenuItem(value: "1:1", child: Text("1:1")),
-                      DropdownMenuItem(value: "9:16", child: Text("9:16")),
-                    ],
-                    onChanged: (v) =>
-                        setStateDialog(() => selectedRatio = v!),
-                  ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Frames"),
-                      IconButton(
-                        onPressed: () =>
-                            setStateDialog(() => frames--),
-                        icon: const Icon(Icons.remove),
-                      ),
-                      Text("$frames"),
-                      IconButton(
-                        onPressed: () =>
-                            setStateDialog(() => frames++),
-                        icon: const Icon(Icons.add),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              onClose: () => Navigator.pop(dialogContext),
-              onCreate: () async {
-                final name = nameController.text.trim();
-                Navigator.pop(dialogContext);
-
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => AnimeEditorScreen(
-                      projectName:
-                          name.isEmpty ? "Untitled" : name,
-                    ),
-                  ),
-                );
-
-                if (result != null) {
-                  setState(() {
-                    projects.add(result);
-                  });
-                }
+            ListTile(
+              leading: const Icon(Icons.movie),
+              title: const Text("Anime Project"),
+              onTap: () {
+                Navigator.pop(context);
               },
-            );
-          },
-        );
-      },
-    );
-  }
+            ),
 
-  // ================= MANGA POPUP =================
-  void _openMangaPopup(BuildContext context) {
-    final nameController = TextEditingController();
-    String selectedPaper = "A4";
-    int pages = 1;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setStateDialog) {
-            return CreateProjectDialog(
-              title: "Create Manga Project",
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(controller: nameController),
-
-                  DropdownButton(
-                    value: selectedPaper,
-                    items: const [
-                      DropdownMenuItem(value: "A4", child: Text("A4")),
-                      DropdownMenuItem(value: "A5", child: Text("A5")),
-                      DropdownMenuItem(value: "Webtoon", child: Text("Webtoon")),
-                    ],
-                    onChanged: (v) =>
-                        setStateDialog(() => selectedPaper = v!),
-                  ),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text("Pages"),
-                      IconButton(
-                        onPressed: () =>
-                            setStateDialog(() => pages--),
-                        icon: const Icon(Icons.remove),
-                      ),
-                      Text("$pages"),
-                      IconButton(
-                        onPressed: () =>
-                            setStateDialog(() => pages++),
-                        icon: const Icon(Icons.add),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-              onClose: () => Navigator.pop(dialogContext),
-              onCreate: () async {
-                final name = nameController.text.trim();
-                Navigator.pop(dialogContext);
-
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => MangaEditorScreen(
-                      projectName:
-                          name.isEmpty ? "Untitled" : name,
-                    ),
-                  ),
-                );
-
-                if (result != null) {
-                  setState(() {
-                    projects.add(result);
-                  });
-                }
+            ListTile(
+              leading: const Icon(Icons.menu_book),
+              title: const Text("Manga Project"),
+              onTap: () {
+                Navigator.pop(context);
               },
-            );
-          },
-        );
-      },
-    );
-  }
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
   
 void _showProfileSheet(BuildContext context) {
 showModalBottomSheet(
@@ -524,4 +357,6 @@ showModalBottomSheet(
       ),
     );
   },
-);}}
+);}
+
+}
