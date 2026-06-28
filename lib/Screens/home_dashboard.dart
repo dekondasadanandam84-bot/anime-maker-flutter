@@ -19,58 +19,100 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final isTablet = MediaQuery.of(context).size.width >= 700;
 
     return Scaffold(
-drawer: Drawer(
-  child: SafeArea(
-    child: Column(
-      children: [
-        const SizedBox(height: 20),
-
-        const CircleAvatar(
-          radius: 40,
-          child: Icon(Icons.person, size: 40),
-        ),
-
-        const SizedBox(height: 10),
-        const Text("Anime Maker"),
-
-        const Divider(),
-
-        
-
-        // 📌 MAIN MENU (TAKES AVAILABLE SPACE)
-        Expanded(
-          child: ListView(
-            padding: EdgeInsets.zero,
+      drawer: Drawer(
+        child: SafeArea(
+          child: Column(
             children: [
-              _item(Icons.workspace_premium, "Go Pro"),
-              _item(Icons.folder, "Projects"),
-              _item(Icons.groups, "Collaboration"),
-              _item(Icons.monetization_on, "Earn Credits"),
+              const SizedBox(height: 20),
+
+              Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.deepPurple,
+                        width: 2,
+                      ),
+                    ),
+                    child: const CircleAvatar(
+                      radius: 42,
+                      backgroundImage: AssetImage("assets/logo.png"),
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Stack(
+                    children: [
+                      Text(
+                        "Anime Maker",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          foreground: Paint()
+                            ..style = PaintingStyle.stroke
+                            ..strokeWidth = 4
+                            ..color = Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      Text(
+                        "Anime Maker",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          color: Colors.deepPurpleAccent.shade100,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 12,
+                              color: Colors.blueAccent.withValues(alpha: 0.6),
+                              offset: const Offset(0, 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+
+              const Divider(),
+
+              Expanded(
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    _item(Icons.workspace_premium, "Go Pro"),
+                    _item(Icons.folder, "Projects"),
+                    _item(Icons.groups, "Collaboration"),
+                    _item(Icons.monetization_on, "Earn Credits"),
+                  ],
+                ),
+              ),
+
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  border: Border(
+                    top: BorderSide(color: Colors.grey),
+                  ),
+                ),
+                child: ListTile(
+                  leading: const Icon(Icons.person),
+                  title: const Text("Profile"),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showProfileSheet(context);
+                  },
+                ),
+              ),
             ],
           ),
         ),
-
-        // 🔥 PUSH PROFILE TO TRUE BOTTOM
-        Container(
-          width: double.infinity,
-          decoration: const BoxDecoration(
-            border: Border(
-              top: BorderSide(color: Colors.grey),
-            ),
-          ),
-          child: ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text("Profile"),
-            onTap: () {
-              Navigator.pop(context);
-              _showProfileSheet(context);
-            },
-          ),
-        ),
-      ],
-    ),
-  ),
-),
+      ),
 
       body: SafeArea(
         child: Column(
@@ -87,14 +129,40 @@ drawer: Drawer(
                     ),
                   ),
                   const Spacer(),
-                  const Text(
-                    "ANIME MAKER",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 3,
-                    ),
+
+                  Stack(
+                    children: [
+                      Text(
+                        "Anime Maker",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          foreground: Paint()
+                            ..style = PaintingStyle.stroke
+                            ..strokeWidth = 4
+                            ..color = Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                      Text(
+                        "Anime Maker",
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2,
+                          color: Colors.deepPurpleAccent.shade100,
+                          shadows: [
+                            Shadow(
+                              blurRadius: 12,
+                              color: Colors.blueAccent.withValues(alpha: 0.6),
+                              offset: const Offset(0, 0),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
+
                   const Spacer(),
                 ],
               ),
@@ -108,10 +176,9 @@ drawer: Drawer(
       ),
 
       floatingActionButton: FloatingActionButton(
-  onPressed: _openCreateSheet,
-  child: const Icon(Icons.add),
-),
-          key: null,
+        onPressed: _openCreateSheet,
+        child: const Icon(Icons.add),
+      ),
     );
   }
 
@@ -135,11 +202,28 @@ drawer: Drawer(
     }
   }
 
+
   // ================= PROJECT GRID =================
   Widget _projectsView(bool isTablet) {
     if (projects.isEmpty) {
       return const Center(
-        child: Text("You haven't created a project yet"),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.folder_open, size: 90, color: Colors.grey),
+            SizedBox(height: 15),
+            Text(
+              "No Projects Yet",
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 8),
+            Text(
+              "You haven't created a project yet.\nClick the + button below to get started.",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+          ],
+        ),
       );
     }
 
@@ -155,103 +239,143 @@ drawer: Drawer(
       itemBuilder: (context, index) {
         final project = projects[index];
 
-return Card(
-  child: Padding(
-    padding: const EdgeInsets.all(12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Center(
-            child: Icon(
-              project["thumbnail"],
-              size: 60,
-            ),
-          ),
-        ),
-
-Center(
-  child: Text(
-    project["name"],
-    textAlign: TextAlign.center,
-    style: const TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 16,
-    ),
-  ),
-),
-
-        const SizedBox(height: 8),
-
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.download),
-              onPressed: () {},
-            ),
-
-IconButton(
-  icon: const Icon(Icons.edit),
-  onPressed: () async {
-    final updatedProject = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => project["type"] == "manga"
-            ? MangaEditorScreen(
-                projectName: project["name"],
-              )
-            : AnimeEditorScreen(
-                projectName: project["name"],
-              ),
-      ),
-    );
-
-    if (updatedProject != null) {
-      setState(() {
-        projects[index] = updatedProject as Map<String, dynamic>;
-      });
-    }
-  },
-),
-
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == "delete") {
-                  setState(() {
-                    projects.removeAt(index);
-                  });
-                }
-
-                if (value == "location") {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      title: const Text("Location"),
-                      content: Text(project["location"]),
-                    ),
-                  );
-                }
-              },
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: "location",
-                  child: Text("Show Location"),
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              children: [
+                Expanded(
+                  child: Center(
+                    child: Icon(project["thumbnail"], size: 60),
+                  ),
                 ),
-                const PopupMenuItem(
-                  value: "delete",
-                  child: Text("Delete"),
+
+                Text(
+                  project["name"],
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.download),
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Downloading ${project["name"]}",
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () async {
+                        final updatedProject = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                project["type"] == "manga"
+                                    ? MangaEditorScreen(
+                                        projectName: project["name"])
+                                    : AnimeEditorScreen(
+                                        projectName: project["name"]),
+                          ),
+                        );
+
+                        if (updatedProject != null) {
+                          setState(() {
+                            projects[index] =
+                                updatedProject as Map<String, dynamic>;
+                          });
+                        }
+                      },
+                    ),
+
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: (value) {
+                        if (value == "share") {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                "Sharing ${project["name"]}",
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (value == "location") {
+                          showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                              title: const Text("Location"),
+                              content: Text(
+                                project["location"] ?? "Unknown",
+                              ),
+                            ),
+                          );
+                        }
+
+                        if (value == "delete") {
+                          setState(() {
+                            projects.removeAt(index);
+                          });
+                        }
+                      },
+                      itemBuilder: (context) => const [
+                        PopupMenuItem(
+                          value: "share",
+                          child: Row(
+                            children: [
+                              Icon(Icons.share, size: 20),
+                              SizedBox(width: 10),
+                              Text("Share"),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: "location",
+                          child: Row(
+                            children: [
+                              Icon(Icons.location_on, size: 20),
+                              SizedBox(width: 10),
+                              Text("Show Location"),
+                            ],
+                          ),
+                        ),
+                        PopupMenuDivider(),
+                        PopupMenuItem(
+                          value: "delete",
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete,
+                                  color: Colors.red, size: 20),
+                              SizedBox(width: 10),
+                              Text(
+                                "Delete",
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ],
-    ),
-  ),
-);
-
-
+          ),
+        );
       },
     );
   }
@@ -289,6 +413,7 @@ IconButton(
       },
     );
   }
+
   void _openCreateSheet() {
   showModalBottomSheet(
     context: context,
@@ -419,15 +544,16 @@ void _showProfileSheet(BuildContext context) {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 107, 222, 130),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.add),
-                    label: const Text("Add Account"),
-                  ),
+                  style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                 foregroundColor: Colors.green,
+                ),
+                 onPressed: () {
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.add, color: Colors.green),
+                label: const Text("Add Account"),
+                 ),
                 ),
 
                 const SizedBox(height: 10),
@@ -436,15 +562,16 @@ void _showProfileSheet(BuildContext context) {
                   width: double.infinity,
                   height: 55,
                   child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 243, 87, 76),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.logout),
-                    label: const Text("Logout"),
+                  style: ElevatedButton.styleFrom(
+                 backgroundColor: Colors.white,
+                   foregroundColor: Colors.red,
                   ),
+                  onPressed: () {
+                   Navigator.pop(context);
+                  },
+                 icon: const Icon(Icons.logout, color: Colors.red),
+                  label: const Text("Logout"),
+                 ),
                 ),
               ],
             ),
