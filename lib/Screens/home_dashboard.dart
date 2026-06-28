@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/Screens/anime_editor_screen.dart';
+import 'package:flutter_application_1/Screens/manga_editor_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -9,34 +11,6 @@ class HomeDashboardScreen extends StatefulWidget {
 }
 
 class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
-  Widget _accountTile({
-  required String name,
-  bool isActive = false,
-}) {
-  return Container(
-    margin: const EdgeInsets.only(bottom: 10),
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: isActive ? Colors.deepPurple : Colors.grey.shade900,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(
-        color: isActive ? Colors.purple : Colors.transparent,
-      ),
-    ),
-    child: Row(
-      children: [
-        const CircleAvatar(
-          child: Icon(Icons.person),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          name,
-          style: const TextStyle(fontSize: 16),
-        ),
-      ],
-    ),
-  );
-}
   String selectedSection = "Projects";
   List<Map<String, dynamic>> projects = [];
 
@@ -179,7 +153,103 @@ drawer: Drawer(
       ),
       itemCount: projects.length,
       itemBuilder: (context, index) {
-        return null;
+        final project = projects[index];
+
+return Card(
+  child: Padding(
+    padding: const EdgeInsets.all(12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: Center(
+            child: Icon(
+              project["thumbnail"],
+              size: 60,
+            ),
+          ),
+        ),
+
+Center(
+  child: Text(
+    project["name"],
+    textAlign: TextAlign.center,
+    style: const TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 16,
+    ),
+  ),
+),
+
+        const SizedBox(height: 8),
+
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.download),
+              onPressed: () {},
+            ),
+
+IconButton(
+  icon: const Icon(Icons.edit),
+  onPressed: () async {
+    final updatedProject = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => project["type"] == "manga"
+            ? MangaEditorScreen(
+                projectName: project["name"],
+              )
+            : AnimeEditorScreen(
+                projectName: project["name"],
+              ),
+      ),
+    );
+
+    if (updatedProject != null) {
+      setState(() {
+        projects[index] = updatedProject as Map<String, dynamic>;
+      });
+    }
+  },
+),
+
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == "delete") {
+                  setState(() {
+                    projects.removeAt(index);
+                  });
+                }
+
+                if (value == "location") {
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text("Location"),
+                      content: Text(project["location"]),
+                    ),
+                  );
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: "location",
+                  child: Text("Show Location"),
+                ),
+                const PopupMenuItem(
+                  value: "delete",
+                  child: Text("Delete"),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
+  ),
+);
 
 
       },
@@ -223,7 +293,9 @@ drawer: Drawer(
   showModalBottomSheet(
     context: context,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      borderRadius: BorderRadius.vertical(
+        top: Radius.circular(20),
+      ),
     ),
     builder: (context) {
       return Padding(
@@ -233,7 +305,10 @@ drawer: Drawer(
           children: [
             const Text(
               "Create Project",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
 
             const SizedBox(height: 15),
@@ -241,122 +316,184 @@ drawer: Drawer(
             ListTile(
               leading: const Icon(Icons.movie),
               title: const Text("Anime Project"),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
+
+                final project = await Navigator.pushNamed(
+                  context,
+                  '/create-project',
+                );
+
+                if (project != null) {
+                  setState(() {
+                    projects.add(project as Map<String, dynamic>);
+                  });
+                }
               },
             ),
 
-            ListTile(
-              leading: const Icon(Icons.menu_book),
-              title: const Text("Manga Project"),
-              onTap: () {
-                Navigator.pop(context);
-              },
-            ),
+ListTile(
+  leading: const Icon(Icons.menu_book),
+  title: const Text("Manga Project"),
+  onTap: () async {
+    Navigator.pop(context);
+
+    final project = await Navigator.pushNamed(
+      context,
+      '/create-manga-project',
+    );
+
+    if (project != null) {
+      setState(() {
+        projects.add(project as Map<String, dynamic>);
+      });
+    }
+  },
+),
           ],
         ),
       );
     },
   );
 }
-  
 void _showProfileSheet(BuildContext context) {
-showModalBottomSheet(
-  context: context,
-  isScrollControlled: true,
-  backgroundColor: Colors.transparent,
-  builder: (context) {
-    return Container(
-      height: MediaQuery.of(context).size.height * 0.5,
-      decoration: const BoxDecoration(
-        color: Colors.black,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(25),
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              // HANDLE BAR
-              Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              const Text(
-                "Accounts",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(height: 15),
-
-              // ACCOUNTS HERE
-              Expanded(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      _accountTile(
-                        name: "Dhanush (Current)",
-                        isActive: true,
-                      ),
-                      _accountTile(name: "Anime Creator 1"),
-                      _accountTile(name: "Studio Account"),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              // BUTTONS
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.add),
-                  label: const Text("Add Account"),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                  ),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(Icons.logout),
-                  label: const Text("Logout"),
-                ),
-              ),
-            ],
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return Container(
+        height: MediaQuery.of(context).size.height * 0.55,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(25),
           ),
         ),
-      ),
-    );
-  },
-);}
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                // Top Handle
+                Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
 
+                const SizedBox(height: 20),
+
+                const Text(
+                  "Accounts",
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        _profileTile(
+                          name: "Dhanush (Current)",
+                          isActive: true,
+                        ),
+                        _profileTile(name: "Anime Creator 1"),
+                        _profileTile(name: "Studio Account"),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 107, 222, 130),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text("Add Account"),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 243, 87, 76),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    icon: const Icon(Icons.logout),
+                    label: const Text("Logout"),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 }
+
+Widget _profileTile({
+  required String name,
+  bool isActive = false,
+}) {
+  return Container(
+    margin: const EdgeInsets.only(bottom: 12),
+    padding: const EdgeInsets.all(14),
+    decoration: BoxDecoration(
+      color: isActive
+          ? Colors.deepPurple.shade100
+          : Colors.grey.shade100,
+      borderRadius: BorderRadius.circular(14),
+      border: Border.all(
+        color: isActive
+            ? Colors.deepPurple
+            : Colors.grey.shade300,
+      ),
+    ),
+    child: Row(
+      children: [
+        CircleAvatar(
+          backgroundColor: Colors.deepPurple.shade200,
+          child: const Icon(
+            Icons.person,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            name,
+            style: const TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}}

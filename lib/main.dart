@@ -3,6 +3,7 @@ import 'package:flutter_application_1/Screens/earn_credits_screen.dart';
 import 'Screens/home_dashboard.dart';
 import 'Screens/collaboration_screen.dart';
 import 'Screens/premium_screen.dart';
+import 'Screens/create_project_screen.dart';
 
 void main() {
   runApp(const AnimeMakerApp());
@@ -21,11 +22,21 @@ class AnimeMakerApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anime Maker',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorSchemeSeed: Colors.deepPurple,
-        brightness: Brightness.dark,
-      ),
+theme: ThemeData(
+  useMaterial3: true,
+  colorSchemeSeed: const Color.fromARGB(255, 121, 78, 186),
+  brightness: Brightness.light,
+  scaffoldBackgroundColor: Colors.white,
+  cardColor: Colors.white,
+  drawerTheme: const DrawerThemeData(
+    backgroundColor: Colors.white,
+  ),
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Colors.white,
+    foregroundColor: Colors.black,
+    elevation: 0,
+  ),
+),
 
       // First screen
       initialRoute: '/',
@@ -44,6 +55,12 @@ class AnimeMakerApp extends StatelessWidget {
 
           case '/premium':
             return slideRoute(const PremiumScreen());
+
+            case '/create-project':
+             return slideRoute( const CreateProjectScreen(),);
+
+            case '/create-manga-project':
+             return slideRoute(const CreateProjectScreen(isManga: true),);
 
           default:
             return slideRoute(const HomeDashboardScreen());

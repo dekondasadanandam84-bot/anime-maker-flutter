@@ -17,12 +17,13 @@ class AnimeEditorScreen extends StatelessWidget {
       ),
       body: Center(
         child: ElevatedButton(
-  onPressed: () {
-    Navigator.pop(context, {
-      "name": projectName,
-      "thumbnail": Icons.movie,
-    });
-  },
+onPressed: () {
+  Navigator.pop(context, {
+    "name": projectName,
+    "thumbnail": Icons.movie,
+    "location": "Local Storage",
+  });
+},
   child: const Text("Save"),
 ),
       ),
