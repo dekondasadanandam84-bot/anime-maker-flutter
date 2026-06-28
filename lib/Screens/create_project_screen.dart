@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/Screens/anime_editor_screen.dart';
+import 'package:flutter_application_1/anime_editor/screen/anime_editor_screen.dart';
 import 'package:flutter_application_1/Screens/manga_editor_screen.dart';
 
 class CreateProjectScreen extends StatefulWidget {
