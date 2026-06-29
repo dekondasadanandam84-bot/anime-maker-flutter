@@ -283,14 +283,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                         final updatedProject = await Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) =>
-                                project["type"] == "manga"
-                                    ? MangaEditorScreen(
-                                        projectName: project["name"])
-                                    : AnimeEditorScreen(
-                                        projectName: project["name"]),
-                          ),
-                        );
+  builder: (_) =>
+      project["type"] == "manga"
+          ? MangaEditorScreen(
+              projectName: project["name"],
+            )
+          : AnimeEditorScreen(
+              projectName: project["name"],
+              ratio: project["ratio"] ?? "16:9",
+            ),
+));
 
                         if (updatedProject != null) {
                           setState(() {

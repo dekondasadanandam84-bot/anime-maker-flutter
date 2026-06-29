@@ -88,7 +88,10 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     MaterialPageRoute(
                       builder: (_) => widget.isManga
                           ? MangaEditorScreen(projectName: projectName)
-                          : AnimeEditorScreen(projectName: projectName),
+                          : AnimeEditorScreen(
+  projectName: projectName,
+  ratio: selectedRatio,
+),
                     ),
                   );
 
