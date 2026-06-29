@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+
 
 class AnimeEditorScreen extends StatefulWidget {
   final String projectName;
@@ -18,31 +18,6 @@ class AnimeEditorScreen extends StatefulWidget {
 
 class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
 
-  @override
-  void initState() {
-    super.initState();
-
-    // 📱 LOCK LANDSCAPE ONLY ON MOBILE
-    if (!kIsWeb) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ]);
-    }
-  }
-
-  @override
-  void dispose() {
-    // 📱 RESET TO PORTRAIT ONLY ON MOBILE
-    if (!kIsWeb) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-    }
-
-    super.dispose();
-  }
 
 @override
 Widget build(BuildContext context) {
@@ -101,41 +76,37 @@ Widget build(BuildContext context) {
               color: Colors.black87,
               borderRadius: BorderRadius.circular(14),
             ),
-            child:  Row(
-  mainAxisSize: MainAxisSize.min,
-  children: [
-    const Icon(Icons.undo, color: Colors.white),
-    const SizedBox(width: 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.undo, color: Colors.white),
+                const SizedBox(width: 12),
+                const Icon(Icons.redo, color: Colors.white),
+                const SizedBox(width: 12),
+                const Icon(Icons.music_note, color: Colors.white),
+                const SizedBox(width: 12),
+                const Icon(Icons.copy, color: Colors.white),
+                const SizedBox(width: 12),
+                const Icon(Icons.control_point_duplicate, color: Colors.white),
+                const SizedBox(width: 12),
+                IconButton(
+                  icon: const Icon(Icons.save, color: Colors.white),
+                  onPressed: () {
 
-    const Icon(Icons.redo, color: Colors.white),
-    const SizedBox(width: 12),
 
-    const Icon(Icons.music_note, color: Colors.white),
-    const SizedBox(width: 12),
-
-    const Icon(Icons.copy, color: Colors.white),
-    const SizedBox(width: 12),
-
-    const Icon(Icons.control_point_duplicate, color: Colors.white),
-    const SizedBox(width: 12),
-
-    IconButton(
-      icon: const Icon(Icons.save, color: Colors.white),
-      onPressed: () {
-        Navigator.pop(context, {
-          "name": widget.projectName,
-          "type": "anime",
-          "thumbnail": Icons.movie,
-          "location": "Local Storage",
-          "ratio": widget.ratio,
-        });
-      },
-    ),
-
-    const SizedBox(width: 12),
-    const Icon(Icons.workspace_premium, color: Colors.amber),
-  ],
-)
+  Navigator.pop(context, {
+    "name": widget.projectName,
+    "type": "anime",
+    "thumbnail": Icons.movie,
+    "location": "Local Storage",
+    "ratio": widget.ratio,
+  });
+}
+                ),
+                const SizedBox(width: 12),
+                const Icon(Icons.workspace_premium, color: Colors.amber),
+              ],
+            ),
           ),
         ),
 
@@ -224,8 +195,8 @@ Widget build(BuildContext context) {
     ),
   );
 }
-  
-  Widget _frameBox(String text) {
+
+ Widget _frameBox(String text) {
   return Container(
     width: 90,
     margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 16),

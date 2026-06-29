@@ -95,9 +95,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     ),
                   );
 
-                  if (result != null) {
-                    navigator.pop(result);
-                  }
+if (result != null) {
+  navigator.pop(result);
+}
                 },
                 child: const Text("Create Project"),
               ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/anime_editor/screen/anime_editor_screen.dart';
 import 'package:flutter_application_1/Screens/manga_editor_screen.dart';
+import 'package:flutter_application_1/Screens/create_project_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -130,7 +131,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
                   ),
                   const Spacer(),
 
-                  Stack(
+                                    Stack(
                     children: [
                       Text(
                         "Anime Maker",
@@ -440,24 +441,28 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
 
             const SizedBox(height: 15),
 
-            ListTile(
-              leading: const Icon(Icons.movie),
-              title: const Text("Anime Project"),
-              onTap: () async {
-                Navigator.pop(context);
+ListTile(
+  leading: const Icon(Icons.movie),
+  title: const Text("Anime Project"),
+  onTap: () async {
+    Navigator.pop(context);
 
-                final project = await Navigator.pushNamed(
-                  context,
-                  '/create-project',
-                );
+    final project = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CreateProjectScreen(),
+      ),
+    );
 
-                if (project != null) {
-                  setState(() {
-                    projects.add(project as Map<String, dynamic>);
-                  });
-                }
-              },
-            ),
+    if (project != null) {
+  
+
+  setState(() {
+    projects.add(project as Map<String, dynamic>);
+  });
+}
+  },
+),
 
 ListTile(
   leading: const Icon(Icons.menu_book),
@@ -465,9 +470,11 @@ ListTile(
   onTap: () async {
     Navigator.pop(context);
 
-    final project = await Navigator.pushNamed(
+    final project = await Navigator.push(
       context,
-      '/create-manga-project',
+      MaterialPageRoute(
+        builder: (_) => const CreateProjectScreen(isManga: true),
+      ),
     );
 
     if (project != null) {

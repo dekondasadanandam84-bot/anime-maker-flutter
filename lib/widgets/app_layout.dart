@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../utils/responsive.dart';
+import 'package:flutter_application_1/utils/responsive.dart';
 import '../Screens/home_dashboard.dart';
 
 class AppLayout extends StatelessWidget {
@@ -9,9 +9,8 @@ class AppLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     if (Responsive.isTablet(context)) {
       return const TabletLayout();
-    } else {
-      return const HomeDashboardScreen();
     }
+    return const HomeDashboardScreen();
   }
 }
 
@@ -23,22 +22,23 @@ class TabletLayout extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          SizedBox(
+          // Sidebar
+          Container(
             width: 280,
-            child: Drawer(
-              child: SafeArea(
-                child: Column(
-                  children: const [
-                    SizedBox(height: 20),
-                    Icon(Icons.auto_awesome, size: 50),
-                    SizedBox(height: 10),
-                    Text("Anime Maker"),
-                  ],
-                ),
+            color: Colors.grey.shade200,
+            child: const SafeArea(
+              child: Column(
+                children: [
+                  SizedBox(height: 20),
+                  Icon(Icons.animation, size: 50),
+                  SizedBox(height: 10),
+                  Text("Anime Maker"),
+                ],
               ),
             ),
           ),
 
+          // Main Content
           const Expanded(
             child: HomeDashboardScreen(),
           ),
