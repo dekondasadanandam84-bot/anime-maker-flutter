@@ -1,54 +1,226 @@
-
 import 'package:flutter/material.dart';
-
+import '../models/frame_model.dart';
+import '../widgets/frame_manager.dart';
 
 class AnimeEditorScreen extends StatefulWidget {
   final String projectName;
- final String ratio;
+  final String ratio;
+  final int fps;
 
   const AnimeEditorScreen({
-    super.key,
-    required this.projectName,
-    this.ratio = "16:9",
-  });
+  super.key,
+  required this.projectName,
+  this.ratio = "16:9",
+  this.fps = 12,
+});
 
   @override
   State<AnimeEditorScreen> createState() => _AnimeEditorScreenState();
 }
 
 class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
+  List<FrameModel> frames = [
+    FrameModel(number: 1),
+  ];
 
+  int selectedFrame = 0;
 
-@override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: Stack(
-      children: [
-        // Background
-        Container(
-          color: Colors.grey.shade300,
+  void _addFrame() {
+    setState(() {
+      frames.add(FrameModel(number: frames.length + 1));
+      selectedFrame = frames.length - 1;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final orientation = MediaQuery.of(context).orientation;
+
+    if (orientation == Orientation.portrait) {
+      return Scaffold(
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              "Please rotate your device to landscape mode for editing.",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
         ),
+      );
+    }
 
-        // Center Canvas
-        Center(
+    return Scaffold(
+      backgroundColor: Colors.grey.shade200,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildTopBar(),
+            Expanded(
+              child: Row(
+                children: [
+                  _buildLeftTools(),
+                  Expanded(
+                    child: Center(
+                      child: _buildCanvas(),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            _buildBottomBar(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTopBar() {
+    return Container(
+      height: 72,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      color: Colors.white,
+      child: Row(
+        children: [
+          const Icon(Icons.arrow_back),
+          const SizedBox(width: 12),
+          Text(
+            widget.projectName,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const Spacer(),
+          const Icon(Icons.undo),
+          const SizedBox(width: 14),
+          const Icon(Icons.redo),
+          const SizedBox(width: 14),
+          const Icon(Icons.music_note),
+          const SizedBox(width: 14),
+          const Icon(Icons.copy),
+          const SizedBox(width: 14),
+          const Icon(Icons.paste),
+          const SizedBox(width: 14),
+          const Icon(Icons.settings),
+          const SizedBox(width: 14),
+          IconButton(
+            icon: const Icon(Icons.save),
+            onPressed: () {
+             Navigator.pop(context, {
+             "name": widget.projectName,
+             "type": "anime",
+              "thumbnail": Icons.movie,
+           "location": "Local Storage",
+              "ratio": widget.ratio,
+            "fps": widget.fps,
+            });
+            },
+          ),
+          const SizedBox(width: 10),
+          const Icon(Icons.workspace_premium, color: Colors.amber),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeftTools() {
+    return Container(
+      width: 82,
+      margin: const EdgeInsets.only(top: 4, bottom: 4),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(18),
+          bottomRight: Radius.circular(18),
+        ),
+      ),
+      child: const Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Icon(Icons.brush, size: 28),
+          Icon(Icons.auto_fix_off, size: 28),
+          Icon(Icons.text_fields, size: 28),
+          Icon(Icons.select_all, size: 28),
+          Icon(Icons.format_color_fill, size: 28),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCanvas() {
+    double width = 500;
+    double height = 280;
+
+    if (widget.ratio == "9:16") {
+      width = 220;
+      height = 400;
+    } else if (widget.ratio == "1:1") {
+      width = 350;
+      height = 350;
+    }
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: Colors.black26),
+      ),
+    );
+  }
+
+  Widget _buildBottomBar() {
+  return Container(
+    height: 90,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    color: Colors.white,
+    child: Row(
+      children: [
+        Expanded(
+          child: Center(
+            child: FrameManager(
+              frames: frames,
+              selectedFrame: selectedFrame,
+              onAddFrame: _addFrame,
+              onSelectFrame: (index) {
+                setState(() {
+                  if (selectedFrame == index) {
+                    _showFrameActions();
+                  } else {
+                    selectedFrame = index;
+                  }
+                });
+              },
+            ),
+          ),
+        ),
+        const Icon(Icons.skip_previous, size: 28),
+        const SizedBox(width: 12),
+        const Icon(Icons.play_arrow, size: 30),
+        const SizedBox(width: 12),
+        const Icon(Icons.skip_next, size: 28),
+      ],
+    ),
+  );
+}
+
+ void _showFrameActions() {
+  showDialog(
+    context: context,
+    barrierColor: Colors.black12,
+    builder: (_) {
+      return Center(
+        child: Material(
+          color: Colors.transparent,
           child: Container(
-            width: widget.ratio == "16:9"
-                ? 500
-                : widget.ratio == "9:16"
-                    ? 220
-                    : widget.ratio == "1:1"
-                        ? 350
-                        : 420,
-            height: widget.ratio == "16:9"
-                ? 280
-                : widget.ratio == "9:16"
-                    ? 400
-                    : widget.ratio == "1:1"
-                        ? 350
-                        : 315,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: Colors.white,
-              border: Border.all(color: Colors.black26),
               borderRadius: BorderRadius.circular(12),
               boxShadow: const [
                 BoxShadow(
@@ -57,159 +229,92 @@ Widget build(BuildContext context) {
                 ),
               ],
             ),
-            child: Center(
-              child: Text(
-                "${widget.ratio} Canvas",
-                style: const TextStyle(fontSize: 18),
-              ),
-            ),
-          ),
-        ),
-
-        // Top Right Toolbar
-        Positioned(
-          top: 16,
-          right: 16,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.black87,
-              borderRadius: BorderRadius.circular(14),
-            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.undo, color: Colors.white),
-                const SizedBox(width: 12),
-                const Icon(Icons.redo, color: Colors.white),
-                const SizedBox(width: 12),
-                const Icon(Icons.music_note, color: Colors.white),
-                const SizedBox(width: 12),
-                const Icon(Icons.copy, color: Colors.white),
-                const SizedBox(width: 12),
-                const Icon(Icons.control_point_duplicate, color: Colors.white),
-                const SizedBox(width: 12),
                 IconButton(
-                  icon: const Icon(Icons.save, color: Colors.white),
+                  icon: const Icon(Icons.keyboard_arrow_left),
                   onPressed: () {
+                    Navigator.pop(context);
+                    _addBefore(selectedFrame);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.copy),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _duplicateFrame(selectedFrame);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.keyboard_arrow_right),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _addAfter(selectedFrame);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _deleteFrame(selectedFrame);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
 
-
-  Navigator.pop(context, {
-    "name": widget.projectName,
-    "type": "anime",
-    "thumbnail": Icons.movie,
-    "location": "Local Storage",
-    "ratio": widget.ratio,
+  void _addBefore(int index) {
+  setState(() {
+    frames.insert(index, FrameModel(number: 0));
+    _renumberFrames();
+    selectedFrame = index;
   });
 }
-                ),
-                const SizedBox(width: 12),
-                const Icon(Icons.workspace_premium, color: Colors.amber),
-              ],
-            ),
-          ),
-        ),
 
-        // Left Tools
-        Positioned(
-          left: 16,
-          top: 110,
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            width: 70,
-            decoration: BoxDecoration(
-              color: Colors.black87,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.brush, color: Colors.white),
-                SizedBox(height: 20),
-                Icon(Icons.auto_fix_off, color: Colors.white),
-                SizedBox(height: 20),
-                Icon(Icons.text_fields, color: Colors.white),
-                SizedBox(height: 20),
-                Icon(Icons.select_all, color: Colors.white),
-                SizedBox(height: 20),
-                Icon(Icons.format_color_fill, color: Colors.white),
-              ],
-            ),
-          ),
-        ),
-
-        // Right Properties Panel
-        Positioned(
-          right: 16,
-          top: 110,
-          child: Container(
-            width: 220,
-            height: 300,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Center(
-              child: Text("Properties Panel"),
-            ),
-          ),
-        ),
-
-        // Bottom Timeline
-        Positioned(
-          left: 16,
-          right: 16,
-          bottom: 16,
-          child: Container(
-            height: 90,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            decoration: BoxDecoration(
-              color: Colors.black87,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.add, color: Colors.white),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: ListView(
-                    reverse: true,
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      _frameBox("Frame 1"),
-                      _frameBox("Frame 2"),
-                      _frameBox("Frame 3"),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.skip_previous, color: Colors.white),
-                const SizedBox(width: 12),
-                const Icon(Icons.play_arrow, color: Colors.white),
-                const SizedBox(width: 12),
-                const Icon(Icons.skip_next, color: Colors.white),
-              ],
-            ),
-          ),
-        ),
-      ],
-    ),
-  );
+void _addAfter(int index) {
+  setState(() {
+    frames.insert(index + 1, FrameModel(number: 0));
+    _renumberFrames();
+    selectedFrame = index + 1;
+  });
 }
 
- Widget _frameBox(String text) {
-  return Container(
-    width: 90,
-    margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 16),
-    decoration: BoxDecoration(
-      color: Colors.grey.shade700,
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Center(
-      child: Text(
-        text,
-        style: const TextStyle(color: Colors.white),
-      ),
-    ),
-  );
+void _duplicateFrame(int index) {
+  setState(() {
+    frames.insert(index + 1, FrameModel(number: 0));
+    _renumberFrames();
+    selectedFrame = index + 1;
+  });
+}
+
+void _deleteFrame(int index) {
+  if (frames.length == 1) return;
+
+  setState(() {
+    frames.removeAt(index);
+    _renumberFrames();
+
+    if (selectedFrame >= frames.length) {
+      selectedFrame = frames.length - 1;
+    }
+  });
+}
+
+void _renumberFrames() {
+  for (int i = 0; i < frames.length; i++) {
+    frames[i] = FrameModel(number: i + 1);
+  }
 }
 }
+
+
+
+
+
+  

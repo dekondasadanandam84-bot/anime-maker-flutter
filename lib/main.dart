@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 // Screens
-import 'Screens/home_dashboard.dart';
 import 'Screens/collaboration_screen.dart';
 import 'Screens/premium_screen.dart';
 import 'Screens/create_project_screen.dart';
@@ -69,9 +68,7 @@ class AnimeMakerApp extends StatelessWidget {
   }
 }
 
-//
 // 🌐 RESPONSIVE ROOT (PHONE vs TABLET)
-//
 class ResponsiveRoot extends StatelessWidget {
   const ResponsiveRoot({super.key});
 
@@ -81,49 +78,7 @@ class ResponsiveRoot extends StatelessWidget {
   }
 }
 
-//
-// 📱 TABLET LAYOUT
-//
-class TabletHomeScreen extends StatelessWidget {
-  const TabletHomeScreen({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Row(
-        children: [
-          // LEFT SIDE DRAWER (always visible)
-          SizedBox(
-            width: 280,
-            child: Drawer(
-              child: SafeArea(
-                child: Column(
-                  children: const [
-                    SizedBox(height: 20),
-                    Icon(Icons.auto_awesome, size: 50),
-                    SizedBox(height: 10),
-                    Text(
-                      "Anime Maker",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // RIGHT SIDE CONTENT
-          const Expanded(
-            child: HomeDashboardScreen(),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 //
 // 🚀 ROUTE ANIMATION

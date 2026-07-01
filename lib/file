@@ -1,0 +1,8 @@
+The method '_addBefore' isn't defined for the type '_AnimeEditorScreenState'.
+Try correcting the name to the name of an existing method, or defining a method named '_addBefore'.
+The method '_duplicateFrame' isn't defined for the type '_AnimeEditorScreenState'.
+Try correcting the name to the name of an existing method, or defining a method named '_duplicateFrame'.
+The method '_addAfter' isn't defined for the type '_AnimeEditorScreenState'.
+Try correcting the name to the name of an existing method, or defining a method named '_addAfter'.
+The method '_deleteFrame' isn't defined for the type '_AnimeEditorScreenState'.
+Try correcting the name to the name of an existing method, or defining a method named '_deleteFrame'.

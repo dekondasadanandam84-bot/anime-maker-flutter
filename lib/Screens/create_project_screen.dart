@@ -96,7 +96,13 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                   );
 
 if (result != null) {
-  navigator.pop(result);
+  navigator.pop({
+    "name": projectName,
+    "type": widget.isManga ? "manga" : "anime",
+    "thumbnail": widget.isManga ? Icons.menu_book : Icons.movie,
+    "ratio": selectedRatio,
+    "fps": fps.toInt(),
+  });
 }
                 },
                 child: const Text("Create Project"),

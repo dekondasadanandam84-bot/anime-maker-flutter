@@ -229,63 +229,134 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.all(12),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: isTablet ? 3 : 2,
-        childAspectRatio: 0.8,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
+  padding: const EdgeInsets.all(12),
+  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: isTablet ? 3 : 2,
+    childAspectRatio: 0.8,
+    crossAxisSpacing: 12,
+    mainAxisSpacing: 12,
+  ),
+  itemCount: projects.length,
+  itemBuilder: (context, index) {
+    final project = projects[index];
+
+    return GestureDetector(
+      onTap: () {
+  showModalBottomSheet(
+    context: context,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) => SafeArea(
+      child: Wrap(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.edit),
+            title: const Text("Edit"),
+            onTap: () async {
+              Navigator.pop(context);
+
+              final updatedProject = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => project["type"] == "manga"
+                      ? MangaEditorScreen(
+                          projectName: project["name"],
+                        )
+                      : AnimeEditorScreen(
+                          projectName: project["name"],
+                          ratio: project["ratio"],
+                        ),
+                ),
+              );
+
+              if (updatedProject != null) {
+                setState(() {
+                  projects[index] = updatedProject;
+                });
+              }
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.download),
+            title: const Text("Download"),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.share),
+            title: const Text("Share"),
+            onTap: () {
+              Navigator.pop(context);
+            },
+          ),
+
+          ListTile(
+            leading: const Icon(Icons.delete, color: Colors.red),
+            title: const Text(
+              "Delete",
+              style: TextStyle(color: Colors.red),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              setState(() {
+                projects.removeAt(index);
+              });
+            },
+          ),
+        ],
       ),
-      itemCount: projects.length,
-      itemBuilder: (context, index) {
-        final project = projects[index];
+    ),
+  );
+},
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+  flex: 4,
+  child: GestureDetector(
+    onTapDown: (details) async {
+  final navigator = Navigator.of(context);
+      final selected = await showMenu(
+        context: context,
+        position: RelativeRect.fromLTRB(
+          details.globalPosition.dx,
+          details.globalPosition.dy,
+          0,
+          0,
+        ),
+        items: const [
+          PopupMenuItem(
+            value: "edit",
+            child: Text("Edit"),
+          ),
+          PopupMenuItem(
+            value: "download",
+            child: Text("Download"),
+          ),
+          PopupMenuItem(
+            value: "share",
+            child: Text("Share"),
+          ),
+          PopupMenuItem(
+            value: "delete",
+            child: Text("Delete"),
+          ),
+        ],
+      );
 
-        return Card(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              children: [
-                Expanded(
-                  child: Center(
-                    child: Icon(project["thumbnail"], size: 60),
-                  ),
-                ),
-
-                Text(
-                  project["name"],
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.download),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              "Downloading ${project["name"]}",
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () async {
-                        final updatedProject = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-  builder: (_) =>
-      project["type"] == "manga"
+      if (selected == "edit") {
+  final updatedProject = await navigator.push(
+    MaterialPageRoute(
+      builder: (_) => project["type"] == "manga"
           ? MangaEditorScreen(
               projectName: project["name"],
             )
@@ -293,94 +364,71 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
               projectName: project["name"],
               ratio: project["ratio"] ?? "16:9",
             ),
-));
+    ),
+  );
 
-                        if (updatedProject != null) {
-                          setState(() {
-                            projects[index] =
-                                updatedProject as Map<String, dynamic>;
-                          });
-                        }
-                      },
+  if (!mounted) return;
+
+  if (updatedProject != null) {
+    setState(() {
+      projects[index] = updatedProject;
+    });
+  }
+}
+
+      if (selected == "delete") {
+        setState(() {
+          projects.removeAt(index);
+        });
+      }
+    },
+    child: Container(
+      width: double.infinity,
+      color: Colors.grey.shade300,
+      child: Center(
+        child: Icon(
+          project["thumbnail"],
+          size: 60,
+          color: Colors.grey.shade700,
+        ),
+      ),
+    ),
+  ),
+),
+            Expanded(
+              flex: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      project["name"],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-
-                    PopupMenuButton<String>(
-                      icon: const Icon(Icons.more_vert),
-                      onSelected: (value) {
-                        if (value == "share") {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                "Sharing ${project["name"]}",
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (value == "location") {
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: const Text("Location"),
-                              content: Text(
-                                project["location"] ?? "Unknown",
-                              ),
-                            ),
-                          );
-                        }
-
-                        if (value == "delete") {
-                          setState(() {
-                            projects.removeAt(index);
-                          });
-                        }
-                      },
-                      itemBuilder: (context) => const [
-                        PopupMenuItem(
-                          value: "share",
-                          child: Row(
-                            children: [
-                              Icon(Icons.share, size: 20),
-                              SizedBox(width: 10),
-                              Text("Share"),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: "location",
-                          child: Row(
-                            children: [
-                              Icon(Icons.location_on, size: 20),
-                              SizedBox(width: 10),
-                              Text("Show Location"),
-                            ],
-                          ),
-                        ),
-                        PopupMenuDivider(),
-                        PopupMenuItem(
-                          value: "delete",
-                          child: Row(
-                            children: [
-                              Icon(Icons.delete,
-                                  color: Colors.red, size: 20),
-                              SizedBox(width: 10),
-                              Text(
-                                "Delete",
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 6),
+                    Text(
+                      '${project["ratio"] ?? "16:9"} • ${project["fps"] ?? 24} FPS',
+                      style: TextStyle(
+                        color: Colors.grey.shade700,
+                      ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
+  },
+);
   }
 
   // ================= DRAWER ITEM =================
