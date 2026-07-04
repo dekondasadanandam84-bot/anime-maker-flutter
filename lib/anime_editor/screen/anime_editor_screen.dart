@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/frame_model.dart';
 import '../widgets/frame_manager.dart';
+import '../canvas/canvas_controller.dart';
 
 class AnimeEditorScreen extends StatefulWidget {
   final String projectName;
@@ -19,6 +20,8 @@ class AnimeEditorScreen extends StatefulWidget {
 }
 
 class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
+  final CanvasController canvasController = CanvasController();
+
   List<FrameModel> frames = [
     FrameModel(number: 1),
   ];
@@ -96,7 +99,23 @@ class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
             ),
           ),
           const Spacer(),
-          const Icon(Icons.undo),
+
+IconButton(
+  icon: const Icon(Icons.zoom_out),
+  onPressed: canvasController.zoomOut,
+),
+
+IconButton(
+  icon: const Icon(Icons.fit_screen),
+  onPressed: canvasController.reset,
+),
+
+IconButton(
+  icon: const Icon(Icons.zoom_in),
+  onPressed: canvasController.zoomIn,
+),
+
+const Icon(Icons.undo),
           const SizedBox(width: 14),
           const Icon(Icons.redo),
           const SizedBox(width: 14),
@@ -164,14 +183,21 @@ class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
       height = 350;
     }
 
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: Colors.black26),
-      ),
-    );
+    return InteractiveViewer(
+  transformationController: canvasController.transformationController,
+  minScale: 0.5,
+  maxScale: 5.0,
+  panEnabled: true,
+  scaleEnabled: true,
+  child: Container(
+    width: width,
+    height: height,
+    decoration: BoxDecoration(
+      color: Colors.white,
+      border: Border.all(color: Colors.black26),
+    ),
+  ),
+);
   }
 
   Widget _buildBottomBar() {
@@ -310,6 +336,11 @@ void _renumberFrames() {
   for (int i = 0; i < frames.length; i++) {
     frames[i] = FrameModel(number: i + 1);
   }
+}
+@override
+void dispose() {
+  canvasController.dispose();
+  super.dispose();
 }
 }
 

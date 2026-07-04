@@ -1,8 +1,4 @@
-The method '_addBefore' isn't defined for the type '_AnimeEditorScreenState'.
-Try correcting the name to the name of an existing method, or defining a method named '_addBefore'.
-The method '_duplicateFrame' isn't defined for the type '_AnimeEditorScreenState'.
-Try correcting the name to the name of an existing method, or defining a method named '_duplicateFrame'.
-The method '_addAfter' isn't defined for the type '_AnimeEditorScreenState'.
-Try correcting the name to the name of an existing method, or defining a method named '_addAfter'.
-The method '_deleteFrame' isn't defined for the type '_AnimeEditorScreenState'.
-Try correcting the name to the name of an existing method, or defining a method named '_deleteFrame'.
+'scaled' is deprecated and shouldn't be used. Use scaledByVector3, scaledByVector4, or scaledByDouble instead.
+Try replacing the use of the deprecated member with the replacement.
+'scaled' is deprecated and shouldn't be used. Use scaledByVector3, scaledByVector4, or scaledByDouble instead.
+Try replacing the use of the deprecated member with the replacement.
