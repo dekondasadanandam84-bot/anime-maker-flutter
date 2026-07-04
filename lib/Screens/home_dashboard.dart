@@ -228,11 +228,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
       );
     }
 
-    return GridView.builder(
+return GridView.builder(
   padding: const EdgeInsets.all(12),
-  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-    crossAxisCount: isTablet ? 3 : 2,
-    childAspectRatio: 0.8,
+  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+    maxCrossAxisExtent: 250,
+    childAspectRatio: 0.82,
     crossAxisSpacing: 12,
     mainAxisSpacing: 12,
   ),
@@ -241,119 +241,28 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
     final project = projects[index];
 
     return GestureDetector(
-      onTap: () {
-  showModalBottomSheet(
-    context: context,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (_) => SafeArea(
-      child: Wrap(
-        children: [
-          ListTile(
-            leading: const Icon(Icons.edit),
-            title: const Text("Edit"),
-            onTap: () async {
-              Navigator.pop(context);
+  onTapDown: (details) async {
+    final navigator = Navigator.of(context);
 
-              final updatedProject = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => project["type"] == "manga"
-                      ? MangaEditorScreen(
-                          projectName: project["name"],
-                        )
-                      : AnimeEditorScreen(
-                          projectName: project["name"],
-                          ratio: project["ratio"],
-                        ),
-                ),
-              );
+final selected = await showMenu(
+  context: context,
+  position: RelativeRect.fromLTRB(
+    details.globalPosition.dx,
+    details.globalPosition.dy,
+    0,
+    0,
+  ),
+  items: const [
+    PopupMenuItem(value: "edit", child: Text("Edit")),
+    PopupMenuItem(value: "download", child: Text("Download")),
+    PopupMenuItem(value: "share", child: Text("Share")),
+    PopupMenuItem(value: "delete", child: Text("Delete")),
+  ],
+);
 
-              if (updatedProject != null) {
-                setState(() {
-                  projects[index] = updatedProject;
-                });
-              }
-            },
-          ),
+if (!mounted) return;
 
-          ListTile(
-            leading: const Icon(Icons.download),
-            title: const Text("Download"),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-
-          ListTile(
-            leading: const Icon(Icons.share),
-            title: const Text("Share"),
-            onTap: () {
-              Navigator.pop(context);
-            },
-          ),
-
-          ListTile(
-            leading: const Icon(Icons.delete, color: Colors.red),
-            title: const Text(
-              "Delete",
-              style: TextStyle(color: Colors.red),
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              setState(() {
-                projects.removeAt(index);
-              });
-            },
-          ),
-        ],
-      ),
-    ),
-  );
-},
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border.all(color: Colors.grey.shade300),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-  flex: 4,
-  child: GestureDetector(
-    onTapDown: (details) async {
-  final navigator = Navigator.of(context);
-      final selected = await showMenu(
-        context: context,
-        position: RelativeRect.fromLTRB(
-          details.globalPosition.dx,
-          details.globalPosition.dy,
-          0,
-          0,
-        ),
-        items: const [
-          PopupMenuItem(
-            value: "edit",
-            child: Text("Edit"),
-          ),
-          PopupMenuItem(
-            value: "download",
-            child: Text("Download"),
-          ),
-          PopupMenuItem(
-            value: "share",
-            child: Text("Share"),
-          ),
-          PopupMenuItem(
-            value: "delete",
-            child: Text("Delete"),
-          ),
-        ],
-      );
-
-      if (selected == "edit") {
+if (selected == "edit") {
   final updatedProject = await navigator.push(
     MaterialPageRoute(
       builder: (_) => project["type"] == "manga"
@@ -376,57 +285,63 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen> {
   }
 }
 
-      if (selected == "delete") {
-        setState(() {
-          projects.removeAt(index);
-        });
-      }
-    },
-    child: Container(
-      width: double.infinity,
-      color: Colors.grey.shade300,
-      child: Center(
-        child: Icon(
-          project["thumbnail"],
-          size: 60,
-          color: Colors.grey.shade700,
-        ),
-      ),
+    if (selected == "delete") {
+      setState(() {
+        projects.removeAt(index);
+      });
+    }
+  },
+
+  child: Container(
+    decoration: BoxDecoration(
+      color: Colors.white,
+      border: Border.all(color: Colors.grey.shade300),
     ),
-  ),
-),
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      project["name"],
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      '${project["ratio"] ?? "16:9"} • ${project["fps"] ?? 24} FPS',
-                      style: TextStyle(
-                        color: Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
+    child: Column(
+      children: [
+        Expanded(
+          flex: 4,
+          child: Container(
+            width: double.infinity,
+            color: Colors.grey.shade300,
+            child: Center(
+              child: Icon(
+                project["thumbnail"],
+                size: 60,
+                color: Colors.grey.shade700,
               ),
             ),
-          ],
+          ),
         ),
-      ),
-    );
+        Expanded(
+          flex: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  project["name"],
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  '${project["ratio"] ?? "16:9"} • ${project["fps"] ?? 24} FPS',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+);
   },
 );
   }

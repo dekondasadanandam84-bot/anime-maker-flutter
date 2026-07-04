@@ -19,6 +19,7 @@ class AnimeEditorScreen extends StatefulWidget {
   State<AnimeEditorScreen> createState() => _AnimeEditorScreenState();
 }
 
+
 class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
   final CanvasController canvasController = CanvasController();
 
@@ -27,13 +28,20 @@ class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
   ];
 
   int selectedFrame = 0;
+  int selectedTool = 0;
 
-  void _addFrame() {
-    setState(() {
+
+ void _addFrames(int count) {
+  final safeCount = count.clamp(1, 24);
+
+  setState(() {
+    for (int i = 0; i < safeCount; i++) {
       frames.add(FrameModel(number: frames.length + 1));
-      selectedFrame = frames.length - 1;
-    });
-  }
+    }
+
+    selectedFrame = frames.length - 1;
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -83,93 +91,117 @@ class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
   }
 
   Widget _buildTopBar() {
-    return Container(
-      height: 72,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      color: Colors.white,
-      child: Row(
-        children: [
-          const Icon(Icons.arrow_back),
-          const SizedBox(width: 12),
-          Text(
-            widget.projectName,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+  return Container(
+    height: 72,
+    padding: const EdgeInsets.symmetric(horizontal: 16),
+    color: Colors.white,
+    child: Row(
+      children: [
+        // LEFT: tools (optional icons)
+        const Icon(Icons.undo),
+        const SizedBox(width: 12),
+        const Icon(Icons.redo),
+        const SizedBox(width: 12),
+        const Icon(Icons.music_note),
+        const SizedBox(width: 12),
+        const Icon(Icons.copy),
+        const SizedBox(width: 12),
+        const Icon(Icons.paste),
+
+        const Spacer(),
+
+        // CENTER: zoom controls
+        Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.zoom_out),
+              onPressed: canvasController.zoomOut,
             ),
-          ),
-          const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.fit_screen),
+              onPressed: canvasController.reset,
+            ),
+            IconButton(
+              icon: const Icon(Icons.zoom_in),
+              onPressed: canvasController.zoomIn,
+            ),
+          ],
+        ),
 
-IconButton(
-  icon: const Icon(Icons.zoom_out),
-  onPressed: canvasController.zoomOut,
-),
+        const Spacer(),
 
-IconButton(
-  icon: const Icon(Icons.fit_screen),
-  onPressed: canvasController.reset,
-),
+        // RIGHT: settings + save
+        const Icon(Icons.settings),
+        const SizedBox(width: 12),
 
-IconButton(
-  icon: const Icon(Icons.zoom_in),
-  onPressed: canvasController.zoomIn,
-),
-
-const Icon(Icons.undo),
-          const SizedBox(width: 14),
-          const Icon(Icons.redo),
-          const SizedBox(width: 14),
-          const Icon(Icons.music_note),
-          const SizedBox(width: 14),
-          const Icon(Icons.copy),
-          const SizedBox(width: 14),
-          const Icon(Icons.paste),
-          const SizedBox(width: 14),
-          const Icon(Icons.settings),
-          const SizedBox(width: 14),
-          IconButton(
-            icon: const Icon(Icons.save),
-            onPressed: () {
-             Navigator.pop(context, {
-             "name": widget.projectName,
-             "type": "anime",
-              "thumbnail": Icons.movie,
-           "location": "Local Storage",
+        IconButton(
+          icon: const Icon(Icons.save),
+          onPressed: () {
+            Navigator.pop(context, {
+              "name": widget.projectName,
+              "type": "anime",
               "ratio": widget.ratio,
-            "fps": widget.fps,
+              "fps": widget.fps,
             });
-            },
-          ),
-          const SizedBox(width: 10),
-          const Icon(Icons.workspace_premium, color: Colors.amber),
-        ],
-      ),
-    );
-  }
+          },
+        ),
+
+        const SizedBox(width: 10),
+        const Icon(Icons.workspace_premium, color: Colors.amber),
+      ],
+    ),
+  );
+}
 
   Widget _buildLeftTools() {
-    return Container(
-      width: 82,
-      margin: const EdgeInsets.only(top: 4, bottom: 4),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topRight: Radius.circular(18),
-          bottomRight: Radius.circular(18),
-        ),
+  final tools = [
+    Icons.brush,
+    Icons.auto_fix_off,
+    Icons.text_fields,
+    Icons.select_all,
+    Icons.format_color_fill,
+  ];
+
+  return Container(
+    width: 80,
+    margin: const EdgeInsets.only(top: 4, bottom: 4),
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.only(
+        topRight: Radius.circular(18),
+        bottomRight: Radius.circular(18),
       ),
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Icon(Icons.brush, size: 28),
-          Icon(Icons.auto_fix_off, size: 28),
-          Icon(Icons.text_fields, size: 28),
-          Icon(Icons.select_all, size: 28),
-          Icon(Icons.format_color_fill, size: 28),
-        ],
-      ),
-    );
-  }
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: List.generate(tools.length, (index) {
+        final isSelected = selectedTool == index;
+
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedTool = index;
+            });
+          },
+          child: Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.pink : Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.black12),
+            ),
+            child: Icon(
+              tools[index],
+              size: 28,
+              color: isSelected ? Colors.white : Colors.black,
+            ),
+          ),
+        );
+      }),
+    ),
+  );
+}
 
   Widget _buildCanvas() {
     double width = 500;
@@ -212,7 +244,7 @@ const Icon(Icons.undo),
             child: FrameManager(
               frames: frames,
               selectedFrame: selectedFrame,
-              onAddFrame: _addFrame,
+              onAddFrame: _showAddFrameDialog,
               onSelectFrame: (index) {
                 setState(() {
                   if (selectedFrame == index) {
@@ -295,6 +327,98 @@ const Icon(Icons.undo),
   );
 }
 
+void _showAddFrameDialog() {
+  int selectedCount = 1;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            title: const Text("How many frames to add?"),
+            content: SizedBox(
+  width: 320,
+  height: 260,
+  child: Column(
+    children: [
+      Text(
+        "$selectedCount frame(s)",
+        style: const TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+
+      const SizedBox(height: 12),
+
+      Expanded(
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate:
+              const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 6,
+            childAspectRatio: 1,
+            mainAxisSpacing: 6,
+            crossAxisSpacing: 6,
+          ),
+          itemCount: 24,
+          itemBuilder: (context, index) {
+            final value = index + 1;
+            final isSelected = value == selectedCount;
+
+            return GestureDetector(
+              onTap: () {
+                setStateDialog(() {
+                  selectedCount = value;
+                });
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Colors.pink
+                      : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Center(
+                  child: Text(
+                    "$value",
+                    style: TextStyle(
+                      color: isSelected
+                          ? Colors.white
+                          : Colors.black,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ],
+  ),
+),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _addFrames(selectedCount);
+                },
+                child: const Text("Add"),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
   void _addBefore(int index) {
   setState(() {
     frames.insert(index, FrameModel(number: 0));
@@ -343,9 +467,3 @@ void dispose() {
   super.dispose();
 }
 }
-
-
-
-
-
-  

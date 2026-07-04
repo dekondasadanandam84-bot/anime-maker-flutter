@@ -1,4 +1,7 @@
-'scaled' is deprecated and shouldn't be used. Use scaledByVector3, scaledByVector4, or scaledByDouble instead.
-Try replacing the use of the deprecated member with the replacement.
-'scaled' is deprecated and shouldn't be used. Use scaledByVector3, scaledByVector4, or scaledByDouble instead.
-Try replacing the use of the deprecated member with the replacement.
+The method '_showFrameActions' isn't defined for the type '_AnimeEditorScreenState'.
+Try correcting the name to the name of an existing method, or defining a method named '_showFrameActions'.The declaration '_showAddFrameDialog' isn't referenced.
+Try removing the declaration of '_showAddFrameDialog'.The declaration '_addBefore' isn't referenced.
+Try removing the declaration of '_addBefore'.The declaration '_addAfter' isn't referenced.
+Try removing the declaration of '_addAfter'.The declaration '_duplicateFrame' isn't referenced.
+Try removing the declaration of '_duplicateFrame'.The declaration '_deleteFrame' isn't referenced.
+Try removing the declaration of '_deleteFrame'.
