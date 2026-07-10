@@ -1,7 +1,4 @@
-The method '_showFrameActions' isn't defined for the type '_AnimeEditorScreenState'.
-Try correcting the name to the name of an existing method, or defining a method named '_showFrameActions'.The declaration '_showAddFrameDialog' isn't referenced.
-Try removing the declaration of '_showAddFrameDialog'.The declaration '_addBefore' isn't referenced.
-Try removing the declaration of '_addBefore'.The declaration '_addAfter' isn't referenced.
-Try removing the declaration of '_addAfter'.The declaration '_duplicateFrame' isn't referenced.
-Try removing the declaration of '_duplicateFrame'.The declaration '_deleteFrame' isn't referenced.
-Try removing the declaration of '_deleteFrame'.
+Part 5.1: Update FrameModel to store strokes.
+Part 5.2: Update BrushDrawingSystem to load/save frame strokes.
+Part 5.3: Update AnimeEditorController.
+Part 5.4: Connect everything and test switching frames.

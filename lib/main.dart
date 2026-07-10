@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 // Screens
-import 'Screens/collaboration_screen.dart';
-import 'Screens/premium_screen.dart';
-import 'Screens/create_project_screen.dart';
-import 'Screens/earn_credits_screen.dart';
+import 'screens/collaboration_screen.dart';
+import 'screens/premium_screen.dart';
+import 'screens/create_project_screen.dart';
+import 'screens/earn_credits_screen.dart';
 import 'package:flutter_application_1/widgets/app_layout.dart';
 
 void main() {

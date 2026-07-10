@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/anime_editor/screen/anime_editor_screen.dart';
-import 'package:flutter_application_1/Screens/manga_editor_screen.dart';
+import 'package:flutter_application_1/screens/manga_editor_screen.dart';
 
 class CreateProjectScreen extends StatefulWidget {
   final bool isManga;
@@ -74,42 +74,42 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
             const Spacer(),
 
             SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                onPressed: () async {
-                  final projectName = nameController.text.trim().isEmpty
-                      ? "Untitled"
-                      : nameController.text.trim();
+  width: double.infinity,
+  height: 55,
+  child: ElevatedButton(
+    onPressed: () async {
+      final projectName = nameController.text.trim().isEmpty
+          ? "Untitled"
+          : nameController.text.trim();
 
-                  final navigator = Navigator.of(context);
+      if (!mounted) return;
 
-                  final result = await navigator.push(
-                    MaterialPageRoute(
-                      builder: (_) => widget.isManga
-                          ? MangaEditorScreen(projectName: projectName)
-                          : AnimeEditorScreen(
-  projectName: projectName,
-  ratio: selectedRatio,
-),
-                    ),
-                  );
-
-if (result != null) {
-  navigator.pop({
-    "name": projectName,
-    "type": widget.isManga ? "manga" : "anime",
-    "thumbnail": widget.isManga ? Icons.menu_book : Icons.movie,
-    "ratio": selectedRatio,
-    "fps": fps.toInt(),
-  });
-}
-                },
-                child: const Text("Create Project"),
-              ),
-            ),
-          ],
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => widget.isManga
+              ? MangaEditorScreen(
+                  projectName: projectName,
+                )
+              : AnimeEditorScreen(
+                  projectName: projectName,
+                  ratio: selectedRatio,
+                  fps: fps.toInt(), // IMPORTANT FIX
+                ),
         ),
+      );
+
+      if (!mounted) return;
+
+      // return project data back to home dashboard
+      if (result != null && context.mounted) {
+        Navigator.pop(context, result);
+      }
+    },
+    child: const Text("Create Project"),
+  ),
+)
+        ]),
       ),
     );
   }

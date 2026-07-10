@@ -6,6 +6,7 @@ class FrameManager extends StatelessWidget {
   final int selectedFrame;
   final VoidCallback onAddFrame;
   final Function(int) onSelectFrame;
+  final Function(int) onFrameDoubleTap;
  
 
   const FrameManager({
@@ -14,6 +15,7 @@ class FrameManager extends StatelessWidget {
     required this.selectedFrame,
     required this.onAddFrame,
     required this.onSelectFrame,
+    required this.onFrameDoubleTap,
   });
 
   @override
@@ -29,7 +31,12 @@ class FrameManager extends StatelessWidget {
           final isSelected = selectedFrame == index;
 
           return GestureDetector(
-            onTap: () => onSelectFrame(index),
+  onTap: () => onSelectFrame(index),
+  onDoubleTap: () {
+    if (selectedFrame == index) {
+      onFrameDoubleTap(index);
+    }
+  },
             child: Container(
   width: frameWidth,
   height: 56,

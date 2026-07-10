@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/anime_editor/screen/anime_editor_screen.dart';
-import 'package:flutter_application_1/Screens/manga_editor_screen.dart';
-import 'package:flutter_application_1/Screens/create_project_screen.dart';
+import 'package:flutter_application_1/screens/manga_editor_screen.dart';
+import 'package:flutter_application_1/screens/create_project_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -272,17 +272,18 @@ if (selected == "edit") {
           : AnimeEditorScreen(
               projectName: project["name"],
               ratio: project["ratio"] ?? "16:9",
+               fps: project["fps"] ?? 12,
             ),
     ),
   );
 
   if (!mounted) return;
 
-  if (updatedProject != null) {
-    setState(() {
-      projects[index] = updatedProject;
-    });
-  }
+  if (updatedProject != null && updatedProject is Map<String, dynamic>) {
+  setState(() {
+    projects[index] = updatedProject;
+  });
+}
 }
 
     if (selected == "delete") {

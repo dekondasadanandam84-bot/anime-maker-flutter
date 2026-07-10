@@ -1,31 +1,20 @@
 import 'package:flutter/material.dart';
 
 class CanvasController {
+  CanvasController();
+
   final TransformationController transformationController =
       TransformationController();
 
-  void zoomIn() {
-    transformationController.value =
-        transformationController.value.scaledByDouble(
-      1.2,
-      1.2,
-      1.0,
-      1.0,
-    );
-  }
+  static const double minScale = 0.2;
+  static const double maxScale = 8.0;
 
-  void zoomOut() {
-    transformationController.value =
-        transformationController.value.scaledByDouble(
-      0.8,
-      0.8,
-      1.0,
-      1.0,
-    );
+  void fitToScreen() {
+    transformationController.value = Matrix4.identity();
   }
 
   void reset() {
-    transformationController.value = Matrix4.identity();
+    fitToScreen();
   }
 
   void dispose() {

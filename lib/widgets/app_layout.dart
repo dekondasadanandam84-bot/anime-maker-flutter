@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Screens/home_dashboard.dart';
+import '../screens/home_dashboard.dart';
 
 class AppLayout extends StatelessWidget {
   const AppLayout({super.key});
