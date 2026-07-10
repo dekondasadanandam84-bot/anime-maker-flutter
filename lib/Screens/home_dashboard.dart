@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/anime_editor/anime_editor_screen.dart';
-import 'package:flutter_application_1/screens/manga_editor_screen.dart';
+import 'package:flutter_application_1/manga_editor/manga_editor_screen.dart';
 import 'package:flutter_application_1/screens/create_project_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
