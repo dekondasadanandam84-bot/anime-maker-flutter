@@ -1,4 +1,0 @@
-Part 5.1: Update FrameModel to store strokes.
-Part 5.2: Update BrushDrawingSystem to load/save frame strokes.
-Part 5.3: Update AnimeEditorController.
-Part 5.4: Connect everything and test switching frames.

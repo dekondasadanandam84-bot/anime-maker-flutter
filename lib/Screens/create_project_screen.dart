@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/anime_editor/screen/anime_editor_screen.dart';
+import 'package:flutter_application_1/anime_editor/anime_editor_screen.dart';
 import 'package:flutter_application_1/screens/manga_editor_screen.dart';
 
 class CreateProjectScreen extends StatefulWidget {
@@ -24,6 +24,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   String selectedPaperSize = "A4";
   double pages = 20;
   final paperSizes = ["A4", "A5", "B5", "Comic", "Webtoon"];
+  
 
   @override
   Widget build(BuildContext context) {
@@ -78,34 +79,34 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   height: 55,
   child: ElevatedButton(
     onPressed: () async {
-      final projectName = nameController.text.trim().isEmpty
-          ? "Untitled"
-          : nameController.text.trim();
+  final navigator = Navigator.of(context);
 
-      if (!mounted) return;
+  final projectName = nameController.text.trim().isEmpty
+      ? "Untitled"
+      : nameController.text.trim();
 
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => widget.isManga
-              ? MangaEditorScreen(
-                  projectName: projectName,
-                )
-              : AnimeEditorScreen(
-                  projectName: projectName,
-                  ratio: selectedRatio,
-                  fps: fps.toInt(), // IMPORTANT FIX
-                ),
-        ),
-      );
+  final result = await navigator.push(
+    MaterialPageRoute(
+      builder: (_) => widget.isManga
+          ? MangaEditorScreen(
+              projectName: projectName,
+              pages: pages.toInt(),
+              size: selectedPaperSize,
+            )
+          : AnimeEditorScreen(
+              projectName: projectName,
+              ratio: selectedRatio,
+              fps: fps.toInt(),
+            ),
+    ),
+  );
 
-      if (!mounted) return;
+  if (!mounted) return;
 
-      // return project data back to home dashboard
-      if (result != null && context.mounted) {
-        Navigator.pop(context, result);
-      }
-    },
+  if (result != null) {
+    navigator.pop(result);
+  }
+},
     child: const Text("Create Project"),
   ),
 )

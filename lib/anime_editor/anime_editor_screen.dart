@@ -1,22 +1,19 @@
 import 'package:flutter/material.dart';
 
-class MangaEditorScreen extends StatelessWidget {
-
+class AnimeEditorScreen extends StatelessWidget {
   final String projectName;
-  final int pages;
-  final String size;
+  final String ratio;
+  final int fps;
 
-  const MangaEditorScreen({
+  const AnimeEditorScreen({
     super.key,
     required this.projectName,
-    required this.pages,
-    required this.size,
+    required this.ratio,
+    required this.fps,
   });
-
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text(projectName),
@@ -24,21 +21,18 @@ class MangaEditorScreen extends StatelessWidget {
 
       body: Center(
         child: ElevatedButton(
-
           onPressed: () {
 
             Navigator.pop(context, {
   "name": projectName,
-  "type": "manga",
-  "pages": pages,
-  "size": size,
-  "thumbnail": Icons.menu_book,
+  "type": "anime",
+  "ratio": ratio,
+  "fps": fps,
+  "thumbnail": Icons.animation,
 });
 
           },
-
           child: const Text("Save"),
-
         ),
       ),
     );

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/anime_editor/screen/anime_editor_screen.dart';
+import 'package:flutter_application_1/anime_editor/anime_editor_screen.dart';
 import 'package:flutter_application_1/screens/manga_editor_screen.dart';
 import 'package:flutter_application_1/screens/create_project_screen.dart';
 
@@ -266,16 +266,18 @@ if (selected == "edit") {
   final updatedProject = await navigator.push(
     MaterialPageRoute(
       builder: (_) => project["type"] == "manga"
-          ? MangaEditorScreen(
-              projectName: project["name"],
-            )
-          : AnimeEditorScreen(
-              projectName: project["name"],
-              ratio: project["ratio"] ?? "16:9",
-               fps: project["fps"] ?? 12,
-            ),
+    ? MangaEditorScreen(
+        projectName: project["name"],
+        pages: project["pages"] ?? 1,
+        size: project["size"] ?? "A4",
+      )
+    : AnimeEditorScreen(
+        projectName: project["name"],
+        ratio: project["ratio"] ?? "16:9",
+        fps: project["fps"] ?? 12,
+      )
     ),
-  );
+  );    
 
   if (!mounted) return;
 
@@ -332,9 +334,13 @@ if (selected == "edit") {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  '${project["ratio"] ?? "16:9"} • ${project["fps"] ?? 24} FPS',
-                ),
+                project["type"] == "manga"
+    ? Text(
+        '${project["size"] ?? "A4"} • ${project["pages"] ?? 1} Pages',
+      )
+    : Text(
+        '${project["ratio"] ?? "16:9"} • ${project["fps"] ?? 12} FPS',
+      ),
               ],
             ),
           ),
