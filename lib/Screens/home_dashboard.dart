@@ -309,10 +309,12 @@ if (selected == "edit") {
             color: Colors.grey.shade300,
             child: Center(
               child: Icon(
-                project["thumbnail"],
-                size: 60,
-                color: Colors.grey.shade700,
-              ),
+  project["type"] == "anime"
+      ? Icons.movie_creation_outlined
+      : Icons.menu_book_outlined,
+  size: 60,
+  color: Colors.grey.shade700,
+),
             ),
           ),
         ),

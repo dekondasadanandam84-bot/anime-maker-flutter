@@ -18,7 +18,6 @@ class MangaEditorController {
       "type": "manga",
       "size": size,
       "pages": pages,
-      "thumbnail": "manga",
     };
   }
 

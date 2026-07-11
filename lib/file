@@ -1,0 +1,697 @@
+import 'package:flutter/material.dart';
+import '../../anime_editor/controllers/anime_editor_controller.dart';
+
+
+class LeftBar extends StatelessWidget {
+
+  final AnimeEditorController controller;
+
+
+  const LeftBar({
+    super.key,
+    required this.controller,
+  });
+
+
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Container(
+      width: 70,
+
+      padding: const EdgeInsets.symmetric(
+        vertical: 10,
+      ),
+
+      decoration: BoxDecoration(
+
+        color: Colors.white,
+
+        borderRadius: BorderRadius.circular(18),
+
+        border: Border.all(
+          color: Colors.grey.shade300,
+        ),
+
+        boxShadow: const [
+
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
+
+        ],
+      ),
+
+
+      child: Column(
+
+        mainAxisSize: MainAxisSize.min,
+
+
+        children: [
+
+          _toolButton(
+            EditorTool.brush,
+            Icons.brush,
+          ),
+
+          const SizedBox(height: 10),
+
+
+          _toolButton(
+            EditorTool.eraser,
+            Icons.auto_fix_normal,
+          ),
+
+          const SizedBox(height: 10),
+
+
+          _toolButton(
+            EditorTool.text,
+            Icons.text_fields,
+          ),
+
+          const SizedBox(height: 10),
+
+
+          _toolButton(
+            EditorTool.paint,
+            Icons.format_color_fill,
+          ),
+
+          const SizedBox(height: 10),
+
+
+          _toolButton(
+            EditorTool.selection,
+            Icons.select_all,
+          ),
+
+        ],
+      ),
+    );
+  }
+
+
+
+  Widget _toolButton(
+    EditorTool tool,
+    IconData icon,
+  ) {
+
+
+    final bool isSelected =
+        controller.selectedTool == tool;
+
+
+
+    return InkWell(
+
+      borderRadius: BorderRadius.circular(14),
+
+
+      onTap: () {
+
+        controller.selectTool(tool);
+
+      },
+
+
+      child: AnimatedContainer(
+
+        duration: const Duration(
+          milliseconds: 200,
+        ),
+
+
+        width: 50,
+
+        height: 50,
+
+
+        decoration: BoxDecoration(
+
+          color: isSelected
+              ? Colors.pink
+              : Colors.transparent,
+
+
+          borderRadius:
+              BorderRadius.circular(14),
+
+        ),
+
+
+
+        child: Icon(
+
+          icon,
+
+
+          color: isSelected
+              ? Colors.white
+              : Colors.black87,
+
+
+          size: 28,
+
+        ),
+      ),
+    );
+  }
+}
+
+import 'package:flutter/material.dart';
+
+class BrushPanel extends StatelessWidget {
+  const BrushPanel({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+
+      children: [
+
+        _brushIcon(
+          Icons.brush,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _brushIcon(
+          Icons.swap_vert,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _brushIcon(
+          Icons.opacity,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _brushIcon(
+          Icons.color_lens,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _brushIcon(
+          Icons.straighten,
+        ),
+
+      ],
+    );
+  }
+
+
+
+  Widget _brushIcon(
+    IconData icon,
+  ) {
+
+    return InkWell(
+
+      borderRadius: BorderRadius.circular(14),
+
+      onTap: () {
+        // Future controller connection
+      },
+
+
+      child: Container(
+
+        width: 50,
+
+        height: 50,
+
+
+        decoration: BoxDecoration(
+
+          color: Colors.grey.shade100,
+
+          borderRadius:
+              BorderRadius.circular(14),
+
+
+          border: Border.all(
+            color: Colors.grey.shade300,
+          ),
+
+        ),
+
+
+        child: Icon(
+          icon,
+          size: 26,
+          color: Colors.black87,
+        ),
+
+      ),
+    );
+  }
+}
+
+import 'package:flutter/material.dart';
+
+class EraserPanel extends StatelessWidget {
+  const EraserPanel({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+
+      children: [
+
+        _eraserIcon(
+          Icons.swap_vert,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _eraserIcon(
+          Icons.opacity,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _eraserIcon(
+          Icons.blur_on,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _eraserIcon(
+          Icons.straighten,
+        ),
+
+      ],
+    );
+  }
+
+
+
+  Widget _eraserIcon(
+    IconData icon,
+  ) {
+
+    return InkWell(
+
+      borderRadius: BorderRadius.circular(14),
+
+      onTap: () {
+        // Future controller connection
+      },
+
+
+      child: Container(
+
+        width: 50,
+
+        height: 50,
+
+
+        decoration: BoxDecoration(
+
+          color: Colors.grey.shade100,
+
+          borderRadius:
+              BorderRadius.circular(14),
+
+
+          border: Border.all(
+            color: Colors.grey.shade300,
+          ),
+
+        ),
+
+
+        child: Icon(
+          icon,
+          size: 26,
+          color: Colors.black87,
+        ),
+
+      ),
+    );
+  }
+}
+
+import 'package:flutter/material.dart';
+
+class TextPanel extends StatelessWidget {
+  const TextPanel({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+
+      children: [
+
+        _textIcon(
+          Icons.add,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _textIcon(
+          Icons.font_download,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _textIcon(
+          Icons.format_size,
+        ),
+
+        const SizedBox(height: 10),
+
+
+        _textIcon(
+          Icons.color_lens,
+        ),
+
+      ],
+    );
+  }
+
+
+
+  Widget _textIcon(
+    IconData icon,
+  ) {
+
+    return InkWell(
+
+      borderRadius: BorderRadius.circular(14),
+
+      onTap: () {
+        // Future controller connection
+      },
+
+
+      child: Container(
+
+        width: 50,
+
+        height: 50,
+
+
+        decoration: BoxDecoration(
+
+          color: Colors.grey.shade100,
+
+          borderRadius:
+              BorderRadius.circular(14),
+
+
+          border: Border.all(
+            color: Colors.grey.shade300,
+          ),
+
+        ),
+
+
+        child: Icon(
+          icon,
+          size: 26,
+          color: Colors.black87,
+        ),
+
+      ),
+    );
+  }
+}
+
+import 'package:flutter/material.dart';
+
+
+enum EditorTool {
+  brush,
+  eraser,
+  text,
+  paint,
+  selection,
+}
+
+
+class AnimeEditorController extends ChangeNotifier {
+
+  String projectName;
+  String ratio;
+  int fps;
+
+  int frames;
+
+
+  EditorTool? selectedTool;
+
+
+  AnimeEditorController({
+    required this.projectName,
+    required this.ratio,
+    required this.fps,
+    this.frames = 1,
+  });
+
+
+
+  void selectTool(EditorTool tool) {
+
+    selectedTool = tool;
+
+    notifyListeners();
+
+  }
+
+  void clearTool() {
+  selectedTool = null;
+  notifyListeners();
+}
+
+
+
+  Map<String, dynamic> saveProject() {
+    return {
+      "name": projectName,
+      "type": "anime",
+      "ratio": ratio,
+      "fps": fps,
+      "frames": frames,
+    };
+  }
+
+
+
+  void addFrames(int value) {
+    frames += value;
+    notifyListeners();
+  }
+
+
+
+  void reset() {
+    frames = 1;
+    notifyListeners();
+  }
+}
+
+import 'package:flutter/material.dart';
+import 'package:flutter_application_1/widgets/editor/top_bar.dart';
+import '../controllers/anime_editor_controller.dart';
+import '../../widgets/editor/left_bar.dart';
+import '../../widgets/editor/right_panel.dart';
+import '../../widgets/editor/brush_panel.dart';
+import '../../widgets/editor/eraser_panel.dart';
+import '../../widgets/editor/text_panel.dart';
+import '../../widgets/editor/paint_panel.dart';
+
+class AnimeEditorScreen extends StatefulWidget {
+  final String projectName;
+  final String ratio;
+  final int fps;
+
+  const AnimeEditorScreen({
+    super.key,
+    required this.projectName,
+    required this.ratio,
+    required this.fps,
+  });
+
+  @override
+  State<AnimeEditorScreen> createState() =>
+      _AnimeEditorScreenState();
+}
+
+class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
+  late AnimeEditorController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = AnimeEditorController(
+      projectName: widget.projectName,
+      ratio: widget.ratio,
+      fps: widget.fps,
+    );
+  }
+
+  Widget getRightPanel() {
+    switch(controller.selectedTool) {
+
+      case EditorTool.brush:
+        return const BrushPanel();
+
+      case EditorTool.eraser:
+        return const EraserPanel();
+
+      case EditorTool.text:
+        return const TextPanel();
+
+      default:
+        return const SizedBox();
+    }
+
+  }
+
+
+
+
+  @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: SafeArea(
+      child: AnimatedBuilder(
+        animation: controller,
+        builder: (context, child) {
+          return Stack(
+            children: [
+
+              // NORMAL EDITOR
+              Column(
+                children: [
+
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: TopBar(
+                      projectName: controller.projectName,
+                      onSave: () {
+                        Navigator.pop(
+                          context,
+                          controller.saveProject(),
+                        );
+                      },
+                      onGoPro: () {
+                        Navigator.pushNamed(
+                          context,
+                          '/premium',
+                        );
+                      },
+                    ),
+                  ),
+
+                  Expanded(
+                    child: Stack(
+                      children: [
+
+                        Row(
+                          children: [
+
+                            SizedBox(
+                              width: 90,
+                              child: Center(
+                                child: LeftBar(
+                                  controller: controller,
+                                ),
+                              ),
+                            ),
+
+                            Expanded(
+                              child: Container(
+                                margin: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius:
+                                      BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Center(
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      Text(controller.ratio),
+                                      Text(
+                                        "${controller.fps} FPS",
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        if (controller.selectedTool != null &&
+                            controller.selectedTool != EditorTool.paint)
+                          Positioned(
+                            right: 20,
+                            top: 0,
+                            bottom: 0,
+                            child: Center(
+                              child: RightPanel(
+                                child: getRightPanel(),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // FULL SCREEN PAINT
+              if (controller.selectedTool ==
+                  EditorTool.paint)
+                Positioned.fill(
+                  child: PaintPanel(
+                    onClose: () {
+                      controller.clearTool();
+                    },
+                  ),
+                ),
+            ],
+          );
+        },
+      ),
+    ),
+  );
+}
+
+}
