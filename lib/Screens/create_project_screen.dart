@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/anime_editor/screens/anime_editor_screen.dart';
+import 'package:flutter_application_1/anime_editor/clipsystem/clip_setup_screen.dart';
 import 'package:flutter_application_1/manga_editor/screens/manga_editor_screen.dart';
+import '../anime_editor/models/project_model.dart';
+import '../anime_editor/models/canvas_model.dart';
 
 class CreateProjectScreen extends StatefulWidget {
   final bool isManga;
@@ -93,11 +95,21 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
               pages: pages.toInt(),
               size: selectedPaperSize,
             )
-          : AnimeEditorScreen(
-              projectName: projectName,
-              ratio: selectedRatio,
-              fps: fps.toInt(),
-            ),
+          :  ClipSetupScreen(
+    project: ProjectModel(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      name: projectName,
+      type: "anime",
+      ratio: selectedRatio,
+      fps: fps.toInt(),
+      canvas: CanvasModel(
+        ratio: selectedRatio,
+          width: 1920,
+  height: 1080,
+      ),
+      clips: [],
+    ),
+  )
     ),
   );
 

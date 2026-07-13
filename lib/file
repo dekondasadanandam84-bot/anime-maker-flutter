@@ -1,697 +1,123 @@
-import 'package:flutter/material.dart';
-import '../../anime_editor/controllers/anime_editor_controller.dart';
+Step 1 ✅ Connect ProjectModel to AnimeEditorController
 
+Goal: AnimeEditorController owns a single ProjectModel.
 
-class LeftBar extends StatelessWidget {
+After this step:
 
-  final AnimeEditorController controller;
+AnimeEditorController
+        │
+        ▼
+   ProjectModel
 
+Don't change any managers yet.
 
-  const LeftBar({
-    super.key,
-    required this.controller,
-  });
+Step 2 ✅ Connect CanvasManager
 
+Goal: Remove duplicate canvas data.
 
+ProjectModel
+     │
+     ▼
+CanvasManager
 
-  @override
-  Widget build(BuildContext context) {
+Instead of storing:
 
-    return Container(
-      width: 70,
+String ratio;
+double width;
+double height;
 
-      padding: const EdgeInsets.symmetric(
-        vertical: 10,
-      ),
+inside CanvasManager, it will use:
 
-      decoration: BoxDecoration(
+project.canvas
+Step 3 ✅ Connect ClipController
 
-        color: Colors.white,
+Replace its internal list:
 
-        borderRadius: BorderRadius.circular(18),
+List<ClipModel> clips;
 
-        border: Border.all(
-          color: Colors.grey.shade300,
-        ),
+with
 
-        boxShadow: const [
+project.clips
 
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
+Now all clips live inside the project.
 
-        ],
-      ),
+Architecture:
 
+ProjectModel
+    │
+    └── List<ClipModel>
+Step 4 ✅ Connect FrameManager
 
-      child: Column(
+Currently you have something like:
 
-        mainAxisSize: MainAxisSize.min,
+List<int> frames;
 
+or
 
-        children: [
+List<FrameModel> frames;
 
-          _toolButton(
-            EditorTool.brush,
-            Icons.brush,
-          ),
+Move them into:
 
-          const SizedBox(height: 10),
+ProjectModel
+   │
+   └── ClipModel
+           │
+           └── frames
 
+Now FrameManager edits:
 
-          _toolButton(
-            EditorTool.eraser,
-            Icons.auto_fix_normal,
-          ),
+project.currentClip.frames
 
-          const SizedBox(height: 10),
+instead of its own list.
 
+Step 5 ✅ Connect CanvasPanel
 
-          _toolButton(
-            EditorTool.text,
-            Icons.text_fields,
-          ),
+Instead of:
 
-          const SizedBox(height: 10),
+canvasManager.ratio
 
+it becomes:
 
-          _toolButton(
-            EditorTool.paint,
-            Icons.format_color_fill,
-          ),
+project.canvas.ratio
 
-          const SizedBox(height: 10),
+The UI reads through the manager, but the data comes from the project.
 
+Step 6 ✅ Connect BottomBar
 
-          _toolButton(
-            EditorTool.selection,
-            Icons.select_all,
-          ),
+Instead of:
 
-        ],
-      ),
-    );
-  }
+frameManager.frames
 
+the manager exposes:
 
+project.currentClip.frames
 
-  Widget _toolButton(
-    EditorTool tool,
-    IconData icon,
-  ) {
+No duplicate frame list.
 
+Step 7 ✅ Save/Load
 
-    final bool isSelected =
-        controller.selectedTool == tool;
+Now saving becomes:
 
+project.toJson();
 
+Loading becomes:
 
-    return InkWell(
+ProjectModel.fromJson(...)
 
-      borderRadius: BorderRadius.circular(14),
+No collecting data from different classes.
 
+Step 8 ✅ Future Managers
 
-      onTap: () {
+Every future manager follows the same pattern:
 
-        controller.selectTool(tool);
+ProjectModel
+│
+├── CanvasManager
+├── FrameManager
+├── ClipManager
+├── LayerManager
+├── AudioManager
+├── ExportManager
+└── HistoryManager
 
-      },
-
-
-      child: AnimatedContainer(
-
-        duration: const Duration(
-          milliseconds: 200,
-        ),
-
-
-        width: 50,
-
-        height: 50,
-
-
-        decoration: BoxDecoration(
-
-          color: isSelected
-              ? Colors.pink
-              : Colors.transparent,
-
-
-          borderRadius:
-              BorderRadius.circular(14),
-
-        ),
-
-
-
-        child: Icon(
-
-          icon,
-
-
-          color: isSelected
-              ? Colors.white
-              : Colors.black87,
-
-
-          size: 28,
-
-        ),
-      ),
-    );
-  }
-}
-
-import 'package:flutter/material.dart';
-
-class BrushPanel extends StatelessWidget {
-  const BrushPanel({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-
-      children: [
-
-        _brushIcon(
-          Icons.brush,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _brushIcon(
-          Icons.swap_vert,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _brushIcon(
-          Icons.opacity,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _brushIcon(
-          Icons.color_lens,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _brushIcon(
-          Icons.straighten,
-        ),
-
-      ],
-    );
-  }
-
-
-
-  Widget _brushIcon(
-    IconData icon,
-  ) {
-
-    return InkWell(
-
-      borderRadius: BorderRadius.circular(14),
-
-      onTap: () {
-        // Future controller connection
-      },
-
-
-      child: Container(
-
-        width: 50,
-
-        height: 50,
-
-
-        decoration: BoxDecoration(
-
-          color: Colors.grey.shade100,
-
-          borderRadius:
-              BorderRadius.circular(14),
-
-
-          border: Border.all(
-            color: Colors.grey.shade300,
-          ),
-
-        ),
-
-
-        child: Icon(
-          icon,
-          size: 26,
-          color: Colors.black87,
-        ),
-
-      ),
-    );
-  }
-}
-
-import 'package:flutter/material.dart';
-
-class EraserPanel extends StatelessWidget {
-  const EraserPanel({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-
-      children: [
-
-        _eraserIcon(
-          Icons.swap_vert,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _eraserIcon(
-          Icons.opacity,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _eraserIcon(
-          Icons.blur_on,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _eraserIcon(
-          Icons.straighten,
-        ),
-
-      ],
-    );
-  }
-
-
-
-  Widget _eraserIcon(
-    IconData icon,
-  ) {
-
-    return InkWell(
-
-      borderRadius: BorderRadius.circular(14),
-
-      onTap: () {
-        // Future controller connection
-      },
-
-
-      child: Container(
-
-        width: 50,
-
-        height: 50,
-
-
-        decoration: BoxDecoration(
-
-          color: Colors.grey.shade100,
-
-          borderRadius:
-              BorderRadius.circular(14),
-
-
-          border: Border.all(
-            color: Colors.grey.shade300,
-          ),
-
-        ),
-
-
-        child: Icon(
-          icon,
-          size: 26,
-          color: Colors.black87,
-        ),
-
-      ),
-    );
-  }
-}
-
-import 'package:flutter/material.dart';
-
-class TextPanel extends StatelessWidget {
-  const TextPanel({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-
-      children: [
-
-        _textIcon(
-          Icons.add,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _textIcon(
-          Icons.font_download,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _textIcon(
-          Icons.format_size,
-        ),
-
-        const SizedBox(height: 10),
-
-
-        _textIcon(
-          Icons.color_lens,
-        ),
-
-      ],
-    );
-  }
-
-
-
-  Widget _textIcon(
-    IconData icon,
-  ) {
-
-    return InkWell(
-
-      borderRadius: BorderRadius.circular(14),
-
-      onTap: () {
-        // Future controller connection
-      },
-
-
-      child: Container(
-
-        width: 50,
-
-        height: 50,
-
-
-        decoration: BoxDecoration(
-
-          color: Colors.grey.shade100,
-
-          borderRadius:
-              BorderRadius.circular(14),
-
-
-          border: Border.all(
-            color: Colors.grey.shade300,
-          ),
-
-        ),
-
-
-        child: Icon(
-          icon,
-          size: 26,
-          color: Colors.black87,
-        ),
-
-      ),
-    );
-  }
-}
-
-import 'package:flutter/material.dart';
-
-
-enum EditorTool {
-  brush,
-  eraser,
-  text,
-  paint,
-  selection,
-}
-
-
-class AnimeEditorController extends ChangeNotifier {
-
-  String projectName;
-  String ratio;
-  int fps;
-
-  int frames;
-
-
-  EditorTool? selectedTool;
-
-
-  AnimeEditorController({
-    required this.projectName,
-    required this.ratio,
-    required this.fps,
-    this.frames = 1,
-  });
-
-
-
-  void selectTool(EditorTool tool) {
-
-    selectedTool = tool;
-
-    notifyListeners();
-
-  }
-
-  void clearTool() {
-  selectedTool = null;
-  notifyListeners();
-}
-
-
-
-  Map<String, dynamic> saveProject() {
-    return {
-      "name": projectName,
-      "type": "anime",
-      "ratio": ratio,
-      "fps": fps,
-      "frames": frames,
-    };
-  }
-
-
-
-  void addFrames(int value) {
-    frames += value;
-    notifyListeners();
-  }
-
-
-
-  void reset() {
-    frames = 1;
-    notifyListeners();
-  }
-}
-
-import 'package:flutter/material.dart';
-import 'package:flutter_application_1/widgets/editor/top_bar.dart';
-import '../controllers/anime_editor_controller.dart';
-import '../../widgets/editor/left_bar.dart';
-import '../../widgets/editor/right_panel.dart';
-import '../../widgets/editor/brush_panel.dart';
-import '../../widgets/editor/eraser_panel.dart';
-import '../../widgets/editor/text_panel.dart';
-import '../../widgets/editor/paint_panel.dart';
-
-class AnimeEditorScreen extends StatefulWidget {
-  final String projectName;
-  final String ratio;
-  final int fps;
-
-  const AnimeEditorScreen({
-    super.key,
-    required this.projectName,
-    required this.ratio,
-    required this.fps,
-  });
-
-  @override
-  State<AnimeEditorScreen> createState() =>
-      _AnimeEditorScreenState();
-}
-
-class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
-  late AnimeEditorController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    controller = AnimeEditorController(
-      projectName: widget.projectName,
-      ratio: widget.ratio,
-      fps: widget.fps,
-    );
-  }
-
-  Widget getRightPanel() {
-    switch(controller.selectedTool) {
-
-      case EditorTool.brush:
-        return const BrushPanel();
-
-      case EditorTool.eraser:
-        return const EraserPanel();
-
-      case EditorTool.text:
-        return const TextPanel();
-
-      default:
-        return const SizedBox();
-    }
-
-  }
-
-
-
-
-  @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    body: SafeArea(
-      child: AnimatedBuilder(
-        animation: controller,
-        builder: (context, child) {
-          return Stack(
-            children: [
-
-              // NORMAL EDITOR
-              Column(
-                children: [
-
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: TopBar(
-                      projectName: controller.projectName,
-                      onSave: () {
-                        Navigator.pop(
-                          context,
-                          controller.saveProject(),
-                        );
-                      },
-                      onGoPro: () {
-                        Navigator.pushNamed(
-                          context,
-                          '/premium',
-                        );
-                      },
-                    ),
-                  ),
-
-                  Expanded(
-                    child: Stack(
-                      children: [
-
-                        Row(
-                          children: [
-
-                            SizedBox(
-                              width: 90,
-                              child: Center(
-                                child: LeftBar(
-                                  controller: controller,
-                                ),
-                              ),
-                            ),
-
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius:
-                                      BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                    children: [
-                                      Text(controller.ratio),
-                                      Text(
-                                        "${controller.fps} FPS",
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        if (controller.selectedTool != null &&
-                            controller.selectedTool != EditorTool.paint)
-                          Positioned(
-                            right: 20,
-                            top: 0,
-                            bottom: 0,
-                            child: Center(
-                              child: RightPanel(
-                                child: getRightPanel(),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              // FULL SCREEN PAINT
-              if (controller.selectedTool ==
-                  EditorTool.paint)
-                Positioned.fill(
-                  child: PaintPanel(
-                    onClose: () {
-                      controller.clearTool();
-                    },
-                  ),
-                ),
-            ],
-          );
-        },
-      ),
-    ),
-  );
-}
-
-}
+Each manager edits only its section of the project.

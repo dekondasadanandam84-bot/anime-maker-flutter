@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/anime_editor/screens/anime_editor_screen.dart';
+import 'package:flutter_application_1/anime_editor/clipsystem/clip_setup_screen.dart';
 import 'package:flutter_application_1/manga_editor/screens/manga_editor_screen.dart';
 import 'package:flutter_application_1/screens/create_project_screen.dart';
+import '../anime_editor/models/project_model.dart';
+import '../anime_editor/models/canvas_model.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -271,11 +273,21 @@ if (selected == "edit") {
         pages: project["pages"] ?? 1,
         size: project["size"] ?? "A4",
       )
-    : AnimeEditorScreen(
-        projectName: project["name"],
+    :   ClipSetupScreen(
+    project: ProjectModel(
+      id: project["id"] ?? DateTime.now().millisecondsSinceEpoch.toString(),
+      name: project["name"],
+      type: "anime",
+      ratio: project["ratio"] ?? "16:9",
+      fps: project["fps"] ?? 12,
+      canvas: CanvasModel(
         ratio: project["ratio"] ?? "16:9",
-        fps: project["fps"] ?? 12,
-      )
+        width: 1920,
+        height: 1080,
+      ),
+      clips: List.from(project["clips"] ?? []),
+    ),
+  )
     ),
   );    
 
@@ -341,8 +353,8 @@ if (selected == "edit") {
         '${project["size"] ?? "A4"} • ${project["pages"] ?? 1} Pages',
       )
     : Text(
-        '${project["ratio"] ?? "16:9"} • ${project["fps"] ?? 12} FPS',
-      ),
+  '${project["ratio"]} • ${project["fps"]} FPS • ${project["clips"]?.length ?? 1} Clips',
+)
               ],
             ),
           ),

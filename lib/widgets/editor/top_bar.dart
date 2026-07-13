@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 class TopBar extends StatelessWidget {
   final String projectName;
-  final VoidCallback onSave;
+  final VoidCallback onBack;
   final VoidCallback onGoPro;
 
   const TopBar({
     super.key,
     required this.projectName,
-    required this.onSave,
+    required this.onBack,
     required this.onGoPro
   });
 
@@ -34,18 +34,25 @@ class TopBar extends StatelessWidget {
       children: [
         // Left - Project Name
         Expanded(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              projectName,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+  child: Row(
+    children: [
+      IconButton(
+        onPressed: onBack,
+        icon: const Icon(Icons.arrow_back),
+      ),
+      Expanded(
+        child: Text(
+          projectName,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
         ),
+      ),
+    ],
+  ),
+),
 
         // Empty space for center button
         const SizedBox(width: 48),
@@ -90,13 +97,6 @@ class TopBar extends StatelessWidget {
   icon: const Icon(
     Icons.audiotrack,
     color: Colors.pink,
-  ),
-),
-                IconButton(
-  onPressed: onSave,
-  icon: const Icon(
-    Icons.save,
-    color: Colors.teal,
   ),
 ),
                 IconButton(

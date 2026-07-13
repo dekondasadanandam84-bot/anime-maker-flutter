@@ -8,18 +8,17 @@ import '../../widgets/editor/eraser_panel.dart';
 import '../../widgets/editor/text_panel.dart';
 import '../../widgets/editor/paint_panel.dart';
 import '../../widgets/editor/rotate_device_overlay.dart';
+import 'package:flutter_application_1/widgets/editor/bottom_bar.dart';
+import 'package:flutter_application_1/widgets/editor/canvas_panel.dart';
+import '../models/project_model.dart';
 
 class AnimeEditorScreen extends StatefulWidget {
-  final String projectName;
-  final String ratio;
-  final int fps;
+final ProjectModel project;
 
-  const AnimeEditorScreen({
-    super.key,
-    required this.projectName,
-    required this.ratio,
-    required this.fps,
-  });
+const AnimeEditorScreen({
+  super.key,
+  required this.project,
+});
 
   @override
   State<AnimeEditorScreen> createState() =>
@@ -34,10 +33,8 @@ void initState() {
   super.initState();
 
   controller = AnimeEditorController(
-    projectName: widget.projectName,
-    ratio: widget.ratio,
-    fps: widget.fps,
-  );
+  project: widget.project,
+);
 }
 
   Widget getRightPanel() {
@@ -68,18 +65,31 @@ void initState() {
 
   @override
 Widget build(BuildContext context) {
-    final bool isPortrait =
-      MediaQuery.of(context).orientation ==
-          Orientation.portrait;
+  final bool isPortrait =
+      MediaQuery.of(context).orientation == Orientation.portrait;
 
   if (isPortrait) {
     return const Scaffold(
       body: RotateDeviceOverlay(),
     );
   }
-  return Scaffold(
-    body: SafeArea(
-      child: AnimatedBuilder(
+
+  return AnimatedBuilder(
+    animation: controller,
+    builder: (context, child) {
+      return Scaffold(
+        bottomNavigationBar: controller.selectedTool == EditorTool.paint
+            ? null
+            : BottomBar(
+                frameManager: controller.frameManager,
+                onPrevious: controller.frameManager.previousFrame,
+                onPlay: () {},
+                onNext: controller.frameManager.nextFrame,
+                onLayers: () {},
+              ),
+
+  body: SafeArea(
+    child: AnimatedBuilder(
         animation: controller,
         builder: (context, child) {
           return Stack(
@@ -93,11 +103,8 @@ Widget build(BuildContext context) {
                     padding: const EdgeInsets.all(12),
                     child: TopBar(
                       projectName: controller.projectName,
-                      onSave: () {
-                        Navigator.pop(
-                          context,
-                          controller.saveProject(),
-                        );
+                      onBack: () {
+                      Navigator.pop(context);
                       },
                       onGoPro: () {
                         Navigator.pushNamed(
@@ -113,44 +120,23 @@ Widget build(BuildContext context) {
                       children: [
 
                         Row(
-                          children: [
+  children: [
+    SizedBox(
+      width: 90,
+      child: Center(
+        child: LeftBar(
+          controller: controller,
+        ),
+      ),
+    ),
 
-                            SizedBox(
-                              width: 90,
-                              child: Center(
-                                child: LeftBar(
-                                  controller: controller,
-                                ),
-                              ),
-                            ),
-
-                            Expanded(
-                              child: Container(
-                                margin: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade100,
-                                  borderRadius:
-                                      BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-                                child: Center(
-                                  child: Column(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
-                                    children: [
-                                      Text(controller.ratio),
-                                      Text(
-                                        "${controller.fps} FPS",
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+    Expanded(
+      child: CanvasPanel(
+        canvasManager: controller.canvasManager,
+      ),
+    ),
+  ],
+),
 
                         if (controller.selectedTool != null &&
                             controller.selectedTool != EditorTool.paint)
@@ -186,5 +172,7 @@ Widget build(BuildContext context) {
       ),
     ),
   );
+}
+);
 }
 }

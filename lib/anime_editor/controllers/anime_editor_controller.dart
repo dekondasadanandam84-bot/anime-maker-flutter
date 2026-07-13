@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import '../controllers/frame_manager.dart';
+import 'canvas_manager.dart';
+import '../models/project_model.dart';
 
 enum EditorTool {
   brush,
@@ -31,114 +33,208 @@ enum TextTool {
   color,
 }
 
-class AnimeEditorController extends ChangeNotifier {
-  String projectName;
-  String ratio;
-  int fps;
-  int frames;
 
-  // Left toolbar
+class AnimeEditorController extends ChangeNotifier {
+
+final ProjectModel project;
+
+
+  
+
+  late final FrameManager frameManager;
+
+
+  
+
+late final CanvasManager canvasManager;
+
+
+
+  // ======================
+  // LEFT TOOLBAR
+  // ======================
+
   EditorTool? selectedTool;
 
-  // Brush panel
+
+
+  // ======================
+  // BRUSH PANEL
+  // ======================
+
   BrushTool? selectedBrushTool;
 
-  // Eraser panel
+
+
+  // ======================
+  // ERASER PANEL
+  // ======================
+
   EraserTool? selectedEraserTool;
 
-  // Text panel
+
+
+  // ======================
+  // TEXT PANEL
+  // ======================
+
   TextTool? selectedTextTool;
 
+
+
   AnimeEditorController({
-    required this.projectName,
-    required this.ratio,
-    required this.fps,
-    this.frames = 1,
-  });
+  required this.project,
+}) {
+
+  frameManager = FrameManager(
+    frames: project.currentClip.frames,
+    selectedFrame: project.currentClip.selectedFrame,
+    project:project,
+  );
+
+  frameManager.addListener(notifyListeners);
+
+
+  canvasManager = CanvasManager(
+    project: project,
+  );
+
+  canvasManager.addListener(notifyListeners);
+}
+
+ String get projectName => project.name;
+
+
 
   // ======================
   // LEFT TOOLBAR
   // ======================
 
   void selectTool(EditorTool tool) {
+
     selectedTool = tool;
+
     notifyListeners();
   }
 
+
   void clearTool() {
+
     selectedTool = null;
+
     notifyListeners();
   }
+
+
 
   // ======================
   // BRUSH PANEL
   // ======================
 
   void selectBrushTool(BrushTool tool) {
+
     selectedBrushTool = tool;
+
     notifyListeners();
   }
 
+
   void clearBrushTool() {
+
     selectedBrushTool = null;
+
     notifyListeners();
   }
+
+
 
   // ======================
   // ERASER PANEL
   // ======================
 
   void selectEraserTool(EraserTool tool) {
+
     selectedEraserTool = tool;
+
     notifyListeners();
   }
 
+
   void clearEraserTool() {
+
     selectedEraserTool = null;
+
     notifyListeners();
   }
+
+
 
   // ======================
   // TEXT PANEL
   // ======================
 
   void selectTextTool(TextTool tool) {
+
     selectedTextTool = tool;
+
     notifyListeners();
   }
+
 
   void clearTextTool() {
+
     selectedTextTool = null;
+
     notifyListeners();
   }
 
+
+
   // ======================
-  // PROJECT
+  // PROJECT SAVE
   // ======================
 
   Map<String, dynamic> saveProject() {
-    return {
-      "name": projectName,
-      "type": "anime",
-      "ratio": ratio,
-      "fps": fps,
-      "frames": frames,
-    };
+
+    return project.toJson();
+
   }
 
-  void addFrames(int value) {
-    frames += value;
-    notifyListeners();
-  }
+
+
+  // ======================
+  // RESET
+  // ======================
 
   void reset() {
-    frames = 1;
+
+
+    frameManager.clear();
+
 
     selectedTool = null;
+
     selectedBrushTool = null;
+
     selectedEraserTool = null;
+
     selectedTextTool = null;
 
+
     notifyListeners();
+
   }
+@override
+void dispose() {
+
+  if (hasListeners) {
+    frameManager.removeListener(notifyListeners);
+    canvasManager.removeListener(notifyListeners);
+  }
+
+  frameManager.dispose();
+  canvasManager.dispose();
+
+  super.dispose();
+}
 }
