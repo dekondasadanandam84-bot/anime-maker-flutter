@@ -3,7 +3,6 @@ import 'package:flutter_application_1/anime_editor/clipsystem/clip_setup_screen.
 import 'package:flutter_application_1/manga_editor/screens/manga_editor_screen.dart';
 import 'package:flutter_application_1/screens/create_project_screen.dart';
 import '../anime_editor/models/project_model.dart';
-import '../anime_editor/models/canvas_model.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -280,11 +279,6 @@ if (selected == "edit") {
       type: "anime",
       ratio: project["ratio"] ?? "16:9",
       fps: project["fps"] ?? 12,
-      canvas: CanvasModel(
-        ratio: project["ratio"] ?? "16:9",
-        width: 1920,
-        height: 1080,
-      ),
       clips: List.from(project["clips"] ?? []),
     ),
   )

@@ -1,5 +1,8 @@
+import 'package:flutter_application_1/anime_editor/canvas_system/models/canvas_model.dart';
+
 class FrameModel {
   final int id;
+  CanvasModel canvas;
 
   int duration;
 
@@ -13,6 +16,7 @@ class FrameModel {
 
   FrameModel({
     required this.id,
+     required this.canvas,
     this.duration = 1,
     this.visible = true,
     this.locked = false,
@@ -28,6 +32,7 @@ class FrameModel {
       "locked": locked,
       "selected": selected,
       "thumbnailPath": thumbnailPath,
+      "canvas": canvas.toJson(),
     };
   }
 
@@ -39,11 +44,13 @@ class FrameModel {
       locked: json["locked"] ?? false,
       selected: json["selected"] ?? false,
       thumbnailPath: json["thumbnailPath"],
+      canvas: CanvasModel.fromJson(json["canvas"]),
     );
   }
 
   FrameModel copyWith({
     int? id,
+    CanvasModel? canvas,
     int? duration,
     bool? visible,
     bool? locked,
@@ -52,6 +59,7 @@ class FrameModel {
   }) {
     return FrameModel(
       id: id ?? this.id,
+      canvas: canvas ?? this.canvas,
       duration: duration ?? this.duration,
       visible: visible ?? this.visible,
       locked: locked ?? this.locked,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../controllers/frame_manager.dart';
-import 'canvas_manager.dart';
+import '../canvas_system/controllers/canvas_manager.dart';
 import '../models/project_model.dart';
+import '../canvas_system/controllers/canvas_controller.dart';
+import '../canvas_system/tools/brush_engine.dart';
 
 enum EditorTool {
   brush,
@@ -43,10 +45,11 @@ final ProjectModel project;
 
   late final FrameManager frameManager;
 
-
+late final CanvasController canvasController;
   
 
 late final CanvasManager canvasManager;
+late final BrushEngine brushEngine;
 
 
 
@@ -80,7 +83,7 @@ late final CanvasManager canvasManager;
 
   TextTool? selectedTextTool;
 
-
+bool brushActive = false;
 
   AnimeEditorController({
   required this.project,
@@ -89,10 +92,11 @@ late final CanvasManager canvasManager;
   frameManager = FrameManager(
     frames: project.currentClip.frames,
     selectedFrame: project.currentClip.selectedFrame,
-    project:project,
+    project: project,
   );
 
   frameManager.addListener(notifyListeners);
+
 
 
   canvasManager = CanvasManager(
@@ -100,6 +104,23 @@ late final CanvasManager canvasManager;
   );
 
   canvasManager.addListener(notifyListeners);
+
+
+
+  brushEngine = BrushEngine();
+
+
+
+  canvasController = CanvasController(
+    canvasManager: canvasManager,
+  );
+
+
+
+  brushEngine.addListener(notifyListeners);
+
+  canvasController.addListener(notifyListeners);
+
 }
 
  String get projectName => project.name;
@@ -133,10 +154,12 @@ late final CanvasManager canvasManager;
 
   void selectBrushTool(BrushTool tool) {
 
-    selectedBrushTool = tool;
+  selectedBrushTool = tool;
 
-    notifyListeners();
-  }
+  brushActive = true;
+
+  notifyListeners();
+}
 
 
   void clearBrushTool() {
@@ -234,6 +257,9 @@ void dispose() {
 
   frameManager.dispose();
   canvasManager.dispose();
+  brushEngine.dispose();
+
+canvasController.dispose();
 
   super.dispose();
 }

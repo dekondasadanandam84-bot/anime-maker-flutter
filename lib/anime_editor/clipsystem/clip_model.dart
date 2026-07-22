@@ -1,10 +1,13 @@
+import 'package:flutter_application_1/anime_editor/models/frame_model.dart';
+
 class ClipModel {
   final int id;
   final String name;
   final int durationSeconds;
   final int fps;
   final int frameCount;
-  List<int> frames;
+  List<FrameModel> frames;
+  FrameModel get currentFrame => frames[selectedFrame];
   int selectedFrame;
 
   ClipModel({
@@ -24,7 +27,7 @@ class ClipModel {
     int? durationSeconds,
     int? fps,
     int? frameCount,
-    List<int>? frames,
+    List<FrameModel>? frames,
     int? selectedFrame,
   }) {
     return ClipModel(
@@ -33,7 +36,7 @@ class ClipModel {
       durationSeconds: durationSeconds ?? this.durationSeconds,
       fps: fps ?? this.fps,
       frameCount: frameCount ?? this.frameCount,
-      frames: frames ?? List<int>.from(this.frames),
+      frames: frames ?? List<FrameModel>.from(this.frames),
       selectedFrame: selectedFrame ?? this.selectedFrame,
     );
   }
@@ -46,7 +49,7 @@ class ClipModel {
       "durationSeconds": durationSeconds,
       "fps": fps,
       "frameCount": frameCount,
-      "frames": frames,
+      "frames": frames.map((frame) => frame.toJson()).toList(),
       "selectedFrame": selectedFrame,
     };
   }
@@ -59,9 +62,9 @@ class ClipModel {
       durationSeconds: json["durationSeconds"],
       fps: json["fps"],
       frameCount: json["frameCount"],
-      frames: List<int>.from(
-        json["frames"] ?? [1], 
-      ),
+      frames: (json["frames"] as List? ?? [])
+    .map((e) => FrameModel.fromJson(e))
+    .toList(),
       selectedFrame: json["selectedFrame"] ?? 0,
     );
   }

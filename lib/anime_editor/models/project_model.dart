@@ -1,5 +1,4 @@
-import 'canvas_model.dart';
-import 'clip_model.dart';
+import '../clipsystem/clip_model.dart';
 
 class ProjectModel {
   final String id;
@@ -10,7 +9,7 @@ class ProjectModel {
   String ratio;
   int fps;
 
-  CanvasModel canvas;
+
 
   List<ClipModel> clips;
 
@@ -22,7 +21,6 @@ class ProjectModel {
     required this.type,
     required this.ratio,
     required this.fps,
-    required this.canvas,
     required this.clips,
     this.selectedClipIndex = 0,
   });
@@ -45,7 +43,6 @@ class ProjectModel {
       "ratio": ratio,
       "fps": fps,
       "selectedClipIndex": selectedClipIndex,
-      "canvas": canvas.toJson(),
       "clips": clips.map((clip) => clip.toJson()).toList(),
     };
   }
@@ -59,7 +56,6 @@ class ProjectModel {
       ratio: json["ratio"],
       fps: json["fps"],
       selectedClipIndex: json["selectedClipIndex"] ?? 0,
-      canvas: CanvasModel.fromJson(json["canvas"]),
       clips: (json["clips"] as List)
           .map((e) => ClipModel.fromJson(e))
           .toList(),

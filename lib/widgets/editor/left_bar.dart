@@ -115,9 +115,15 @@ class LeftBar extends StatelessWidget {
 
       onTap: () {
 
-        controller.selectTool(tool);
+  controller.selectTool(tool);
 
-      },
+  if(tool == EditorTool.brush){
+
+    controller.brushActive = false;
+
+  }
+
+},
 
 
       child: AnimatedContainer(

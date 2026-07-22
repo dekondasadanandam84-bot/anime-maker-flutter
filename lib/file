@@ -1,123 +1,333 @@
-Step 1 ✅ Connect ProjectModel to AnimeEditorController
+import 'package:flutter/material.dart';
+import '../../anime_editor/controllers/anime_editor_controller.dart';
 
-Goal: AnimeEditorController owns a single ProjectModel.
 
-After this step:
+class LeftBar extends StatelessWidget {
 
-AnimeEditorController
-        │
-        ▼
-   ProjectModel
+  final AnimeEditorController controller;
 
-Don't change any managers yet.
 
-Step 2 ✅ Connect CanvasManager
+  const LeftBar({
+    super.key,
+    required this.controller,
+  });
 
-Goal: Remove duplicate canvas data.
 
-ProjectModel
-     │
-     ▼
-CanvasManager
 
-Instead of storing:
+  @override
+  Widget build(BuildContext context) {
 
-String ratio;
-double width;
-double height;
+    return Container(
+      width: 70,
 
-inside CanvasManager, it will use:
+      padding: const EdgeInsets.symmetric(
+        vertical: 10,
+      ),
 
-project.canvas
-Step 3 ✅ Connect ClipController
+      decoration: BoxDecoration(
 
-Replace its internal list:
+        color: Colors.white,
 
-List<ClipModel> clips;
+        borderRadius: BorderRadius.circular(18),
 
-with
+        border: Border.all(
+          color: Colors.grey.shade300,
+        ),
 
-project.clips
+        boxShadow: const [
 
-Now all clips live inside the project.
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(0, 2),
+          ),
 
-Architecture:
+        ],
+      ),
 
-ProjectModel
-    │
-    └── List<ClipModel>
-Step 4 ✅ Connect FrameManager
 
-Currently you have something like:
+      child: Column(
 
-List<int> frames;
+        mainAxisSize: MainAxisSize.min,
 
-or
 
-List<FrameModel> frames;
+        children: [
 
-Move them into:
+          _toolButton(
+            EditorTool.brush,
+            Icons.brush,
+          ),
 
-ProjectModel
-   │
-   └── ClipModel
-           │
-           └── frames
+          const SizedBox(height: 10),
 
-Now FrameManager edits:
 
-project.currentClip.frames
+          _toolButton(
+            EditorTool.eraser,
+            Icons.auto_fix_normal,
+          ),
 
-instead of its own list.
+          const SizedBox(height: 10),
 
-Step 5 ✅ Connect CanvasPanel
 
-Instead of:
+          _toolButton(
+            EditorTool.text,
+            Icons.text_fields,
+          ),
 
-canvasManager.ratio
+          const SizedBox(height: 10),
 
-it becomes:
 
-project.canvas.ratio
+          _toolButton(
+            EditorTool.paint,
+            Icons.format_color_fill,
+          ),
 
-The UI reads through the manager, but the data comes from the project.
+          const SizedBox(height: 10),
 
-Step 6 ✅ Connect BottomBar
 
-Instead of:
+          _toolButton(
+            EditorTool.selection,
+            Icons.select_all,
+          ),
 
-frameManager.frames
+        ],
+      ),
+    );
+  }
 
-the manager exposes:
 
-project.currentClip.frames
 
-No duplicate frame list.
+  Widget _toolButton(
+    EditorTool tool,
+    IconData icon,
+  ) {
 
-Step 7 ✅ Save/Load
 
-Now saving becomes:
+    final bool isSelected =
+        controller.selectedTool == tool;
 
-project.toJson();
 
-Loading becomes:
 
-ProjectModel.fromJson(...)
+    return InkWell(
 
-No collecting data from different classes.
+      borderRadius: BorderRadius.circular(14),
 
-Step 8 ✅ Future Managers
 
-Every future manager follows the same pattern:
+      onTap: () {
 
-ProjectModel
-│
-├── CanvasManager
-├── FrameManager
-├── ClipManager
-├── LayerManager
-├── AudioManager
-├── ExportManager
-└── HistoryManager
+        controller.selectTool(tool);
 
-Each manager edits only its section of the project.
+      },
+
+
+      child: AnimatedContainer(
+
+        duration: const Duration(
+          milliseconds: 200,
+        ),
+
+
+        width: 50,
+
+        height: 50,
+
+
+        decoration: BoxDecoration(
+
+          color: isSelected
+              ? Colors.pink
+              : Colors.transparent,
+
+
+          borderRadius:
+              BorderRadius.circular(14),
+
+        ),
+
+
+
+        child: Icon(
+
+          icon,
+
+
+          color: isSelected
+              ? Colors.white
+              : Colors.black87,
+
+
+          size: 28,
+
+        ),
+      ),
+    );
+  }
+}
+
+import 'package:flutter/material.dart';
+
+class RightPanel extends StatelessWidget {
+
+  final Widget child;
+
+  const RightPanel({
+    super.key,
+    required this.child,
+  });
+
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Container(
+
+      width: 70,
+
+      padding: const EdgeInsets.symmetric(
+        vertical: 10,
+        horizontal: 8,
+      ),
+
+
+      decoration: BoxDecoration(
+
+        color: Colors.white,
+
+        borderRadius: BorderRadius.circular(16),
+
+
+        border: Border.all(
+          color: Colors.grey.shade300,
+        ),
+
+
+        boxShadow: const [
+
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+
+        ],
+      ),
+
+
+      child: child,
+
+    );
+  }
+}
+
+import 'package:flutter/material.dart';
+import '../../anime_editor/controllers/anime_editor_controller.dart';
+
+class BrushPanel extends StatelessWidget {
+
+  final AnimeEditorController controller;
+
+  const BrushPanel({
+    super.key,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+
+      children: [
+
+_brushIcon(
+  BrushTool.brush,
+  Icons.brush,
+),
+
+const SizedBox(height: 16),
+
+_brushIcon(
+  BrushTool.pressure,
+  Icons.swap_vert,
+),
+
+const SizedBox(height: 16),
+
+_brushIcon(
+  BrushTool.opacity,
+  Icons.opacity,
+),
+
+const SizedBox(height: 16),
+
+_brushIcon(
+  BrushTool.color,
+  Icons.color_lens,
+),
+
+const SizedBox(height: 16),
+
+_brushIcon(
+  BrushTool.size,
+  Icons.straighten,
+),
+
+      ],
+    );
+  }
+
+
+
+  Widget _brushIcon(
+  BrushTool tool,
+  IconData icon,
+) {
+
+  final bool isSelected =
+    controller.selectedBrushTool == tool;
+
+    return InkWell(
+
+      borderRadius: BorderRadius.circular(14),
+
+      onTap: () {
+  controller.selectBrushTool(tool);
+},
+
+
+      child: Container(
+
+        width: 50,
+
+        height: 50,
+
+
+        decoration: BoxDecoration(
+
+          color: isSelected
+    ? Colors.pink
+    : Colors.grey.shade100,
+
+          borderRadius:
+              BorderRadius.circular(14),
+
+
+          border: Border.all(
+            color: Colors.grey.shade300,
+          ),
+
+        ),
+
+
+        child: Icon(
+          icon,
+          size: 26,
+          color: isSelected
+    ? Colors.white
+    : Colors.black87,
+        ),
+
+      ),
+    );
+  }
+}

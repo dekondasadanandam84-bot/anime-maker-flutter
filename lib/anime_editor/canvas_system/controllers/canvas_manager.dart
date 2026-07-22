@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/project_model.dart';
+import 'package:flutter_application_1/anime_editor/canvas_system/models/canvas_model.dart';
+import '../../models/project_model.dart';
 
 
 class CanvasManager extends ChangeNotifier {
@@ -12,18 +13,19 @@ class CanvasManager extends ChangeNotifier {
   });
 
 
+CanvasModel get canvas => project.currentClip.currentFrame.canvas;
+
 
   String get ratio =>
-      project.canvas.ratio;
+    canvas.ratio;
 
 
 
   void updateRatio(String ratio) {
 
-    if(project.canvas.ratio == ratio) return;
+    if (canvas.ratio == ratio) return;
 
-
-    project.canvas.ratio = ratio;
+canvas.ratio = ratio;
 
 
     notifyListeners();
@@ -37,7 +39,7 @@ class CanvasManager extends ChangeNotifier {
     double aspectHeight = 9;
 
 
-    switch(project.canvas.ratio){
+    switch (canvas.ratio) {
 
       case "16:9":
         aspectWidth = 16;

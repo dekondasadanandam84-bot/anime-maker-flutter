@@ -1,4 +1,7 @@
-import '../models/clip_model.dart';
+import 'package:flutter_application_1/anime_editor/canvas_system/models/canvas_model.dart';
+import 'package:flutter_application_1/anime_editor/models/frame_model.dart';
+
+import 'clip_model.dart';
 import '../models/project_model.dart';
 
 class ClipController {
@@ -42,7 +45,16 @@ class ClipController {
   durationSeconds: defaultDurationSeconds,
   fps: project.fps,
   frameCount: project.fps * defaultDurationSeconds,
-  frames: [1],
+  frames: [
+  FrameModel(
+    id: 1,
+    canvas: CanvasModel(
+  ratio: project.ratio,
+  width: 1920,
+  height: 1080,
+),
+  ),
+],
 )
     );
   }
@@ -62,7 +74,16 @@ class ClipController {
         durationSeconds: defaultDurationSeconds,
         fps: project.fps,
         frameCount: project.fps * defaultDurationSeconds,
-        frames: [1],
+        frames: [
+  FrameModel(
+    id: 1,
+    canvas: CanvasModel(
+      ratio: project.ratio,
+      width: 1920,
+      height: 1080,
+    ),
+  ),
+],
       ),
     );
   }
@@ -101,7 +122,8 @@ class ClipController {
     durationSeconds: clip.durationSeconds,
     fps: clip.fps,
     frameCount: clip.frameCount,
-    frames: [1],
+    frames: clip.frames,
+selectedFrame: clip.selectedFrame,
   );
 }
 

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../models/clip_model.dart';
+import 'clip_model.dart';
 
 class ClipCard extends StatelessWidget {
   final ClipModel clip;

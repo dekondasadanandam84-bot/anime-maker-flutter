@@ -1,5 +1,9 @@
+import 'package:flutter_application_1/anime_editor/canvas_system/models/stroke_model.dart';
+
 class CanvasModel {
   String ratio;
+
+  List<StrokeModel> strokes;
 
   double width;
   double height;
@@ -26,7 +30,9 @@ class CanvasModel {
     this.backgroundColor = 0xFFFFFFFF,
     this.showGrid = false,
     this.showOnionSkin = false,
-  });
+    List<StrokeModel>? strokes,
+  }) : strokes = strokes ?? [];
+  
 
   Map<String, dynamic> toJson() {
     return {
@@ -42,6 +48,7 @@ class CanvasModel {
       "showOnionSkin": showOnionSkin,
     };
   }
+
 
   factory CanvasModel.fromJson(Map<String, dynamic> json) {
     return CanvasModel(

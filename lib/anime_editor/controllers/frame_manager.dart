@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/project_model.dart';
+import '../models/frame_model.dart';
+import '../canvas_system/models/canvas_model.dart';
 
 
 class FrameManager extends ChangeNotifier {
@@ -8,14 +10,14 @@ class FrameManager extends ChangeNotifier {
 
   FrameManager({
     required this.project,
-    required List<int> frames,
+    required List<FrameModel> frames,
     int selectedFrame = 0,
   });
 
 
 
-  List<int> get frames =>
-      project.currentClip.frames;
+  List<FrameModel> get frames =>
+    project.currentClip.frames;
 
 
 
@@ -38,7 +40,16 @@ class FrameManager extends ChangeNotifier {
 
     for(int i = 0; i < count; i++) {
 
-      frames.add(start + i + 1);
+      frames.add(
+  FrameModel(
+    id: start + i + 1,
+    canvas: CanvasModel(
+      ratio: project.ratio,
+      width: 1920,
+      height: 1080,
+    ),
+  ),
+);
 
     }
 
@@ -120,10 +131,14 @@ class FrameManager extends ChangeNotifier {
 
   void duplicateFrame(int index){
 
-    frames.insert(
-      index + 1,
-      0,
-    );
+    final frame = frames[index];
+
+frames.insert(
+  index + 1,
+  frame.copyWith(
+    id: frames.length + 1,
+  ),
+);
 
 
     _renumber();
@@ -142,9 +157,16 @@ class FrameManager extends ChangeNotifier {
   void addFrameAfter(int index){
 
     frames.insert(
-      index + 1,
-      0,
-    );
+  index + 1,
+  FrameModel(
+    id: frames.length + 1,
+    canvas: CanvasModel(
+      ratio: project.ratio,
+      width: 1920,
+      height: 1080,
+    ),
+  ),
+);
 
 
     _renumber();
@@ -164,8 +186,17 @@ class FrameManager extends ChangeNotifier {
   void clear(){
 
     frames
-      ..clear()
-      ..add(1);
+  ..clear()
+  ..add(
+    FrameModel(
+      id: 1,
+      canvas: CanvasModel(
+        ratio: project.ratio,
+        width: 1920,
+        height: 1080,
+      ),
+    ),
+  );
 
 
     selectedFrame = 0;
@@ -183,7 +214,9 @@ class FrameManager extends ChangeNotifier {
 
     for(int i = 0; i < frames.length; i++){
 
-      frames[i] = i + 1;
+      frames[i] = frames[i].copyWith(
+  id: i + 1,
+);
 
     }
 
@@ -194,7 +227,17 @@ class FrameManager extends ChangeNotifier {
   if(index < 0 || index > frames.length) return;
 
 
-  frames.insert(index, 0);
+  frames.insert(
+  index,
+  FrameModel(
+    id: frames.length + 1,
+    canvas: CanvasModel(
+      ratio: project.ratio,
+      width: 1920,
+      height: 1080,
+    ),
+  ),
+);
 
 
   _renumber();
