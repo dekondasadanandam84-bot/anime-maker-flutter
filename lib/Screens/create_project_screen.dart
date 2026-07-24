@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/anime_editor/clipsystem/clip_setup_screen.dart';
+import 'package:flutter_application_1/anime_editor/screens/season_screen.dart';
 import 'package:flutter_application_1/manga_editor/screens/manga_editor_screen.dart';
 import '../anime_editor/models/project_model.dart';
 
 class CreateProjectScreen extends StatefulWidget {
-  final bool isManga;
+  final String projectType;
 
   const CreateProjectScreen({
-    super.key,
-    this.isManga = false,
-  });
+  super.key,
+  required this.projectType,
+});
 
   @override
   State<CreateProjectScreen> createState() => _CreateProjectScreenState();
@@ -36,7 +37,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          widget.isManga
+          widget.projectType.startsWith("manga")
               ? "Create Manga Project"
               : "Create Anime Project",
         ),
@@ -48,7 +49,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.isManga ? "Book Name" : "Animation Name",
+              widget.projectType.startsWith("manga") ? "Book Name" : "Animation Name",
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -60,7 +61,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
             TextField(
               controller: nameController,
               decoration: InputDecoration(
-                hintText: widget.isManga
+                hintText: widget.projectType.startsWith("manga")
                     ? "Enter book name"
                     : "Enter animation name",
                 border: OutlineInputBorder(
@@ -71,7 +72,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
             const SizedBox(height: 20),
 
-            widget.isManga ? _buildMangaUI() : _buildAnimeUI(),
+            widget.projectType.startsWith("manga") ? _buildMangaUI() : _buildAnimeUI(),
 
             const Spacer(),
 
@@ -87,25 +88,40 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       : nameController.text.trim();
 
   final result = await navigator.push(
-    MaterialPageRoute(
-      builder: (_) => widget.isManga
-          ? MangaEditorScreen(
-              projectName: projectName,
-              pages: pages.toInt(),
-              size: selectedPaperSize,
-            )
-          :  ClipSetupScreen(
-    project: ProjectModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: projectName,
-      type: "anime",
-      ratio: selectedRatio,
-      fps: fps.toInt(),
-      clips: [],
-    ),
-  )
-    ),
-  );
+  MaterialPageRoute(
+    builder: (_) => widget.projectType.startsWith("manga")
+        ? MangaEditorScreen(
+            projectName: projectName,
+            pages: pages.toInt(),
+            size: selectedPaperSize,
+          )
+        : widget.projectType == "anime_series"
+            ? SeasonScreen(
+                project: ProjectModel(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  name: projectName,
+                  type: "anime",
+                  projectType: widget.projectType,
+                  ratio: selectedRatio,
+                  fps: fps.toInt(),
+                  clips: [],
+                  seasons: [],
+                ),
+              )
+            : ClipSetupScreen(
+                project: ProjectModel(
+                  id: DateTime.now().millisecondsSinceEpoch.toString(),
+                  name: projectName,
+                  type: "anime",
+                  projectType: widget.projectType,
+                  ratio: selectedRatio,
+                  fps: fps.toInt(),
+                  clips: [],
+                  seasons: [],
+                ),
+              ),
+  ),
+);
 
   if (!mounted) return;
 

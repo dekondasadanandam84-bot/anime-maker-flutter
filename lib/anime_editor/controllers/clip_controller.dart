@@ -1,10 +1,12 @@
 import 'package:flutter_application_1/anime_editor/canvas_system/models/canvas_model.dart';
 import 'package:flutter_application_1/anime_editor/models/frame_model.dart';
 
-import 'clip_model.dart';
+import '../models/clip_model.dart';
 import '../models/project_model.dart';
 
 class ClipController {
+
+  int selectedClipIndex = 0;
 
   final ProjectModel project;
 
@@ -12,33 +14,34 @@ class ClipController {
 
 
   ClipController({
-    required this.project,
-    this.defaultDurationSeconds = 120,
-  }) {
-    createDefaultClip();
+ required this.project,
+ this.defaultDurationSeconds = 120,
+}){
+
+ createDefaultClip();
+
+}
+List get clips {
+
+  if(project.projectType == "anime_series") {
+
+    return project
+        .seasons[project.selectedSeasonIndex]
+        .currentEpisode
+        .clips;
+
   }
 
+  return project.clips;
 
-  // Access project clips
-  List<ClipModel> get clips => project.clips;
-
-
-  // Selected clip index
-  int get selectedClipIndex => project.selectedClipIndex;
-
-
-  // Current selected clip
-  ClipModel get currentClip => project.currentClip;
-
-
-
+}
   /// Creates the first clip when project is created
   void createDefaultClip() {
 
-    if (project.clips.isNotEmpty) return;
+    if (clips.isNotEmpty) return;
 
 
-    project.clips.add(
+    clips.add(
       ClipModel(
   id: 1,
   name: "Untitled Clip",
@@ -64,10 +67,10 @@ class ClipController {
   /// Adds a new clip
   void addClip() {
 
-    final number = project.clips.length + 1;
+    final number = clips.length + 1;
 
 
-    project.clips.add(
+    clips.add(
       ClipModel(
         id: number,
         name: "Untitled Clip",
@@ -93,17 +96,15 @@ class ClipController {
   /// Deletes a clip
   void removeClip(int index) {
 
-    if (project.clips.length == 1) return;
+    if (clips.length == 1) return;
 
 
-    project.clips.removeAt(index);
+    clips.removeAt(index);
 
 
-    if (project.selectedClipIndex >= project.clips.length) {
-
-      project.selectedClipIndex =
-          project.clips.length - 1;
-    }
+   if (selectedClipIndex >= clips.length) {
+  selectedClipIndex = clips.length - 1;
+}
   }
 
 
@@ -114,9 +115,9 @@ class ClipController {
   String newName,
 ) {
 
-  final clip = project.clips[index];
+  final clip = clips[index];
 
-  project.clips[index] = ClipModel(
+  clips[index] = ClipModel(
     id: clip.id,
     name: newName,
     durationSeconds: clip.durationSeconds,
@@ -132,12 +133,12 @@ selectedFrame: clip.selectedFrame,
   /// Select clip
   void selectClip(int index) {
 
-    if(index < 0 || index >= project.clips.length) {
+    if(index < 0 || index >= clips.length) {
       return;
     }
 
 
-    project.selectedClipIndex = index;
+   selectedClipIndex = index;
   }
 
 
@@ -154,16 +155,15 @@ selectedFrame: clip.selectedFrame,
 
 
     final clip =
-        project.clips.removeAt(oldIndex);
+        clips.removeAt(oldIndex);
 
 
-    project.clips.insert(
+    clips.insert(
       newIndex,
       clip,
     );
 
 
-    project.selectedClipIndex =
-        project.clips.indexOf(clip);
+   selectedClipIndex = clips.indexOf(clip);
   }
 }

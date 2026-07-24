@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/anime_editor/canvas_system/controllers/canvas_controller.dart';
-import 'package:flutter_application_1/anime_editor/canvas_system/tools/brush_engine.dart';
 import 'package:flutter_application_1/widgets/editor/top_bar.dart';
 import '../controllers/anime_editor_controller.dart';
 import '../../widgets/editor/left_bar.dart';
@@ -30,7 +29,6 @@ const AnimeEditorScreen({
 class _AnimeEditorScreenState extends State<AnimeEditorScreen> {
   late AnimeEditorController controller;
   late CanvasController canvasController;
-late BrushEngine brushEngine;
 
   @override
 void initState() {
@@ -45,8 +43,6 @@ canvasController = CanvasController(
   canvasManager: controller.canvasManager,
 );
 
-
-brushEngine = BrushEngine();
 }
 
   Widget getRightPanel() {
@@ -146,8 +142,6 @@ Widget build(BuildContext context) {
       child: CanvasPanel(
   canvasManager: controller.canvasManager,
   canvasController: controller.canvasController,
-  brushEngine: controller.brushEngine,
-  brushActive: controller.brushActive,
 ),
     ),
   ],

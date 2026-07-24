@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/anime_editor/models/project_model.dart';
 import '../controllers/frame_manager.dart';
 import '../canvas_system/controllers/canvas_manager.dart';
-import '../models/project_model.dart';
 import '../canvas_system/controllers/canvas_controller.dart';
-import '../canvas_system/tools/brush_engine.dart';
+
 
 enum EditorTool {
   brush,
@@ -49,7 +49,7 @@ late final CanvasController canvasController;
   
 
 late final CanvasManager canvasManager;
-late final BrushEngine brushEngine;
+
 
 
 
@@ -90,10 +90,20 @@ bool brushActive = false;
 }) {
 
   frameManager = FrameManager(
-    frames: project.currentClip.frames,
-    selectedFrame: project.currentClip.selectedFrame,
-    project: project,
-  );
+  frames: project
+      .currentSeason
+      .currentEpisode
+      .currentClip
+      .frames,
+
+  selectedFrame: project
+      .currentSeason
+      .currentEpisode
+      .currentClip
+      .selectedFrame,
+
+  project: project,
+);
 
   frameManager.addListener(notifyListeners);
 
@@ -107,7 +117,7 @@ bool brushActive = false;
 
 
 
-  brushEngine = BrushEngine();
+ 
 
 
 
@@ -117,7 +127,7 @@ bool brushActive = false;
 
 
 
-  brushEngine.addListener(notifyListeners);
+ 
 
   canvasController.addListener(notifyListeners);
 
@@ -257,7 +267,7 @@ void dispose() {
 
   frameManager.dispose();
   canvasManager.dispose();
-  brushEngine.dispose();
+ 
 
 canvasController.dispose();
 

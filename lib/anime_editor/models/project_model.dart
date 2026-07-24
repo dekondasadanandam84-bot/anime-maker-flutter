@@ -1,40 +1,50 @@
-import '../clipsystem/clip_model.dart';
+import 'season_model.dart';
+import 'clip_model.dart';
 
 class ProjectModel {
   final String id;
 
   String name;
   String type;
-
+  final String projectType;
   String ratio;
   int fps;
-
-
-
+  List<SeasonModel> seasons;
   List<ClipModel> clips;
 
-  int selectedClipIndex;
+  int selectedSeasonIndex;
 
   ProjectModel({
-    required this.id,
-    required this.name,
-    required this.type,
-    required this.ratio,
-    required this.fps,
-    required this.clips,
-    this.selectedClipIndex = 0,
-  });
+  required this.id,
+  required this.name,
+  required this.type,
+  required this.projectType,
+  required this.ratio,
+  required this.fps,
+  required this.clips,
+  required this.seasons,
+  this.selectedSeasonIndex = 0,
+});
 
-  /// Currently selected clip
-  ClipModel get currentClip => clips[selectedClipIndex];
 
-  /// Change selected clip
-  void selectClip(int index) {
-    if (index < 0 || index >= clips.length) return;
-    selectedClipIndex = index;
+  /// Currently selected season
+  SeasonModel get currentSeason {
+  if (seasons.isEmpty) {
+    throw Exception("No seasons created for this project");
   }
 
-  /// Convert project into JSON for saving
+  return seasons[selectedSeasonIndex];
+}
+
+
+  /// Change selected season
+  void selectSeason(int index) {
+    if (index < 0 || index >= seasons.length) return;
+
+    selectedSeasonIndex = index;
+  }
+
+
   Map<String, dynamic> toJson() {
     return {
       "id": id,
@@ -42,23 +52,29 @@ class ProjectModel {
       "type": type,
       "ratio": ratio,
       "fps": fps,
-      "selectedClipIndex": selectedClipIndex,
+      "projectType": projectType,
+      "selectedSeasonIndex": selectedSeasonIndex,
+      "seasons": seasons.map((season) => season.toJson()).toList(),
       "clips": clips.map((clip) => clip.toJson()).toList(),
     };
   }
 
-  /// Load project from JSON
+
   factory ProjectModel.fromJson(Map<String, dynamic> json) {
     return ProjectModel(
       id: json["id"],
       name: json["name"],
       type: json["type"],
       ratio: json["ratio"],
+      projectType: json["projectType"] ?? "series",
       fps: json["fps"],
-      selectedClipIndex: json["selectedClipIndex"] ?? 0,
-      clips: (json["clips"] as List)
-          .map((e) => ClipModel.fromJson(e))
+      selectedSeasonIndex: json["selectedSeasonIndex"] ?? 0,
+      seasons: (json["seasons"] as List? ?? [])
+          .map((e) => SeasonModel.fromJson(e))
           .toList(),
+          clips: (json["clips"] as List? ?? [])
+    .map((e) => ClipModel.fromJson(e))
+    .toList(),
     );
   }
 }

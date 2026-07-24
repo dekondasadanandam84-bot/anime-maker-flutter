@@ -13,7 +13,12 @@ class CanvasManager extends ChangeNotifier {
   });
 
 
-CanvasModel get canvas => project.currentClip.currentFrame.canvas;
+CanvasModel get canvas =>
+    project.currentSeason
+        .currentEpisode
+        .currentClip
+        .currentFrame
+        .canvas;
 
 
   String get ratio =>

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 // Screens
-import 'screens/collaboration_screen.dart';
-import 'screens/premium_screen.dart';
 import 'screens/create_project_screen.dart';
-import 'screens/earn_credits_screen.dart';
 import 'package:flutter_application_1/widgets/app_layout.dart';
 
 void main() {
@@ -45,20 +42,19 @@ class AnimeMakerApp extends StatelessWidget {
           case '/':
             return slideRoute(const ResponsiveRoot());
 
-          case '/collaboration':
-            return slideRoute(const CollaborationScreen());
-
-          case '/earn-credits':
-            return slideRoute(const EarnCreditsScreen());
-
-          case '/premium':
-            return slideRoute(const PremiumScreen());
-
           case '/create-project':
-            return slideRoute(const CreateProjectScreen());
+  return slideRoute(
+    const CreateProjectScreen(
+      projectType: "anime_series",
+    ),
+  );
 
-          case '/create-manga-project':
-            return slideRoute(const CreateProjectScreen(isManga: true));
+case '/create-manga-project':
+  return slideRoute(
+    const CreateProjectScreen(
+      projectType: "manga_book",
+    ),
+  );
 
           default:
             return slideRoute(const ResponsiveRoot());

@@ -17,7 +17,11 @@ class FrameManager extends ChangeNotifier {
 
 
   List<FrameModel> get frames =>
-    project.currentClip.frames;
+    project
+        .currentSeason
+        .currentEpisode
+        .currentClip
+        .frames;
 
 
 

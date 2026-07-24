@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/anime_editor/screens/anime_editor_screen.dart';
 import 'clip_card.dart';
-import 'clip_controller.dart';
+import '../controllers/clip_controller.dart';
 import '../models/project_model.dart';
 
 class ClipSetupScreen extends StatefulWidget {
 final ProjectModel project;
+final int? seasonIndex;
+final int? episodeIndex;
 
   const ClipSetupScreen({
   super.key,
   required this.project,
+  this.seasonIndex,
+ this.episodeIndex,
 });
 
   @override
@@ -18,7 +22,21 @@ final ProjectModel project;
 
 class _ClipSetupScreenState extends State<ClipSetupScreen> {
   late ClipController controller;
+List get clips {
 
+  if (widget.project.projectType == "anime_series") {
+
+    return widget
+        .project
+        .seasons[widget.seasonIndex!]
+        .episodes[widget.episodeIndex!]
+        .clips;
+
+  }
+
+  return widget.project.clips;
+
+}
   @override
   void initState() {
     super.initState();
@@ -36,27 +54,6 @@ class _ClipSetupScreenState extends State<ClipSetupScreen> {
       appBar: AppBar(
         title: const Text("Clip Setup"),
         centerTitle: true,
-        actions: [
-    IconButton(
-  icon: const Icon(Icons.save),
-  onPressed: () {
-
-   widget.project.clips = controller.clips;
-
-    Navigator.pop(
-      context,
-      {
-        "id": widget.project.id,
-        "name": widget.project.name,
-        "type": "anime",
-        "ratio": widget.project.ratio,
-        "fps": widget.project.fps,
-        "clips": controller.clips,
-      },
-    );
-  },
-),
-  ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 
 class PremiumScreen extends StatelessWidget {
-  const PremiumScreen({super.key});
+  final VoidCallback onBack;
+  const PremiumScreen({
+  super.key,
+  required this.onBack,
+});
 
   Widget planCard({
     required String title,
@@ -110,80 +114,77 @@ class PremiumScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Anime Maker Plans"),
+Widget build(BuildContext context) {
+  return Center(
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          const Text(
+            "Anime Maker Plans",
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
 
-        // BACK BUTTON
-       leading: IconButton(
-  icon: const Icon(Icons.arrow_back),
-  onPressed: () {
-    Navigator.pop(context);
-  },
-),
+          const SizedBox(height: 24),
+
+          planCard(
+            title: "FREE PLAN",
+            price: "₹0 / Forever",
+            isCurrent: true,
+            isPremium: false,
+            buttonText: "CURRENT PLAN",
+            features: const [
+              "Unlimited Local Projects",
+              "Unlock premium brushes and fonts for 24 hours max 3 for each (via credits)",
+              "Manual backup through file manager and google drive",
+              "Includes 10 HD exports per month (credit-based)",
+              "720p Export",
+              "Watermark",
+              "Basic Brushes",
+              "Ads Supported",
+            ],
+          ),
+
+          planCard(
+            title: "PRO MONTHLY",
+            price: "₹149 / MONTHLY",
+            isCurrent: false,
+            isPremium: true,
+            buttonText: "SUBSCRIBE",
+            features: const [
+              "Unlimited Local Projects",
+              "No Watermark",
+              "Manual backup through file manager and google drive",
+              "Premium Brushes",
+              "Premium Fonts",
+              "Ad Free",
+            ],
+          ),
+
+          planCard(
+            title: "PRO YEARLY",
+            price: "₹699 / YEARLY",
+            isCurrent: false,
+            isPremium: true,
+            buttonText: "SUBSCRIBE",
+            features: const [
+              "Unlimited Local Projects",
+              "No Watermark",
+              "Manual backup through file manager and google drive",
+              "Premium Brushes",
+              "Premium Fonts",
+              "Ad Free",
+              "Save ₹1089 per year",
+            ],
+          ),
+
+          const SizedBox(height: 20),
+        ],
       ),
-
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-
-            planCard(
-              title: "FREE PLAN",
-              price: "₹0 / Forever",
-              isCurrent: true,
-              isPremium: false,
-              buttonText: "CURRENT PLAN",
-              features: const [
-                "Unlimited Local Projects",
-                "Unlock premium brushes and fonts for 24 hours max 3 for each (via credits)",
-                "Manual backup through file manager and google drive",
-                "Includes 10 HD exports per month (credit-based)",
-                "720p Export",
-                "Watermark",
-                "Basic Brushes",
-                "Ads Supported",
-              ],
-            ),
-
-            planCard(
-              title: "PRO MONTHLY",
-              price: "₹149 / MONTHLY",
-              isCurrent: false,
-              isPremium: true,
-              buttonText: "SUBSCRIBE",
-              features: const [
-                "Unlimited Local Projects",
-                "No Watermark",
-                "Manual backup through file manager and google drive",
-                "Premium Brushes",
-                "Premium Fonts",
-                "Ad Free",
-              ],
-            ),
-
-            planCard(
-              title: "PRO YEARLY",
-              price: "₹699 / YEARLY",
-              isCurrent: false,
-              isPremium: true,
-              buttonText: "SUBSCRIBE",
-              features: const [
-                "Unlimited Local Projects",
-                "No Watermark",
-                "Manual backup through file manager and google drive",
-                "Premium Brushes",
-                "Premium Fonts",
-                "Ad Free",
-                "Save ₹1089 per year",
-              ],
-            ),
-
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
-    );
-  }
+    ),
+  );
+}
 }
