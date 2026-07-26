@@ -14,6 +14,7 @@ class CreateProjectScreen extends StatefulWidget {
 
   @override
   State<CreateProjectScreen> createState() => _CreateProjectScreenState();
+  
 }
 
 class _CreateProjectScreenState extends State<CreateProjectScreen> {
@@ -26,6 +27,45 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   String selectedPaperSize = "A4";
   double pages = 20;
   final paperSizes = ["A4", "A5", "B5", "Comic", "Webtoon"];
+
+  String get appBarTitle {
+    switch (widget.projectType) {
+      case "anime_series":
+        return "Create Anime Series";
+      case "anime_movie":
+        return "Create Anime Movie";
+      case "manga":
+        return "Create Manga";
+      default:
+        return "Create Project";
+    }
+  }
+
+  String get projectNameLabel {
+    switch (widget.projectType) {
+      case "anime_series":
+        return "Anime Series Name";
+      case "anime_movie":
+        return "Anime Movie Name";
+      case "manga":
+        return "Manga Name";
+      default:
+        return "Project Name";
+    }
+  }
+
+  String get projectNameHint {
+    switch (widget.projectType) {
+      case "anime_series":
+        return "Enter anime series name";
+      case "anime_movie":
+        return "Enter anime movie name";
+      case "manga":
+        return "Enter manga name";
+      default:
+        return "Enter project name";
+    }
+  }
   
 
   @override
@@ -36,11 +76,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(
-          widget.projectType.startsWith("manga")
-              ? "Create Manga Project"
-              : "Create Anime Project",
-        ),
+        title: Text(appBarTitle),
         centerTitle: true,
       ),
       body: Padding(
@@ -49,7 +85,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              widget.projectType.startsWith("manga") ? "Book Name" : "Animation Name",
+  projectNameLabel,
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -61,9 +97,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
             TextField(
               controller: nameController,
               decoration: InputDecoration(
-                hintText: widget.projectType.startsWith("manga")
-                    ? "Enter book name"
-                    : "Enter animation name",
+                hintText: projectNameHint,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

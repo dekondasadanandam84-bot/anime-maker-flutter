@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/anime_editor/canvas_system/models/canvas_model.dart';
+import 'package:flutter_application_1/anime_editor/models/canvas_model.dart';
 import '../../models/project_model.dart';
 
 

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 
-import '../models/canvas_model.dart';
+import '../../models/canvas_model.dart';
 import 'canvas_manager.dart';
 
 class CanvasController extends ChangeNotifier {

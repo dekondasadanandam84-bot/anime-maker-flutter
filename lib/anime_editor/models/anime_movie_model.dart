@@ -1,6 +1,6 @@
 import 'clip_model.dart';
 
-class EpisodeModel {
+class AnimeMovieModel {
   final String id;
 
   String name;
@@ -9,7 +9,7 @@ class EpisodeModel {
 
   int selectedClipIndex;
 
-  EpisodeModel({
+  AnimeMovieModel({
     required this.id,
     required this.name,
     required this.clips,
@@ -41,10 +41,10 @@ class EpisodeModel {
     };
   }
 
-  factory EpisodeModel.fromJson(Map<String, dynamic> json) {
-    return EpisodeModel(
+  factory AnimeMovieModel.fromJson(Map<String, dynamic> json) {
+    return AnimeMovieModel(
       id: json["id"],
-      name: json["name"] ?? "Episode",
+      name: json["name"],
       selectedClipIndex: json["selectedClipIndex"] ?? 0,
       clips: (json["clips"] as List? ?? [])
           .map((e) => ClipModel.fromJson(e))

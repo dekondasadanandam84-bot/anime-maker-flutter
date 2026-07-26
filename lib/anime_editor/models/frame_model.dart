@@ -1,7 +1,8 @@
-import 'package:flutter_application_1/anime_editor/canvas_system/models/canvas_model.dart';
+import 'canvas_model.dart';
 
 class FrameModel {
-  final int id;
+  final String id;
+
   CanvasModel canvas;
 
   int duration;
@@ -16,7 +17,7 @@ class FrameModel {
 
   FrameModel({
     required this.id,
-     required this.canvas,
+    required this.canvas,
     this.duration = 1,
     this.visible = true,
     this.locked = false,
@@ -27,29 +28,29 @@ class FrameModel {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
+      "canvas": canvas.toJson(),
       "duration": duration,
       "visible": visible,
       "locked": locked,
       "selected": selected,
       "thumbnailPath": thumbnailPath,
-      "canvas": canvas.toJson(),
     };
   }
 
   factory FrameModel.fromJson(Map<String, dynamic> json) {
     return FrameModel(
       id: json["id"],
+      canvas: CanvasModel.fromJson(json["canvas"]),
       duration: json["duration"] ?? 1,
       visible: json["visible"] ?? true,
       locked: json["locked"] ?? false,
       selected: json["selected"] ?? false,
       thumbnailPath: json["thumbnailPath"],
-      canvas: CanvasModel.fromJson(json["canvas"]),
     );
   }
 
   FrameModel copyWith({
-    int? id,
+    String? id,
     CanvasModel? canvas,
     int? duration,
     bool? visible,

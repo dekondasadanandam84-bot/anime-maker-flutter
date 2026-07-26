@@ -6,14 +6,12 @@ import '../models/project_model.dart';
 
 class ClipSetupScreen extends StatefulWidget {
 final ProjectModel project;
-final int? seasonIndex;
-final int? episodeIndex;
+
 
   const ClipSetupScreen({
   super.key,
   required this.project,
-  this.seasonIndex,
- this.episodeIndex,
+  
 });
 
   @override
@@ -22,21 +20,7 @@ final int? episodeIndex;
 
 class _ClipSetupScreenState extends State<ClipSetupScreen> {
   late ClipController controller;
-List get clips {
 
-  if (widget.project.projectType == "anime_series") {
-
-    return widget
-        .project
-        .seasons[widget.seasonIndex!]
-        .episodes[widget.episodeIndex!]
-        .clips;
-
-  }
-
-  return widget.project.clips;
-
-}
   @override
   void initState() {
     super.initState();

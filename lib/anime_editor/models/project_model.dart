@@ -1,80 +1,159 @@
-import 'season_model.dart';
-import 'clip_model.dart';
+import 'anime_series_model.dart';
+import 'anime_movie_model.dart';
+import 'project_settings_model.dart';
+import 'export_model.dart';
+import 'import_model.dart';
+
 
 class ProjectModel {
+
   final String id;
 
-  String name;
-  String type;
-  final String projectType;
-  String ratio;
-  int fps;
-  List<SeasonModel> seasons;
-  List<ClipModel> clips;
 
-  int selectedSeasonIndex;
+  String name;
+
+
+  String type;
+
+
+  ProjectSettingsModel settings;
+
+
+  AnimeSeriesModel? series;
+
+
+  AnimeMovieModel? movie;
+
+
+  ExportModel export;
+
+
+  ImportModel import;
+
+
 
   ProjectModel({
-  required this.id,
-  required this.name,
-  required this.type,
-  required this.projectType,
-  required this.ratio,
-  required this.fps,
-  required this.clips,
-  required this.seasons,
-  this.selectedSeasonIndex = 0,
-});
+
+    required this.id,
+
+    required this.name,
+
+    required this.type,
 
 
-  /// Currently selected season
-  SeasonModel get currentSeason {
-  if (seasons.isEmpty) {
-    throw Exception("No seasons created for this project");
-  }
-
-  return seasons[selectedSeasonIndex];
-}
+    required this.settings,
 
 
-  /// Change selected season
-  void selectSeason(int index) {
-    if (index < 0 || index >= seasons.length) return;
+    this.series,
 
-    selectedSeasonIndex = index;
-  }
+    this.movie,
+
+
+    required this.export,
+
+    required this.import,
+
+  });
+
+
+
+  bool get isSeries =>
+      type == "series";
+
+
+  bool get isMovie =>
+      type == "movie";
+
 
 
   Map<String, dynamic> toJson() {
+
     return {
+
       "id": id,
+
       "name": name,
+
       "type": type,
-      "ratio": ratio,
-      "fps": fps,
-      "projectType": projectType,
-      "selectedSeasonIndex": selectedSeasonIndex,
-      "seasons": seasons.map((season) => season.toJson()).toList(),
-      "clips": clips.map((clip) => clip.toJson()).toList(),
+
+
+      "settings":
+          settings.toJson(),
+
+
+      "series":
+          series?.toJson(),
+
+
+      "movie":
+          movie?.toJson(),
+
+
+      "export":
+          export.toJson(),
+
+
+      "import":
+          import.toJson(),
+
     };
+
   }
 
 
-  factory ProjectModel.fromJson(Map<String, dynamic> json) {
+
+  factory ProjectModel.fromJson(
+      Map<String, dynamic> json) {
+
     return ProjectModel(
-      id: json["id"],
-      name: json["name"],
-      type: json["type"],
-      ratio: json["ratio"],
-      projectType: json["projectType"] ?? "series",
-      fps: json["fps"],
-      selectedSeasonIndex: json["selectedSeasonIndex"] ?? 0,
-      seasons: (json["seasons"] as List? ?? [])
-          .map((e) => SeasonModel.fromJson(e))
-          .toList(),
-          clips: (json["clips"] as List? ?? [])
-    .map((e) => ClipModel.fromJson(e))
-    .toList(),
+
+      id:
+          json["id"],
+
+
+      name:
+          json["name"],
+
+
+      type:
+          json["type"] ?? "series",
+
+
+      settings:
+          ProjectSettingsModel.fromJson(
+            json["settings"] ?? {},
+          ),
+
+
+      series:
+          json["series"] != null
+              ? AnimeSeriesModel.fromJson(
+                  json["series"],
+                )
+              : null,
+
+
+      movie:
+          json["movie"] != null
+              ? AnimeMovieModel.fromJson(
+                  json["movie"],
+                )
+              : null,
+
+
+      export:
+          ExportModel.fromJson(
+            json["export"] ?? {},
+          ),
+
+
+      import:
+          ImportModel.fromJson(
+            json["import"] ?? {},
+          ),
+
     );
+
   }
+
 }

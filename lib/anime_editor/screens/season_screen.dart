@@ -156,15 +156,11 @@ class _SeasonScreenState extends State<SeasonScreen> {
 
 
 
-      floatingActionButton:
-
-      FloatingActionButton(
-
-        onPressed: _addSeason,
-
-        child: const Icon(Icons.add),
-
-      ),
+      floatingActionButton: FloatingActionButton.extended(
+  onPressed: _addSeason,
+  icon: const Icon(Icons.add),
+  label: const Text("Add Season"),
+),
 
 
     );

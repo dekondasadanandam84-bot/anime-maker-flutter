@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/project_model.dart';
 import '../models/frame_model.dart';
-import '../canvas_system/models/canvas_model.dart';
+import '../models/canvas_model.dart';
 
 
 class FrameManager extends ChangeNotifier {

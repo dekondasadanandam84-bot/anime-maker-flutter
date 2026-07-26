@@ -7,25 +7,36 @@ class SeasonModel {
 
   List<EpisodeModel> episodes;
 
+  int selectedEpisodeIndex;
+
   SeasonModel({
     required this.id,
     required this.name,
     required this.episodes,
+    this.selectedEpisodeIndex = 0,
   });
-  int selectedEpisodeIndex = 0;
 
-EpisodeModel get currentEpisode =>
-    episodes[selectedEpisodeIndex];
+  /// Currently selected episode
+  EpisodeModel get currentEpisode {
+    if (episodes.isEmpty) {
+      throw Exception("No episodes found.");
+    }
 
-void selectEpisode(int index) {
-  if (index < 0 || index >= episodes.length) return;
+    return episodes[selectedEpisodeIndex];
+  }
 
-  selectedEpisodeIndex = index;
-}
+  /// Change selected episode
+  void selectEpisode(int index) {
+    if (index < 0 || index >= episodes.length) return;
+
+    selectedEpisodeIndex = index;
+  }
+
   Map<String, dynamic> toJson() {
     return {
       "id": id,
       "name": name,
+      "selectedEpisodeIndex": selectedEpisodeIndex,
       "episodes": episodes.map((e) => e.toJson()).toList(),
     };
   }
@@ -33,8 +44,9 @@ void selectEpisode(int index) {
   factory SeasonModel.fromJson(Map<String, dynamic> json) {
     return SeasonModel(
       id: json["id"],
-      name: json["name"],
-      episodes: (json["episodes"] as List)
+      name: json["name"] ?? "Season",
+      selectedEpisodeIndex: json["selectedEpisodeIndex"] ?? 0,
+      episodes: (json["episodes"] as List? ?? [])
           .map((e) => EpisodeModel.fromJson(e))
           .toList(),
     );

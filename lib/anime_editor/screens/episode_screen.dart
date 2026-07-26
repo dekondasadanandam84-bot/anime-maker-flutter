@@ -155,7 +155,12 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
               onTap: () async {
 
 
-                await Navigator.push(
+               widget.project.selectSeason(widget.seasonIndex);
+
+final season = widget.project.currentSeason;
+season.selectEpisode(index);
+
+await Navigator.push(
 
                   context,
 
@@ -188,15 +193,11 @@ class _EpisodeScreenState extends State<EpisodeScreen> {
 
 
 
-      floatingActionButton:
-
-      FloatingActionButton(
-
-        onPressed: _addEpisode,
-
-        child: const Icon(Icons.add),
-
-      ),
+      floatingActionButton: FloatingActionButton.extended(
+  onPressed: _addEpisode,
+  icon: const Icon(Icons.add),
+  label: const Text("Add Episode"),
+),
 
 
     );

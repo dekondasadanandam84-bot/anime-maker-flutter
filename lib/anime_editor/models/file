@@ -1,0 +1,758 @@
+import 'canvas_settings_model.dart';
+import 'layer_model.dart';
+import 'ruler_model.dart';
+import 'onion_skin_model.dart';
+import 'selection_model.dart';
+import 'paint_model.dart';
+import 'eraser_model.dart';
+import 'text_model.dart';
+import 'image_model.dart';
+import 'history_model.dart';
+import 'clipboard_model.dart';
+import 'duplicate_model.dart';
+import 'layer_selection_model.dart';
+class CanvasModel {
+  CanvasSettingsModel settings;
+  RulerModel ruler;
+  OnionSkinModel onionSkin;
+  SelectionModel selection;
+  PaintModel paint;
+  EraserModel eraser;
+  TextModel text;
+  ImageModel image;
+  HistoryModel history;
+  ClipboardModel clipboard;
+  DuplicateModel duplicate;
+  LayerSelectionModel layerSelection;
+  List<LayerModel> layers;
+  int selectedLayerIndex;
+  CanvasModel({
+    required this.settings,
+    required this.ruler,
+    required this.onionSkin,
+    required this.selection,
+    required this.paint,
+    required this.eraser,
+    required this.text,
+    required this.image,
+    required this.history,
+    required this.clipboard,
+    required this.duplicate,
+    required this.layerSelection,
+    required this.layers,
+    this.selectedLayerIndex = 0,
+  });
+  /// Current selected layer
+  LayerModel get currentLayer {
+    if (layers.isEmpty) {
+      throw Exception("No layers found.");
+    }
+    return layers[selectedLayerIndex];
+  }
+  /// Change selected layer
+  void selectLayer(int index) {
+    if (index < 0 || index >= layers.length) {
+      return;
+    }
+    selectedLayerIndex = index;
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "settings": settings.toJson(),
+      "ruler": ruler.toJson(),
+      "onionSkin": onionSkin.toJson(),
+      "selection": selection.toJson(),
+      "paint": paint.toJson(),
+      "eraser": eraser.toJson(),
+      "text": text.toJson(),
+      "image": image.toJson(),
+      "history": history.toJson(),
+      "clipboard": clipboard.toJson(),
+      "duplicate": duplicate.toJson(),
+      "layerSelection": layerSelection.toJson(),
+      "layers":
+          layers.map((layer) => layer.toJson()).toList(),
+      "selectedLayerIndex": selectedLayerIndex,
+    };
+  }
+  factory CanvasModel.fromJson(Map<String, dynamic> json) {
+    return CanvasModel(
+      settings:
+          CanvasSettingsModel.fromJson(json["settings"]),
+      ruler:
+          RulerModel.fromJson(json["ruler"]),
+      onionSkin:
+          OnionSkinModel.fromJson(json["onionSkin"]),
+      selection:
+          SelectionModel.fromJson(json["selection"]),
+      paint:
+          PaintModel.fromJson(json["paint"]),
+      eraser:
+          EraserModel.fromJson(json["eraser"]),
+      text:
+          TextModel.fromJson(json["text"]),
+      image:
+          ImageModel.fromJson(json["image"]),
+      history:
+          HistoryModel.fromJson(json["history"]),
+      clipboard:
+          ClipboardModel.fromJson(json["clipboard"]),
+      duplicate:
+          DuplicateModel.fromJson(json["duplicate"]),
+      layerSelection:
+          LayerSelectionModel.fromJson(json["layerSelection"]),
+      layers:
+          (json["layers"] as List? ?? [])
+              .map((e) => LayerModel.fromJson(e))
+              .toList(),
+      selectedLayerIndex:
+          json["selectedLayerIndex"] ?? 0,
+    );
+  }
+}
+class CanvasSettingsModel {
+  String ratio;
+  double width;
+  double height;
+  double zoom;
+  double rotation;
+  double offsetX;
+  double offsetY;
+  int backgroundColor;
+  bool showGrid;
+  CanvasSettingsModel({
+    required this.ratio,
+    required this.width,
+    required this.height,
+    this.zoom = 1.0,
+    this.rotation = 0.0,
+    this.offsetX = 0.0,
+    this.offsetY = 0.0,
+    this.backgroundColor = 0xFFFFFFFF,
+    this.showGrid = false,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "ratio": ratio,
+      "width": width,
+      "height": height,
+      "zoom": zoom,
+      "rotation": rotation,
+      "offsetX": offsetX,
+      "offsetY": offsetY,
+      "backgroundColor": backgroundColor,
+      "showGrid": showGrid,
+    };
+  }
+  factory CanvasSettingsModel.fromJson(Map<String, dynamic> json) {
+    return CanvasSettingsModel(
+      ratio: json["ratio"],
+      width: (json["width"] as num).toDouble(),
+      height: (json["height"] as num).toDouble(),
+      zoom:
+          (json["zoom"] as num?)?.toDouble() ?? 1.0,
+      rotation:
+          (json["rotation"] as num?)?.toDouble() ?? 0.0,
+      offsetX:
+          (json["offsetX"] as num?)?.toDouble() ?? 0.0,
+      offsetY:
+          (json["offsetY"] as num?)?.toDouble() ?? 0.0,
+      backgroundColor:
+          json["backgroundColor"] ?? 0xFFFFFFFF,
+      showGrid:
+          json["showGrid"] ?? false,
+    );
+  }
+}
+import 'layer_settings_model.dart';
+import 'drawable_model.dart';
+class LayerModel {
+  final String id;
+  String name;
+  LayerSettingsModel settings;
+  List<DrawableModel> drawables;
+  LayerModel({
+    required this.id,
+    required this.name,
+    required this.settings,
+    required this.drawables,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "settings": settings.toJson(),
+      "drawables":
+          drawables.map((e) => e.toJson()).toList(),
+    };
+  }
+  factory LayerModel.fromJson(Map<String, dynamic> json) {
+    return LayerModel(
+      id: json["id"],
+      name: json["name"],
+      settings:
+          LayerSettingsModel.fromJson(json["settings"]),
+      drawables:
+          (json["drawables"] as List? ?? [])
+              .map((e) => DrawableModel.fromJson(e))
+              .toList(),
+    );
+  }
+  LayerModel copyWith({
+    String? id,
+    String? name,
+    LayerSettingsModel? settings,
+    List<DrawableModel>? drawables,
+  }) {
+    return LayerModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      settings: settings ?? this.settings,
+      drawables:
+          drawables ?? List<DrawableModel>.from(this.drawables),
+    );
+  }
+}
+class RulerModel {
+  bool enabled;
+  bool showHorizontal;
+  bool showVertical;
+  double horizontalPosition;
+  double verticalPosition;
+  double angle;
+  RulerModel({
+    this.enabled = false,
+    this.showHorizontal = true,
+    this.showVertical = true,
+    this.horizontalPosition = 0.0,
+    this.verticalPosition = 0.0,
+    this.angle = 0.0,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "enabled": enabled,
+      "showHorizontal": showHorizontal,
+      "showVertical": showVertical,
+      "horizontalPosition": horizontalPosition,
+      "verticalPosition": verticalPosition,
+      "angle": angle,
+    };
+  }
+  factory RulerModel.fromJson(
+      Map<String, dynamic> json) {
+    return RulerModel(
+      enabled:
+          json["enabled"] ?? false,
+      showHorizontal:
+          json["showHorizontal"] ?? true,
+      showVertical:
+          json["showVertical"] ?? true,
+      horizontalPosition:
+          (json["horizontalPosition"] as num?)
+              ?.toDouble() ?? 0.0,
+      verticalPosition:
+          (json["verticalPosition"] as num?)
+              ?.toDouble() ?? 0.0,
+      angle:
+          (json["angle"] as num?)
+              ?.toDouble() ?? 0.0,
+    );
+  }
+}
+class OnionSkinModel {
+  bool enabled;
+  bool showPreviousFrames;
+  bool showNextFrames;
+  int previousFrameCount;
+  int nextFrameCount;
+  double opacity;
+  int previousColor;
+  int nextColor;
+  OnionSkinModel({
+    this.enabled = false,
+    this.showPreviousFrames = true,
+    this.showNextFrames = true,
+    this.previousFrameCount = 1,
+    this.nextFrameCount = 1,
+    this.opacity = 0.5,
+    this.previousColor = 0xFFFF0000,
+    this.nextColor = 0xFF0000FF,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "enabled": enabled,
+      "showPreviousFrames": showPreviousFrames,
+      "showNextFrames": showNextFrames,
+      "previousFrameCount": previousFrameCount,
+      "nextFrameCount": nextFrameCount,
+      "opacity": opacity,
+      "previousColor": previousColor,
+      "nextColor": nextColor,
+    };
+  }
+  factory OnionSkinModel.fromJson(
+      Map<String, dynamic> json) {
+    return OnionSkinModel(
+      enabled:
+          json["enabled"] ?? false,
+      showPreviousFrames:
+          json["showPreviousFrames"] ?? true,
+      showNextFrames:
+          json["showNextFrames"] ?? true,
+      previousFrameCount:
+          json["previousFrameCount"] ?? 1,
+      nextFrameCount:
+          json["nextFrameCount"] ?? 1,
+      opacity:
+          (json["opacity"] as num?)?.toDouble() ?? 0.5,
+      previousColor:
+          json["previousColor"] ?? 0xFFFF0000,
+      nextColor:
+          json["nextColor"] ?? 0xFF0000FF,
+    );
+  }
+}
+class SelectionModel {
+  bool active;
+  double x;
+  double y;
+  double width;
+  double height;
+  double rotation;
+  bool moving;
+  bool resizing;
+  SelectionModel({
+    this.active = false,
+    this.x = 0.0,
+    this.y = 0.0,
+    this.width = 0.0,
+    this.height = 0.0
+    this.rotation = 0.0,
+    this.moving = false,
+    this.resizing = false,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "active": active,
+      "x": x,
+      "y": y,
+      "width": width,
+      "height": height,
+      "rotation": rotation,
+      "moving": moving,
+      "resizing": resizing,
+    };
+  }
+  factory SelectionModel.fromJson(
+      Map<String, dynamic> json) {
+    return SelectionModel(
+      active:
+          json["active"] ?? false,
+      x:
+          (json["x"] as num?)?.toDouble() ?? 0.0,
+      y:
+          (json["y"] as num?)?.toDouble() ?? 0.0,
+      width:
+          (json["width"] as num?)?.toDouble() ?? 0.0,
+      height:
+          (json["height"] as num?)?.toDouble() ?? 0.0,
+      rotation:
+          (json["rotation"] as num?)?.toDouble() ?? 0.0,
+      moving:
+          json["moving"] ?? false,
+      resizing:
+          json["resizing"] ?? false,
+    );
+  }
+}
+class PaintModel {
+  int color;
+  double size;
+  double opacity;
+  bool fillEnabled;
+  bool pressureEnabled;
+  String selectedBrushId;
+  PaintModel({
+    this.color = 0xFF000000,
+    this.size = 8.0,
+    this.opacity = 1.0,
+    this.fillEnabled = false,
+    this.pressureEnabled = false,
+    this.selectedBrushId = "default",
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "color": color,
+      "size": size,
+      "opacity": opacity,
+      "fillEnabled": fillEnabled,
+      "pressureEnabled": pressureEnabled,
+      "selectedBrushId": selectedBrushId,
+    };
+  }
+  factory PaintModel.fromJson(
+      Map<String, dynamic> json) {
+    return PaintModel(
+      color:
+          json["color"] ?? 0xFF000000,
+      size:
+          (json["size"] as num?)?.toDouble() ?? 8.0,
+      opacity:
+          (json["opacity"] as num?)?.toDouble() ?? 1.0,
+      fillEnabled:
+          json["fillEnabled"] ?? false,
+      pressureEnabled:
+          json["pressureEnabled"] ?? false,
+      selectedBrushId:
+          json["selectedBrushId"] ?? "default",
+    );
+  }
+}
+class EraserModel {
+  double size;
+  double opacity;
+  bool pressureEnabled;
+  String mode;
+  bool eraseOnlyCurrentLayer;
+  EraserModel({
+    this.size = 20.0,
+    this.opacity = 1.0,
+    this.pressureEnabled = false,
+    this.mode = "normal",
+    this.eraseOnlyCurrentLayer = true,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "size": size,
+      "opacity": opacity,
+      "pressureEnabled": pressureEnabled,
+      "mode": mode,
+      "eraseOnlyCurrentLayer": eraseOnlyCurrentLayer,
+    };
+  }
+  factory EraserModel.fromJson(
+      Map<String, dynamic> json) {
+    return EraserModel(
+      size:
+          (json["size"] as num?)?.toDouble() ?? 20.0,
+      opacity:
+          (json["opacity"] as num?)?.toDouble() ?? 1.0,
+      pressureEnabled:
+          json["pressureEnabled"] ?? false,
+      mode:
+          json["mode"] ?? "normal",
+      eraseOnlyCurrentLayer:
+          json["eraseOnlyCurrentLayer"] ?? true,
+    );
+  }
+}
+class TextModel {
+  final String id;
+  String content;
+  double x;
+  double y;
+  double fontSize;
+  String fontFamily;
+  int color;
+  double rotation;
+  double opacity;
+  TextModel({
+    required this.id,
+    required this.content,
+    this.x = 0.0,
+    this.y = 0.0,
+    this.fontSize = 24.0,
+    this.fontFamily = "Default",
+    this.color = 0xFF000000,
+    this.rotation = 0.0,
+    this.opacity = 1.0,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "content": content,
+      "x": x,
+      "y": y,
+      "fontSize": fontSize,
+      "fontFamily": fontFamily,
+      "color": color,
+      "rotation": rotation,
+      "opacity": opacity,
+    };
+  }
+  factory TextModel.fromJson(
+      Map<String, dynamic> json) {
+    return TextModel(
+      id: json["id"],
+      content: json["content"] ?? "",
+      x:
+          (json["x"] as num?)?.toDouble() ?? 0.0,
+      y:
+          (json["y"] as num?)?.toDouble() ?? 0.0,
+      fontSize:
+          (json["fontSize"] as num?)?.toDouble() ?? 24.0,
+      fontFamily:
+          json["fontFamily"] ?? "Default",
+      color:
+          json["color"] ?? 0xFF000000,
+      rotation:
+          (json["rotation"] as num?)?.toDouble() ?? 0.0,
+      opacity:
+          (json["opacity"] as num?)?.toDouble() ?? 1.0,
+    );
+  }
+}
+class ImageModel {
+  final String id;
+  String path;
+  double x;
+  double y;
+  double width;
+  double height;
+  double rotation;
+  double opacity;
+  ImageModel({
+    required this.id,
+    required this.path,
+    this.x = 0.0,
+    this.y = 0.0,
+    this.width = 100.0,
+    this.height = 100.0,
+    this.rotation = 0.0,
+    this.opacity = 1.0,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "path": path,
+      "x": x,
+      "y": y,
+      "width": width,
+      "height": height,
+      "rotation": rotation,
+      "opacity": opacity,
+    };
+  }
+  factory ImageModel.fromJson(
+      Map<String, dynamic> json) {
+    return ImageModel(
+      id: json["id"],
+      path: json["path"],
+      x:
+          (json["x"] as num?)?.toDouble() ?? 0.0,
+      y:
+          (json["y"] as num?)?.toDouble() ?? 0.0,
+      width:
+          (json["width"] as num?)?.toDouble() ?? 100.0,
+      height:
+          (json["height"] as num?)?.toDouble() ?? 100.0,
+      rotation:
+          (json["rotation"] as num?)?.toDouble() ?? 0.0,
+      opacity:
+          (json["opacity"] as num?)?.toDouble() ?? 1.0,
+    );
+  }
+}
+class HistoryModel {
+  List<Map<String, dynamic>> undoStack;
+  List<Map<String, dynamic>> redoStack;
+  int maxHistory;
+  bool enabled;
+  HistoryModel({
+    this.undoStack = const [],
+    this.redoStack = const [],
+    this.maxHistory = 100,
+    this.enabled = true,
+  });
+  void addHistory(Map<String, dynamic> state) {
+    if (!enabled) return;
+    undoStack =
+        List<Map<String, dynamic>>.from(undoStack)
+          ..add(state);
+    if (undoStack.length > maxHistory) {
+      undoStack.removeAt(0);
+    }
+    redoStack = [];
+  }
+  Map<String, dynamic>? undo() {
+    if (undoStack.isEmpty) return null;
+    final state = undoStack.last;
+    undoStack =
+        List<Map<String, dynamic>>.from(undoStack)
+          ..removeLast();
+    redoStack =
+        List<Map<String, dynamic>>.from(redoStack)
+          ..add(state);
+    return state;
+  }
+  Map<String, dynamic>? redo() {
+    if (redoStack.isEmpty) return null;
+    final state = redoStack.last;
+    redoStack =
+        List<Map<String, dynamic>>.from(redoStack)
+          ..removeLast();
+    undoStack =
+        List<Map<String, dynamic>>.from(undoStack)
+          ..add(state);
+    return state;
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "undoStack": undoStack,
+      "redoStack": redoStack,
+      "maxHistory": maxHistory,
+      "enabled": enabled,
+    };
+  }
+  factory HistoryModel.fromJson(
+      Map<String, dynamic> json) {
+    return HistoryModel(
+      undoStack:
+          List<Map<String, dynamic>>.from(
+            json["undoStack"] ?? [],
+          ),
+      redoStack:
+          List<Map<String, dynamic>>.from(
+            json["redoStack"] ?? [],
+          ),
+      maxHistory:
+          json["maxHistory"] ?? 100,
+      enabled:
+          json["enabled"] ?? true,
+    );
+  }
+}
+import 'drawable_model.dart';
+class ClipboardModel {
+  List<DrawableModel> items;
+  bool hasData;
+  bool isCut;
+  ClipboardModel({
+    this.items = const [],
+    this.hasData = false,
+    this.isCut = false,
+  });
+  void copy(List<DrawableModel> drawables) {
+    items =
+        List<DrawableModel>.from(drawables);
+    hasData = items.isNotEmpty;
+    isCut = false;
+  }
+  void cut(List<DrawableModel> drawables) {
+    items =
+        List<DrawableModel>.from(drawables);
+    hasData = items.isNotEmpty;
+    isCut = true;
+  }
+  void clear() {
+    items = [];
+    hasData = false;
+    isCut = false;
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "items":
+          items.map((e) => e.toJson()).toList(),
+      "hasData": hasData,
+      "isCut": isCut,
+    };
+  }
+  factory ClipboardModel.fromJson(
+      Map<String, dynamic> json) {
+    return ClipboardModel(
+      items:
+          (json["items"] as List? ?? [])
+              .map((e) => DrawableModel.fromJson(e))
+              .toList(),
+      hasData:
+          json["hasData"] ?? false,
+      isCut:
+          json["isCut"] ?? false,
+    );
+  }
+}
+class DuplicateModel {
+  int count;
+  double offsetX;
+  double offsetY;
+  bool keepTransform;
+  bool keepStyle;
+  DuplicateModel({
+    this.count = 1,
+    this.offsetX = 10.0,
+    this.offsetY = 10.0,
+    this.keepTransform = true,
+    this.keepStyle = true,
+  });
+  Map<String, dynamic> toJson() {
+    return {
+      "count": count,
+      "offsetX": offsetX,
+      "offsetY": offsetY,
+      "keepTransform": keepTransform,
+      "keepStyle": keepStyle,
+    };
+  }
+  factory DuplicateModel.fromJson(
+      Map<String, dynamic> json) {
+    return DuplicateModel(
+      count:
+          json["count"] ?? 1,
+      offsetX:
+          (json["offsetX"] as num?)?.toDouble() ?? 10.0,
+      offsetY:
+          (json["offsetY"] as num?)?.toDouble() ?? 10.0,
+      keepTransform:
+          json["keepTransform"] ?? true,
+      keepStyle:
+          json["keepStyle"] ?? true,
+    );
+  }
+}
+class LayerSelectionModel {
+  int selectedLayerIndex;
+  List<int> selectedLayerIds;
+  bool multiSelect;
+  LayerSelectionModel({
+    this.selectedLayerIndex = 0,
+    this.selectedLayerIds = const [],
+    this.multiSelect = false,
+  });
+  void selectLayer(int index) {
+    selectedLayerIndex = index;
+    if (!multiSelect) {
+      selectedLayerIds = [index];
+    }
+  }
+  void toggleLayer(int index) {
+    if (selectedLayerIds.contains(index)) {
+      selectedLayerIds =
+          List<int>.from(selectedLayerIds)
+            ..remove(index);
+    } else {
+      selectedLayerIds =
+          List<int>.from(selectedLayerIds)
+            ..add(index);
+    }
+  }
+  Map<String, dynamic> toJson() {
+    return {
+      "selectedLayerIndex": selectedLayerIndex,
+      "selectedLayerIds": selectedLayerIds,
+      "multiSelect": multiSelect,
+    };
+  }
+  factory LayerSelectionModel.fromJson(
+      Map<String, dynamic> json) {
+    return LayerSelectionModel(
+      selectedLayerIndex:
+          json["selectedLayerIndex"] ?? 0,
+      selectedLayerIds:
+          List<int>.from(
+            json["selectedLayerIds"] ?? [],
+          ),
+      multiSelect:
+          json["multiSelect"] ?? false,
+    );
+  }
+}

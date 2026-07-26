@@ -1,4 +1,4 @@
-import 'package:flutter_application_1/anime_editor/canvas_system/models/canvas_model.dart';
+import 'package:flutter_application_1/anime_editor/models/canvas_model.dart';
 import 'package:flutter_application_1/anime_editor/models/frame_model.dart';
 
 import '../models/clip_model.dart';
