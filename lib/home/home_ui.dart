@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/home/drawer_ui.dart';
 import 'package:flutter_application_1/home/home_controller.dart';
+import 'package:flutter_application_1/core/app_media.dart';
 
 class HomeUI extends StatelessWidget {
   final HomeController controller = const HomeController();
@@ -8,6 +9,7 @@ class HomeUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+     AppMedia.init(context);
     return Scaffold(
       backgroundColor: Colors.white,
 
@@ -52,10 +54,16 @@ class HomeUI extends StatelessWidget {
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: AppMedia.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [SizedBox(height: 28), ProjectCard(), Spacer()],
+            children: const [
+  SizedBox(height: 24),
+  RecentSection(),
+  SizedBox(height: 20),
+  ProjectCard(),
+  Spacer(),
+],
           ),
         ),
       ),
@@ -243,6 +251,38 @@ class _BottomItem extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class RecentSection extends StatelessWidget {
+  const RecentSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 2),
+          child: Text(
+            "Recent",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        const Divider(
+          height: 1,
+          thickness: 1,
+          color: Color(0xffEAEAEA),
+        ),
+      ],
     );
   }
 }

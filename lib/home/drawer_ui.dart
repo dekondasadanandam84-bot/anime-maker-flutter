@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/home/home_controller.dart';
+import 'package:flutter_application_1/core/app_media.dart';
 
 class DrawerUI extends StatelessWidget {
   final HomeController controller = const HomeController();
@@ -7,6 +8,7 @@ class DrawerUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    AppMedia.init(context);
     const Color dividerColor = Color(0xFFEAEAEA);
 
     return Scaffold(
@@ -16,7 +18,7 @@ class DrawerUI extends StatelessWidget {
           children: [
             //================ HEADER =================//
             SizedBox(
-              height: 64,
+              height: AppMedia.h(64),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
@@ -32,7 +34,7 @@ class DrawerUI extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    right: 16,
+                    right: AppMedia.w(16),
                     child: IconButton(
                       onPressed: () {
                         Navigator.pop(context);
@@ -52,21 +54,19 @@ class DrawerUI extends StatelessWidget {
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 28,
-                ),
+                padding: AppMedia.symmetric(horizontal: 24, vertical: 28),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     //================ QUICK ACTIONS =================//
                     Row(
-                      children: const [
+                      children: [
                         Expanded(
                           child: _QuickActionCard(
                             icon: Icons.settings,
                             color: Colors.blue,
                             title: "Settings",
+                            onTap: () => controller.openSettings(context),
                           ),
                         ),
                         SizedBox(width: 16),
@@ -92,34 +92,34 @@ class DrawerUI extends StatelessWidget {
 
                     //================ MENU =================//
                     const _MenuTile(
-  icon: Icons.diamond_rounded,
-  iconColor: Colors.indigo,
-  title: "Go Plus",
-),
+                      icon: Icons.diamond_rounded,
+                      iconColor: Colors.indigo,
+                      title: "Go Plus",
+                    ),
 
-const Divider(color: dividerColor, height: 1),
+                    const Divider(color: dividerColor, height: 1),
 
-const _MenuTile(
-  icon: Icons.folder_rounded,
-  iconColor: Colors.cyan,
-  title: "Projects",
-),
+                    const _MenuTile(
+                      icon: Icons.folder_rounded,
+                      iconColor: Colors.cyan,
+                      title: "Projects",
+                    ),
 
-const Divider(color: dividerColor, height: 1),
+                    const Divider(color: dividerColor, height: 1),
 
-const _MenuTile(
-  icon: Icons.group_rounded,
-  iconColor: Colors.orange,
-  title: "Collaborations",
-),
+                    const _MenuTile(
+                      icon: Icons.group_rounded,
+                      iconColor: Colors.orange,
+                      title: "Collaborations",
+                    ),
 
-const Divider(color: dividerColor, height: 1),
+                    const Divider(color: dividerColor, height: 1),
 
-const _MenuTile(
-  icon: Icons.monetization_on_rounded,
-  iconColor: Colors.amber,
-  title: "Earn Credits",
-),
+                    const _MenuTile(
+                      icon: Icons.monetization_on_rounded,
+                      iconColor: Colors.amber,
+                      title: "Earn Credits",
+                    ),
 
                     const Divider(color: dividerColor, height: 1),
 
@@ -174,45 +174,61 @@ class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final String title;
+  final VoidCallback? onTap;
 
   const _QuickActionCard({
     required this.icon,
     required this.color,
     required this.title,
+    this.onTap,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 92,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: const Color(0xFFEAEAEA)),
-            boxShadow: const [
-              BoxShadow(
-                color: Color(0x11000000),
-                blurRadius: 8,
-                offset: Offset(0, 2),
-              ),
-            ],
+Widget build(BuildContext context) {
+  return InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(AppMedia.r(18)),
+    child: Container(
+      height: AppMedia.h(100),
+      width: AppMedia.w(100),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(AppMedia.r(18)),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x11000000),
+            blurRadius: 8,
+            offset: Offset(0, 2),
           ),
-          child: Center(child: Icon(icon, color: color, size: 34)),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Colors.grey,
-            fontWeight: FontWeight.w500,
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            icon,
+            color: color,
+            size: AppMedia.icon(34),
           ),
-        ),
-      ],
-    );
-  }
+
+          const SizedBox(height: 10),
+
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: AppMedia.sp(12),
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 }
 
 class _MenuTile extends StatelessWidget {
