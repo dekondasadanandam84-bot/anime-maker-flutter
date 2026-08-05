@@ -1,104 +1,27 @@
 import 'package:flutter/material.dart';
-
-// Screens
-import 'screens/create_project_screen.dart';
-import 'package:flutter_application_1/widgets/app_layout.dart';
+import 'package:flutter_application_1/home/home_ui.dart';
 
 void main() {
-  runApp(const AnimeMakerApp());
+  runApp(const AnimeClipApp());
 }
 
-enum RouteDirection { forward, back }
-
-class AnimeMakerApp extends StatelessWidget {
-  const AnimeMakerApp({super.key});
+class AnimeClipApp extends StatelessWidget {
+  const AnimeClipApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Anime Maker',
-
+      title: 'AnimeClip',
       theme: ThemeData(
         useMaterial3: true,
-        colorSchemeSeed: const Color.fromARGB(255, 137, 58, 255),
-        brightness: Brightness.light,
         scaffoldBackgroundColor: Colors.white,
-        cardColor: Colors.white,
-        drawerTheme: const DrawerThemeData(
-          backgroundColor: Colors.white,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          elevation: 0,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.black,
+          brightness: Brightness.light,
         ),
       ),
-
-      initialRoute: '/',
-
-      onGenerateRoute: (settings) {
-        switch (settings.name) {
-          case '/':
-            return slideRoute(const ResponsiveRoot());
-
-          case '/create-project':
-  return slideRoute(
-    const CreateProjectScreen(
-      projectType: "anime_series",
-    ),
-  );
-
-case '/create-manga-project':
-  return slideRoute(
-    const CreateProjectScreen(
-      projectType: "manga_book",
-    ),
-  );
-
-          default:
-            return slideRoute(const ResponsiveRoot());
-        }
-      },
+      home: const HomeUI(),
     );
   }
-}
-
-// 🌐 RESPONSIVE ROOT (PHONE vs TABLET)
-class ResponsiveRoot extends StatelessWidget {
-  const ResponsiveRoot({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const AppLayout();
-  }
-}
-
-
-
-//
-// 🚀 ROUTE ANIMATION
-//
-PageRouteBuilder slideRoute(
-  Widget page, {
-  RouteDirection direction = RouteDirection.forward,
-}) {
-  final begin = direction == RouteDirection.forward
-      ? const Offset(1.0, 0.0)
-      : const Offset(-1.0, 0.0);
-
-  return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 350),
-    reverseTransitionDuration: const Duration(milliseconds: 350),
-    pageBuilder: (context, animation, secondaryAnimation) => page,
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final tween = Tween(begin: begin, end: Offset.zero)
-          .chain(CurveTween(curve: Curves.easeInOut));
-
-      return SlideTransition(
-        position: animation.drive(tween),
-        child: child,
-      );
-    },
-  );
 }
