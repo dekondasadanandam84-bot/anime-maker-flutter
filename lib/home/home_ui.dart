@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/home/drawer_ui.dart';
 import 'package:flutter_application_1/home/home_controller.dart';
 import 'package:flutter_application_1/core/app_media.dart';
+import 'package:flutter_application_1/search/search_ui.dart';
 
 class HomeUI extends StatelessWidget {
   final HomeController controller = const HomeController();
@@ -39,12 +40,23 @@ class HomeUI extends StatelessWidget {
           ),
         ),
 
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.search, color: Colors.black, size: 26),
-          ),
-        ],
+       actions: [
+  IconButton(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const SearchUI(),
+        ),
+      );
+    },
+    icon: const Icon(
+      Icons.search,
+      color: Color.fromARGB(255, 81, 77, 77),
+      size: 26,
+    ),
+  ),
+],
 
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
@@ -67,10 +79,6 @@ class HomeUI extends StatelessWidget {
           ),
         ),
       ),
-
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-
-      floatingActionButton: const CreateButton(),
 
       bottomNavigationBar: const HomeBottomBar(),
     );
@@ -149,21 +157,27 @@ class ProjectCard extends StatelessWidget {
 /// CREATE BUTTON
 /// =======================================
 
-class CreateButton extends StatelessWidget {
-  const CreateButton({super.key});
+class CreateBottomItem extends StatelessWidget {
+  const CreateBottomItem({super.key});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 68,
-      height: 68,
-      child: FloatingActionButton(
-        onPressed: () {},
-        elevation: 8,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, size: 30),
+      width: 78,
+      child: Center(
+        child: Container(
+          width: 60,
+          height: 60,
+          decoration: const BoxDecoration(
+            color: Color(0xFFE91E63),
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.add,
+            color: Colors.white,
+            size: 34,
+          ),
+        ),
       ),
     );
   }
@@ -187,35 +201,38 @@ class HomeBottomBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Row(
-          children: [
-            Expanded(
-              child: _BottomItem(
-                icon: Icons.movie_creation_outlined,
-                title: "Series",
-              ),
-            ),
+  children: [
+    Expanded(
+      child: _BottomItem(
+        icon: Icons.movie_creation_outlined,
+        title: "Series",
+      ),
+    ),
 
-            Expanded(
-              child: _BottomItem(
-                icon: Icons.theaters_outlined,
-                title: "Movies",
-              ),
-            ),
+    Expanded(
+      child: _BottomItem(
+        icon: Icons.theaters_outlined,
+        title: "Movies",
+      ),
+    ),
 
-            const Spacer(),
+    const CreateBottomItem(),
 
-            Expanded(
-              child: _BottomItem(
-                icon: Icons.auto_stories_outlined,
-                title: "Manga",
-              ),
-            ),
+    Expanded(
+      child: _BottomItem(
+        icon: Icons.auto_stories_outlined,
+        title: "Manga",
+      ),
+    ),
 
-            Expanded(
-              child: _BottomItem(icon: Icons.menu_book_outlined, title: "Book"),
-            ),
-          ],
-        ),
+    Expanded(
+      child: _BottomItem(
+        icon: Icons.menu_book_outlined,
+        title: "Book",
+      ),
+    ),
+  ],
+)
       ),
     );
   }

@@ -74,6 +74,7 @@ class DrawerUI extends StatelessWidget {
                           child: _QuickActionCard(
                             icon: Icons.dashboard_customize,
                             color: Colors.purple,
+                            onTap: () => controller.openTemplates(context),
                             title: "Templates",
                           ),
                         ),
@@ -91,11 +92,14 @@ class DrawerUI extends StatelessWidget {
                     const SizedBox(height: 40),
 
                     //================ MENU =================//
-                    const _MenuTile(
-                      icon: Icons.diamond_rounded,
-                      iconColor: Colors.indigo,
-                      title: "Go Plus",
-                    ),
+                    _MenuTile(
+  icon: Icons.diamond_rounded,
+  iconColor: Colors.indigo,
+  title: "Go Plus",
+  onTapDown: () {
+    const HomeController().openGoPlus(context);
+  },
+),
 
                     const Divider(color: dividerColor, height: 1),
 
@@ -184,80 +188,93 @@ class _QuickActionCard extends StatelessWidget {
   });
 
   @override
-Widget build(BuildContext context) {
-  return InkWell(
-    onTap: onTap,
-    borderRadius: BorderRadius.circular(AppMedia.r(18)),
-    child: Container(
-      height: AppMedia.h(100),
-      width: AppMedia.w(100),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppMedia.r(18)),
-        border: Border.all(color: const Color(0xFFEAEAEA)),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x11000000),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icon,
-            color: color,
-            size: AppMedia.icon(34),
-          ),
-
-          const SizedBox(height: 10),
-
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: AppMedia.sp(12),
-              color: Colors.grey,
-              fontWeight: FontWeight.w500,
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppMedia.r(18)),
+      child: Container(
+        height: AppMedia.h(100),
+        width: AppMedia.w(100),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(AppMedia.r(18)),
+          border: Border.all(color: const Color(0xFFEAEAEA)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x11000000),
+              blurRadius: 8,
+              offset: Offset(0, 2),
             ),
-          ),
-        ],
+          ],
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: AppMedia.icon(34)),
+
+            const SizedBox(height: 10),
+
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: AppMedia.sp(12),
+                color: Colors.grey,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
 
 class _MenuTile extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final String title;
+  final VoidCallback? onTapDown;
 
   const _MenuTile({
     required this.icon,
     required this.iconColor,
     required this.title,
+    this.onTapDown,
   });
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 60,
-      child: Row(
-        children: [
-          Icon(icon, color: iconColor, size: 26),
-          const SizedBox(width: 18),
-          Expanded(
-            child: Text(
-              title,
-              style: const TextStyle(fontSize: 16, color: Colors.black87),
+    return InkWell(
+      onTapDown: (_) {
+        onTapDown?.call();
+      },
+      child: SizedBox(
+        height: 60,
+        child: Row(
+          children: [
+            Icon(
+              icon,
+              color: iconColor,
+              size: 26,
             ),
-          ),
-          const Icon(Icons.chevron_right, color: Colors.grey),
-        ],
+            const SizedBox(width: 18),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            const Icon(
+              Icons.chevron_right,
+              color: Colors.grey,
+            ),
+          ],
+        ),
       ),
     );
   }

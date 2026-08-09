@@ -47,10 +47,11 @@ class _SettingsUIState extends State<SettingsUI> {
             color: Colors.black,
           ),
         ),
+        centerTitle: true,
         title: const Text(
           "Settings",
           style: TextStyle(
-            color: Colors.black,
+            color: Color.fromARGB(255, 13, 113, 254),
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -238,204 +239,87 @@ class _SettingsUIState extends State<SettingsUI> {
     );
   }
   Widget _themeSelector() {
-
-
     return Row(
-
-
       children: [
-
-
         Expanded(
-
           child: _themeCard(
-
             title: "Light",
-
             isSelected: themeMode == AppThemeMode.light,
-
             isDark: false,
-
-
             onTap: (){
-
-
               setState(() {
-
-
                 themeMode = AppThemeMode.light;
-
-
               });
-
-
             },
-
           ),
-
         ),
-
-
-
         const SizedBox(width: 16),
-
-
-
         Expanded(
-
           child: _themeCard(
-
             title: "Dark",
-
             isSelected: themeMode == AppThemeMode.dark,
-
             isDark: true,
-
-
             onTap: (){
-
-
               setState(() {
-
-
                 themeMode = AppThemeMode.dark;
-
-
               });
-
-
             },
           ),
         ),
       ],
     );
   }
-
-
-
-
-
-
   Widget _themeCard({
-
     required String title,
-
     required bool isSelected,
-
     required bool isDark,
-
     required VoidCallback onTap,
-
   }) {
-
-
     return GestureDetector(
-
       onTap: onTap,
-
-
       child: Column(
-
-
         children: [
-
-
-
           Container(
   height: 125,
   padding: const EdgeInsets.all(8),
-
-
             decoration: BoxDecoration(
-
               color: isDark
-
                   ? const Color(0xff1b1c1c)
-
                   : Colors.white,
-
-
               borderRadius: BorderRadius.circular(12),
-
-
               border: Border.all(
-
                 width: isSelected ? 2 : 1,
-
                 color: isSelected
-
                     ? Colors.black
-
                     : const Color(0xffcfc4c5),
-
               ),
-
             ),
-
-
-
             child: Column(
-
               crossAxisAlignment: CrossAxisAlignment.start,
-
-
               children: [
-
-
                 Container(
-
                   height: 8,
-
                   width: 60,
-
                   decoration: BoxDecoration(
-
                     color: isDark
-
                         ? const Color(0xff4c4546)
-
                         : const Color(0xffcfc4c5),
-
                     borderRadius: BorderRadius.circular(4),
-
                   ),
-
                 ),
-
-
-
                 const SizedBox(height: 10),
-
-
-
                 Container(
-
                   height: 35,
-
                   width: double.infinity,
-
                   decoration: BoxDecoration(
-
                     color: isDark
-
                         ? const Color(0xff2f3131)
-
                         : Colors.white,
-
                     borderRadius: BorderRadius.circular(6),
-
                   ),
-
                 ),
-
-
-
                 const Spacer(),
-
-
-
                 Row(
-
                   children: [
                     Expanded(
                       child: Container(
