@@ -93,53 +93,57 @@ class DrawerUI extends StatelessWidget {
 
                     //================ MENU =================//
                     _MenuTile(
-  icon: Icons.diamond_rounded,
-  iconColor: Colors.indigo,
-  title: "Go Plus",
+                  icon: Icons.diamond_rounded,
+                  iconColor: Colors.indigo,
+                  title: "Go Plus",
+                  onTapDown: () {
+                  const HomeController().openGoPlus(context);
+                  },
+                ),
+
+                    const Divider(color: dividerColor, height: 1),
+
+                    _MenuTile(
+  icon: Icons.group_rounded,
+  iconColor: Colors.orange,
+  title: "Collaborations",
   onTapDown: () {
-    const HomeController().openGoPlus(context);
+    controller.openCollaborations(context);
   },
 ),
 
                     const Divider(color: dividerColor, height: 1),
 
-                    const _MenuTile(
-                      icon: Icons.folder_rounded,
-                      iconColor: Colors.cyan,
-                      title: "Projects",
-                    ),
+                    _MenuTile(
+  icon: Icons.monetization_on_rounded,
+  iconColor: Colors.amber,
+  title: "Earn Coins",
+  onTapDown: () {
+    controller.openEarnCoins(context);
+  },
+),
 
                     const Divider(color: dividerColor, height: 1),
 
-                    const _MenuTile(
-                      icon: Icons.group_rounded,
-                      iconColor: Colors.orange,
-                      title: "Collaborations",
-                    ),
+                    _MenuTile(
+  icon: Icons.public,
+  iconColor: Colors.blue,
+  title: "Follow Us",
+  onTapDown: () {
+    controller.openFollowUs(context);
+  },
+),
 
                     const Divider(color: dividerColor, height: 1),
 
-                    const _MenuTile(
-                      icon: Icons.monetization_on_rounded,
-                      iconColor: Colors.amber,
-                      title: "Earn Credits",
-                    ),
-
-                    const Divider(color: dividerColor, height: 1),
-
-                    const _MenuTile(
-                      icon: Icons.public,
-                      iconColor: Colors.blue,
-                      title: "Follow Us",
-                    ),
-
-                    const Divider(color: dividerColor, height: 1),
-
-                    const _MenuTile(
-                      icon: Icons.info,
-                      iconColor: Colors.teal,
-                      title: "About Us",
-                    ),
+                    _MenuTile(
+  icon: Icons.info,
+  iconColor: Colors.teal,
+  title: "About Us",
+  onTapDown: () {
+    controller.openAbout(context);
+  },
+),
                     const Divider(color: dividerColor, height: 1),
 
                     const _MenuTile(

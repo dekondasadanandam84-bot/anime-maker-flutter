@@ -34,99 +34,128 @@ class _SettingsUIState extends State<SettingsUI> {
  AppMedia.init(context);
     return Scaffold(
       backgroundColor: const Color(0xfff9f9f9),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          onPressed: (){
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-          ),
-        ),
-        centerTitle: true,
-        title: const Text(
-          "Settings",
-          style: TextStyle(
-            color: Color.fromARGB(255, 13, 113, 254),
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 32,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _proCard(),
-            const SizedBox(height: 40),
-            _sectionTitle(
-              "Appearance",
-              "Customize how AnimeClip looks on your device.",
-            ),
-            const SizedBox(height: 20),
-            _themeSelector(),
-            const SizedBox(height: 25),
-            const Text(
-              "ACCENT COLOR",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 1,
-                color: Color(0xff4c4546),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Wrap(
-              spacing: 16,
-              children: accentColors.map((color){
-                return GestureDetector(
-                  onTap: (){
-                    setState(() {
-                      selectedAccent = color;
-                    });
+      body: SafeArea(
+  child: SingleChildScrollView(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 16,
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Top bar — now part of the screen content
+        SizedBox(
+          height: 48,
+          width: double.infinity,
+          child: Stack(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () {
+                    Navigator.pop(context);
                   },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: color,
-                      border: Border.all(
-                        color: selectedAccent == color
-                            ? Colors.black
-                            : Colors.transparent,
-                        width: 2,
-                      ),
-                    ),
-                    child: selectedAccent == color
-                        ? const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 20,
-                          )
-                        : null,
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.grey,
+                    size: 26,
                   ),
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 40),
-            _sectionTitle(
-              "Input Methods",
-              "Configure how you interact with the canvas.",
-            ),
-            const SizedBox(height: 20),
-            _inputMethodsCard(),
-          ],
+                ),
+              ),
+
+              const Center(
+                child: Text(
+                  "Settings",
+                  style: TextStyle(
+                    color: Color.fromARGB(255, 13, 113, 254),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+
+        const SizedBox(height: 16),
+
+        // Existing body content
+        _proCard(),
+
+        const SizedBox(height: 40),
+
+        _sectionTitle(
+          "Appearance",
+          "Customize how AnimeClip looks on your device.",
+        ),
+
+        const SizedBox(height: 20),
+
+        _themeSelector(),
+
+        const SizedBox(height: 25),
+
+        const Text(
+          "ACCENT COLOR",
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 1,
+            color: Color(0xff4c4546),
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        Wrap(
+          spacing: 16,
+          children: accentColors.map((color) {
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedAccent = color;
+                });
+              },
+              child: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                  border: Border.all(
+                    color: selectedAccent == color
+                        ? Colors.black
+                        : Colors.transparent,
+                    width: 2,
+                  ),
+                ),
+                child: selectedAccent == color
+                    ? const Icon(
+                        Icons.check,
+                        color: Colors.white,
+                        size: 20,
+                      )
+                    : null,
+              ),
+            );
+          }).toList(),
+        ),
+
+        const SizedBox(height: 40),
+
+        _sectionTitle(
+          "Input Methods",
+          "Configure how you interact with the canvas.",
+        ),
+
+        const SizedBox(height: 20),
+
+        _inputMethodsCard(),
+      ],
+    ),
+  ),
+),
     );
   }
     Widget _proCard() {

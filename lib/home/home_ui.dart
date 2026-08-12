@@ -242,7 +242,10 @@ class _BottomItem extends StatelessWidget {
   final IconData icon;
   final String title;
 
-  const _BottomItem({required this.icon, required this.title});
+  const _BottomItem({
+    required this.icon,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -254,14 +257,18 @@ class _BottomItem extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(icon, size: 20, color: Colors.grey),
+              Icon(
+                icon,
+                size: 22,
+                color: const Color(0xff333333),
+              ),
               const SizedBox(height: 2),
               Text(
                 title,
                 style: const TextStyle(
                   fontSize: 10,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w500,
+                  color: Color(0xff333333),
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],

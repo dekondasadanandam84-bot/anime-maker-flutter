@@ -33,12 +33,6 @@ class _GoPlusUIState extends State<GoPlusUI> {
           children: [
             _buildHeader(),
 
-            const Divider(
-              height: 1,
-              thickness: 1,
-              color: Color(0xFFEAEAEA),
-            ),
-
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -93,7 +87,7 @@ Widget _buildHeader() {
           Navigator.pop(context);
         },
         icon: const Icon(
-          Icons.close,
+          Icons.arrow_back,
           color: Colors.grey,
           size: 26,
         ),

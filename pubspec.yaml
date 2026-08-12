@@ -26,4 +26,5 @@ flutter:
   assets:
     - assets/screen.png
     - assets/screen11.png
+    - assets/screen12.png
     - assets/templates/

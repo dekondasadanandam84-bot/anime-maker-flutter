@@ -29,53 +29,76 @@ void dispose() {
 
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xffF9F9F9),
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        centerTitle: true,
-        title: const Text(
-          "Templates",
-          style: TextStyle(
-            color: Color.fromARGB(255, 140, 27, 132),
-            fontWeight: FontWeight.bold,
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: const Color(0xffF9F9F9),
+    body: SafeArea(
+      child: Column(
+        children: [
+          // Top bar is now part of the screen content
+          SizedBox(
+  height: 48,
+  width: double.infinity,
+  child: Stack(
+    children: [
+      Align(
+        alignment: Alignment.centerLeft,
+        child: IconButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.grey,
+            size: 26,
           ),
         ),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 16),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Start faster with ready-made animation templates.",
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-            ),
+
+      const Center(
+        child: Text(
+          "Templates",
+          style: TextStyle(
+            color: Color.fromARGB(255, 140, 27, 132),
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
           ),
+        ),
+      ),
+    ],
+  ),
+),
+
           const SizedBox(height: 16),
+
+const Padding(
+  padding: EdgeInsets.symmetric(horizontal: 16),
+  child: Align(
+    alignment: Alignment.centerLeft,
+    child: Text(
+      "Start faster with ready-made animation templates.",
+      style: TextStyle(
+        color: Colors.grey,
+        fontSize: 16,
+      ),
+    ),
+  ),
+),
+
+const SizedBox(height: 16),
+
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: controller.templates.length,
               gridDelegate:
-    const SliverGridDelegateWithFixedCrossAxisCount(
-  crossAxisCount: 2,
-  crossAxisSpacing: 12,
-  mainAxisSpacing: 16,
-  childAspectRatio: 160 / 150,
-),
+                  const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 16,
+                childAspectRatio: 160 / 150,
+              ),
               itemBuilder: (context, index) {
                 return TemplateCard(
                   template: controller.templates[index],
@@ -85,8 +108,9 @@ void dispose() {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
 
 class TemplateCard extends StatelessWidget {
