@@ -8,6 +8,9 @@ import 'package:flutter_application_1/earn_coins/earn_coins_ui.dart';
 import 'package:flutter_application_1/follow_us/follow_us_ui.dart';
 import 'package:flutter_application_1/about/about_ui.dart';
 import 'package:flutter_application_1/about/about_controller.dart';
+import 'package:flutter_application_1/accounts/accounts_ui.dart';
+import 'package:flutter_application_1/tutorials/tutorials_ui.dart';
+import 'package:flutter_application_1/help_guide/help_guide_ui.dart';
 
 class HomeController {
   const HomeController();
@@ -118,6 +121,45 @@ void openAbout(BuildContext context) {
 }
 
 void closeAbout(BuildContext context) {
+  Navigator.pop(context);
+}
+
+void openAccounts(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const AccountsUI(),
+    ),
+  );
+}
+
+void closeAccounts(BuildContext context) {
+  Navigator.pop(context);
+}
+
+void openTutorials(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const TutorialsScreen(),
+    ),
+  );
+}
+
+void closeTutorials(BuildContext context) {
+  Navigator.pop(context);
+}
+
+void openHelpGuide(BuildContext context) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => const HelpGuideUi(),
+    ),
+  );
+}
+
+void closeHelpGuide(BuildContext context) {
   Navigator.pop(context);
 }
 }

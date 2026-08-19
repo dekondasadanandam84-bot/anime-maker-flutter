@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/tutorials/tutorials_controller.dart';
 import 'search_controller.dart';
 import 'package:flutter_application_1/templates/templates_controller.dart';
 
@@ -217,8 +218,9 @@ class _SearchResults extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final templates = controller.templates;
+    final tutorials = controller.tutorials;
 
-    if (templates.isEmpty) {
+    if (templates.isEmpty && tutorials.isEmpty) {
       return const Center(
         child: Text(
           "No results found",
@@ -238,23 +240,46 @@ class _SearchResults extends StatelessWidget {
         40,
       ),
       children: [
-        const Text(
-          "Templates",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Colors.black,
+        if (templates.isNotEmpty) ...[
+          const Text(
+            "Templates",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
           ),
-        ),
+          const SizedBox(height: 12),
 
-        const SizedBox(height: 12),
+          ...templates.map(
+            (template) => _TemplateResultCard(
+              template: template,
+              controller: controller,
+            ),
+          ),
+        ],
 
-        ...templates.map(
-  (template) => _TemplateResultCard(
-    template: template,
-    controller: controller,
-  ),
-),
+        if (templates.isNotEmpty && tutorials.isNotEmpty)
+          const SizedBox(height: 28),
+
+        if (tutorials.isNotEmpty) ...[
+          const Text(
+            "Tutorials",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          ...tutorials.map(
+            (tutorial) => _TutorialResultCard(
+              tutorial: tutorial,
+              controller: controller,
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -366,3 +391,105 @@ class _TemplateResultCard extends StatelessWidget {
   }
 }
 
+class _TutorialResultCard extends StatelessWidget {
+  final TutorialItem tutorial;
+  final AnimeClipSearchController controller;
+
+  const _TutorialResultCard({
+    required this.tutorial,
+    required this.controller,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFEAEAEA),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () {
+            controller.tutorialsController.openTutorial(tutorial);
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F3F4),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    tutorial.icon,
+                    size: 28,
+                    color: Colors.black,
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        tutorial.title,
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
+                        tutorial.description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                          height: 1.35,
+                        ),
+                      ),
+
+                      const SizedBox(height: 6),
+
+                      Text(
+                        '${tutorial.category} • ${tutorial.duration}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                const Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

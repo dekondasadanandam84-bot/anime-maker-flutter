@@ -84,6 +84,7 @@ class DrawerUI extends StatelessWidget {
                             icon: Icons.school,
                             color: Colors.green,
                             title: "Tutorials",
+                            onTap: () => controller.openTutorials(context),
                           ),
                         ),
                       ],
@@ -93,68 +94,71 @@ class DrawerUI extends StatelessWidget {
 
                     //================ MENU =================//
                     _MenuTile(
-                  icon: Icons.diamond_rounded,
-                  iconColor: Colors.indigo,
-                  title: "Go Plus",
-                  onTapDown: () {
-                  const HomeController().openGoPlus(context);
-                  },
-                ),
-
-                    const Divider(color: dividerColor, height: 1),
-
-                    _MenuTile(
-  icon: Icons.group_rounded,
-  iconColor: Colors.orange,
-  title: "Collaborations",
-  onTapDown: () {
-    controller.openCollaborations(context);
-  },
-),
-
-                    const Divider(color: dividerColor, height: 1),
-
-                    _MenuTile(
-  icon: Icons.monetization_on_rounded,
-  iconColor: Colors.amber,
-  title: "Earn Coins",
-  onTapDown: () {
-    controller.openEarnCoins(context);
-  },
-),
-
-                    const Divider(color: dividerColor, height: 1),
-
-                    _MenuTile(
-  icon: Icons.public,
-  iconColor: Colors.blue,
-  title: "Follow Us",
-  onTapDown: () {
-    controller.openFollowUs(context);
-  },
-),
-
-                    const Divider(color: dividerColor, height: 1),
-
-                    _MenuTile(
-  icon: Icons.info,
-  iconColor: Colors.teal,
-  title: "About Us",
-  onTapDown: () {
-    controller.openAbout(context);
-  },
-),
-                    const Divider(color: dividerColor, height: 1),
-
-                    const _MenuTile(
-                      icon: Icons.help_center,
-                      iconColor: Colors.green,
-                      title: "Help & Guide",
+                      icon: Icons.diamond_rounded,
+                      iconColor: Colors.indigo,
+                      title: "Go Plus",
+                      onTapDown: () {
+                        const HomeController().openGoPlus(context);
+                      },
                     ),
 
                     const Divider(color: dividerColor, height: 1),
 
-                    const _AccountTile(),
+                    _MenuTile(
+                      icon: Icons.group_rounded,
+                      iconColor: Colors.orange,
+                      title: "Collaborations",
+                      onTapDown: () {
+                        controller.openCollaborations(context);
+                      },
+                    ),
+
+                    const Divider(color: dividerColor, height: 1),
+
+                    _MenuTile(
+                      icon: Icons.monetization_on_rounded,
+                      iconColor: Colors.amber,
+                      title: "Earn Coins",
+                      onTapDown: () {
+                        controller.openEarnCoins(context);
+                      },
+                    ),
+
+                    const Divider(color: dividerColor, height: 1),
+
+                    _MenuTile(
+                      icon: Icons.public,
+                      iconColor: Colors.blue,
+                      title: "Follow Us",
+                      onTapDown: () {
+                        controller.openFollowUs(context);
+                      },
+                    ),
+
+                    const Divider(color: dividerColor, height: 1),
+
+                    _MenuTile(
+                      icon: Icons.info,
+                      iconColor: Colors.teal,
+                      title: "About Us",
+                      onTapDown: () {
+                        controller.openAbout(context);
+                      },
+                    ),
+                    const Divider(color: dividerColor, height: 1),
+
+                    _MenuTile(
+                      icon: Icons.help_center,
+                      iconColor: Colors.green,
+                      title: "Help & Guide",
+                      onTapDown: () {
+                        controller.openHelpGuide(context);
+                      },
+                    ),
+
+                    const Divider(color: dividerColor, height: 1),
+
+                    _AccountTile(controller: controller),
 
                     const SizedBox(height: 32),
                   ],
@@ -258,25 +262,15 @@ class _MenuTile extends StatelessWidget {
         height: 60,
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: iconColor,
-              size: 26,
-            ),
+            Icon(icon, color: iconColor, size: 26),
             const SizedBox(width: 18),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
+                style: const TextStyle(fontSize: 16, color: Colors.black87),
               ),
             ),
-            const Icon(
-              Icons.chevron_right,
-              color: Colors.grey,
-            ),
+            const Icon(Icons.chevron_right, color: Colors.grey),
           ],
         ),
       ),
@@ -285,32 +279,37 @@ class _MenuTile extends StatelessWidget {
 }
 
 class _AccountTile extends StatelessWidget {
-  const _AccountTile();
+  final HomeController controller;
+
+  const _AccountTile({required this.controller});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 60,
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: const BoxDecoration(
-              color: Color(0xFFE3F2FD),
-              shape: BoxShape.circle,
+    return InkWell(
+      onTap: () => controller.openAccounts(context),
+      child: SizedBox(
+        height: 60,
+        child: Row(
+          children: [
+            Container(
+              width: 36,
+              height: 36,
+              decoration: const BoxDecoration(
+                color: Color(0xFFE3F2FD),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.person, color: Colors.blue, size: 20),
             ),
-            child: const Icon(Icons.person, color: Colors.blue, size: 20),
-          ),
-          const SizedBox(width: 18),
-          const Expanded(
-            child: Text(
-              "Account",
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+            const SizedBox(width: 18),
+            const Expanded(
+              child: Text(
+                "Account",
+                style: TextStyle(fontSize: 16, color: Colors.black87),
+              ),
             ),
-          ),
-          const Icon(Icons.chevron_right, color: Colors.grey),
-        ],
+            const Icon(Icons.chevron_right, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }
