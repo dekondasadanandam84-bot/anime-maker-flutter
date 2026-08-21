@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/home/anime/seasons_ui.dart';
+import 'package:flutter_application_1/home/models/anime_series_model.dart';
+import 'package:flutter_application_1/home/models/project_model.dart';
+import 'package:flutter_application_1/home/models/project_settings_model.dart';
+import 'package:flutter_application_1/home/models/anime_movie_model.dart';
 
 enum CreateProjectType { animeSeries, animeMovie, mangaSeries, mangaBook }
 
 class CreateProjectScreen extends StatefulWidget {
   final CreateProjectType projectType;
+  final ValueChanged<ProjectModel> onProjectCreated;
 
-  const CreateProjectScreen({super.key, required this.projectType});
+  const CreateProjectScreen({
+    super.key,
+    required this.projectType,
+    required this.onProjectCreated,
+  });
 
   @override
   State<CreateProjectScreen> createState() => _CreateProjectScreenState();
@@ -116,60 +124,135 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     }
   }
 
+  ProjectAspectRatio _parseAspectRatio(String value) {
+    switch (value) {
+      case '9:16':
+        return ProjectAspectRatio.ratio9x16;
+      case '1:1':
+        return ProjectAspectRatio.ratio1x1;
+      case '16:9':
+      default:
+        return ProjectAspectRatio.ratio16x9;
+    }
+  }
+
   // ============================================================
   // CREATE PROJECT
   // ============================================================
 
   void _createProject() {
-    final name = _titleController.text.trim();
+  final name = _titleController.text.trim();
 
-    if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter the ${nameLabel.toLowerCase()}.')),
-      );
-      return;
-    }
-
-    final projectData = <String, dynamic>{
-      'projectType': widget.projectType.name,
-      'name': name,
-    };
-
-    if (isAnime) {
-      projectData.addAll({
-        'aspectRatio': _aspectRatio,
-        'resolution': _resolution,
-        'fps': _fps.round(),
-        'structure': projectStructure,
-      });
-    }
-
-    if (isManga) {
-      projectData.addAll({
-        'paperSize': _paperSize,
-        'quality': _quality,
-        'structure': projectStructure,
-      });
-    }
-
-    debugPrint('CREATE PROJECT');
-    debugPrint(projectData.toString());
-
-    // Anime Series → Seasons
-    if (widget.projectType == CreateProjectType.animeSeries) {
-  Navigator.of(context).pushReplacement(
-    MaterialPageRoute(
-      builder: (_) => SeasonsScreen(
-        seriesName: name,
+  if (name.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Please enter the ${nameLabel.toLowerCase()}.',
+        ),
       ),
-    ),
-  );
-  return;
-}
-
-    // Existing workflow for the other project types.
-    Navigator.of(context).pop(projectData);
+    );
+    return;
   }
+
+  final projectData = <String, dynamic>{
+    'projectType': widget.projectType.name,
+    'name': name,
+  };
+
+  if (isAnime) {
+    projectData.addAll({
+      'aspectRatio': _aspectRatio,
+      'resolution': _resolution,
+      'fps': _fps.round(),
+      'structure': projectStructure,
+    });
+  }
+
+  if (isManga) {
+    projectData.addAll({
+      'paperSize': _paperSize,
+      'quality': _quality,
+      'structure': projectStructure,
+    });
+  }
+
+  debugPrint('CREATE PROJECT');
+  debugPrint(projectData.toString());
+
+  // ============================================================
+  // ANIME SERIES
+  // ============================================================
+
+  if (widget.projectType == CreateProjectType.animeSeries) {
+    final settings = ProjectSettingsModel(
+      aspectRatio: _parseAspectRatio(_aspectRatio),
+      fps: _fps.roundToDouble(),
+      quality: _quality,
+    );
+
+    final series = AnimeSeriesModel(
+      id: 'series_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+      seasons: const [],
+    );
+
+    final project = ProjectModel(
+      id: 'project_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+      projectType: ProjectType.animeSeries,
+      settings: settings,
+      animeSeries: series,
+    );
+
+    // Send the project back to HomeUI.
+    widget.onProjectCreated(project);
+
+    // Return to Home.
+    Navigator.of(context).pop();
+
+    return;
+  }
+
+  // ============================================================
+  // ANIME MOVIE
+  // ============================================================
+
+  if (widget.projectType == CreateProjectType.animeMovie) {
+    final settings = ProjectSettingsModel(
+      aspectRatio: _parseAspectRatio(_aspectRatio),
+      fps: _fps.roundToDouble(),
+      quality: _quality,
+    );
+
+    final movie = AnimeMovieModel(
+      id: 'movie_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+      clips: const [],
+    );
+
+    final project = ProjectModel(
+      id: 'project_${DateTime.now().microsecondsSinceEpoch}',
+      name: name,
+      projectType: ProjectType.animeMovie,
+      settings: settings,
+      animeMovie: movie,
+    );
+
+    // Send the project back to HomeUI.
+    widget.onProjectCreated(project);
+
+    // Return to Home.
+    Navigator.of(context).pop();
+
+    return;
+  }
+
+  // ============================================================
+  // OTHER PROJECT TYPES
+  // ============================================================
+
+  Navigator.of(context).pop(projectData);
+}
 
   @override
   void dispose() {

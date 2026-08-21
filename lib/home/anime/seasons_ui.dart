@@ -1,18 +1,22 @@
 import 'package:flutter/material.dart';
 
+import '../models/anime_series_model.dart';
 import 'seasons_controller.dart';
+import '../models/season_model.dart';
+import '../models/project_settings_model.dart';
+import 'episodes_ui.dart';
 
 class SeasonsScreen extends StatefulWidget {
-  const SeasonsScreen({
-    super.key,
-    this.seriesName = 'My Anime Series',
-    this.controller,
-    this.onOpenSeason,
-  });
+const SeasonsScreen({
+  super.key,
+  required this.series,
+  required this.settings,
+  this.controller,
+});
 
-  final String seriesName;
-  final SeasonsController? controller;
-  final ValueChanged<SeasonModel>? onOpenSeason;
+final AnimeSeriesModel series;
+final ProjectSettingsModel settings;
+final SeasonsController? controller;
 
   @override
   State<SeasonsScreen> createState() => _SeasonsScreenState();
@@ -25,8 +29,13 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
   @override
   void initState() {
     super.initState();
+
     _ownsController = widget.controller == null;
-    _controller = widget.controller ?? SeasonsController();
+
+    _controller = widget.controller ??
+        SeasonsController(
+          series: widget.series,
+        );
   }
 
   @override
@@ -34,12 +43,16 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     if (_ownsController) {
       _controller.dispose();
     }
+
     super.dispose();
   }
 
   Future<void> _createSeason() async {
     final seasonNumber = _controller.nextSeasonNumber;
-    final controller = TextEditingController(text: 'Season $seasonNumber');
+
+    final controller = TextEditingController(
+      text: 'Season $seasonNumber',
+    );
 
     final shouldCreate = await showDialog<bool>(
       context: context,
@@ -54,15 +67,21 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
               labelText: 'Season Name',
               hintText: 'Enter season name',
             ),
-            onSubmitted: (_) => Navigator.of(dialogContext).pop(true),
+            onSubmitted: (_) {
+              Navigator.of(dialogContext).pop(true);
+            },
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
               child: const Text('Create Season'),
             ),
           ],
@@ -73,18 +92,27 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     final name = controller.text.trim();
     controller.dispose();
 
-    if (shouldCreate != true || !mounted) return;
-    await _controller.createSeason(name: name);
+    if (shouldCreate != true || !mounted) {
+      return;
+    }
+
+    await _controller.createSeason(
+      name: name,
+    );
   }
 
   Future<void> _renameSeason(SeasonModel season) async {
-    final controller = TextEditingController(text: season.name);
+    final controller = TextEditingController(
+      text: season.name,
+    );
 
     final shouldRename = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: Text('Rename Season ${season.number}'),
+          title: Text(
+            'Rename Season ${season.number}',
+          ),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -93,15 +121,21 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
               labelText: 'Season Name',
               hintText: 'Enter a new season name',
             ),
-            onSubmitted: (_) => Navigator.of(dialogContext).pop(true),
+            onSubmitted: (_) {
+              Navigator.of(dialogContext).pop(true);
+            },
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
               child: const Text('Save'),
             ),
           ],
@@ -112,8 +146,14 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     final name = controller.text.trim();
     controller.dispose();
 
-    if (shouldRename != true || !mounted) return;
-    await _controller.renameSeason(seasonId: season.id, newName: name);
+    if (shouldRename != true || !mounted) {
+      return;
+    }
+
+    await _controller.renameSeason(
+      seasonId: season.id,
+      newName: name,
+    );
   }
 
   Future<void> _deleteSeason(SeasonModel season) async {
@@ -123,19 +163,26 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
         return AlertDialog(
           title: const Text('Delete Season?'),
           content: Text(
-            'Are you sure you want to delete "${season.displayName}"? '
-            'This action cannot be undone and will remove all episodes within.',
+            'Are you sure you want to delete '
+            '"${season.displayName}"? '
+            'This action cannot be undone and will remove '
+            'all episodes within.',
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
               child: const Text('Cancel'),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(dialogContext).colorScheme.error,
+                backgroundColor:
+                    Theme.of(dialogContext).colorScheme.error,
               ),
-              onPressed: () => Navigator.of(dialogContext).pop(true),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
               child: const Text('Delete'),
             ),
           ],
@@ -143,8 +190,13 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
       },
     );
 
-    if (confirmed != true || !mounted) return;
-    await _controller.deleteSeason(season.id);
+    if (confirmed != true || !mounted) {
+      return;
+    }
+
+    await _controller.deleteSeason(
+      season.id,
+    );
   }
 
   void _showSeasonMenu(SeasonModel season) {
@@ -157,26 +209,34 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.edit_outlined),
+                leading: const Icon(
+                  Icons.edit_outlined,
+                ),
                 title: const Text('Rename'),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
+
                   _renameSeason(season);
                 },
               ),
               ListTile(
                 leading: Icon(
                   Icons.delete_outline,
-                  color: Theme.of(context).colorScheme.error,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .error,
                 ),
                 title: Text(
                   'Delete',
                   style: TextStyle(
-                    color: Theme.of(context).colorScheme.error,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .error,
                   ),
                 ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
+
                   _deleteSeason(season);
                 },
               ),
@@ -200,7 +260,9 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           tooltip: 'Back',
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () {
+            Navigator.of(context).maybePop();
+          },
           icon: const Icon(Icons.arrow_back),
         ),
         bottom: PreferredSize(
@@ -221,7 +283,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
               ),
             ),
             Text(
-              widget.seriesName,
+              widget.series.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelMedium?.copyWith(
@@ -238,19 +300,27 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
             children: [
               Expanded(
                 child: ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 32, 16, 120),
+                  padding: const EdgeInsets.fromLTRB(
+                    16,
+                    32,
+                    16,
+                    120,
+                  ),
                   children: [
                     Text(
                       'Seasons',
-                      style: theme.textTheme.headlineSmall?.copyWith(
+                      style:
+                          theme.textTheme.headlineSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Manage the seasons in this anime series.',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      style:
+                          theme.textTheme.bodyLarge?.copyWith(
+                        color:
+                            theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 32),
@@ -280,18 +350,23 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
       clipBehavior: Clip.antiAlias,
       child: seasons.isEmpty
           ? Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 36,
+              ),
               child: Column(
                 children: [
                   Icon(
                     Icons.auto_stories_outlined,
                     size: 42,
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color:
+                        theme.colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'No seasons yet',
-                    style: theme.textTheme.titleMedium?.copyWith(
+                    style:
+                        theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -299,8 +374,10 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                   Text(
                     'Create the first season for this series.',
                     textAlign: TextAlign.center,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                    style:
+                        theme.textTheme.bodyMedium?.copyWith(
+                      color:
+                          theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -327,7 +404,16 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     return Material(
       color: theme.colorScheme.surface,
       child: InkWell(
-        onTap: () => widget.onOpenSeason?.call(season),
+        onTap: () {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => EpisodesScreen(
+        season: season,
+        settings: widget.settings,
+      ),
+    ),
+  );
+},
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -335,7 +421,8 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                 ? null
                 : Border(
                     bottom: BorderSide(
-                      color: theme.colorScheme.surfaceContainerHighest,
+                      color: theme.colorScheme
+                          .surfaceContainerHighest,
                     ),
                   ),
           ),
@@ -345,29 +432,36 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainer,
+                  color:
+                      theme.colorScheme.surfaceContainer,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Icon(Icons.auto_stories_rounded),
+                child: const Icon(
+                   Icons.movie_creation_outlined,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
                     Text(
                       season.displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.labelLarge?.copyWith(
+                      style:
+                          theme.textTheme.labelLarge?.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(height: 3),
                     Text(
                       _controller.getEpisodeLabel(season),
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      style:
+                          theme.textTheme.labelMedium?.copyWith(
+                        color:
+                            theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -375,13 +469,21 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
               ),
               IconButton(
                 tooltip: 'Rename',
-                onPressed: () => _renameSeason(season),
-                icon: const Icon(Icons.edit_outlined),
+                onPressed: () {
+                  _renameSeason(season);
+                },
+                icon: const Icon(
+                  Icons.edit_outlined,
+                ),
               ),
               IconButton(
                 tooltip: 'More options',
-                onPressed: () => _showSeasonMenu(season),
-                icon: const Icon(Icons.more_vert),
+                onPressed: () {
+                  _showSeasonMenu(season);
+                },
+                icon: const Icon(
+                  Icons.more_vert,
+                ),
               ),
             ],
           ),
@@ -392,11 +494,19 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
 
   Widget _buildBottomAction(ThemeData theme) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        12,
+        16,
+        16,
+      ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(alpha: 0.96),
+        color: theme.colorScheme.surface
+            .withValues(alpha: 0.96),
         border: Border(
-          top: BorderSide(color: theme.colorScheme.outlineVariant),
+          top: BorderSide(
+            color: theme.colorScheme.outlineVariant,
+          ),
         ),
       ),
       child: SafeArea(
@@ -404,11 +514,14 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
         child: SizedBox(
           width: double.infinity,
           child: FilledButton.icon(
-            onPressed: _controller.isBusy ? null : _createSeason,
+            onPressed: _controller.isBusy
+                ? null
+                : _createSeason,
             icon: const Icon(Icons.add),
             label: const Text('Create Season'),
             style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(52),
+              minimumSize:
+                  const Size.fromHeight(52),
               shape: const StadiumBorder(),
             ),
           ),

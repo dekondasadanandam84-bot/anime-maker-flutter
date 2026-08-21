@@ -1,82 +1,72 @@
 import 'package:flutter/foundation.dart';
 
-class EpisodeModel {
-  EpisodeModel({
-    required this.id,
-    required this.number,
-    this.name,
-    this.clipCount = 0,
-  });
-
-  final String id;
-  final int number;
-  String? name;
-  int clipCount;
-
-  String get displayName {
-    final trimmed = name?.trim() ?? '';
-    return trimmed.isEmpty ? 'Episode $number' : trimmed;
-  }
-
-  EpisodeModel copyWith({
-    String? id,
-    int? number,
-    String? name,
-    int? clipCount,
-  }) {
-    return EpisodeModel(
-      id: id ?? this.id,
-      number: number ?? this.number,
-      name: name ?? this.name,
-      clipCount: clipCount ?? this.clipCount,
-    );
-  }
-}
+import '../models/episode_model.dart';
+import '../models/season_model.dart';
 
 class EpisodesController extends ChangeNotifier {
   EpisodesController({
-    List<EpisodeModel>? initialEpisodes,
-  }) : _episodes = initialEpisodes ??
-            [
-              EpisodeModel(id: 'episode_1', number: 1, clipCount: 4),
-              EpisodeModel(id: 'episode_2', number: 2, clipCount: 8),
-              EpisodeModel(id: 'episode_3', number: 3, clipCount: 0),
-            ];
+    required this._season,
+  });
 
-  final List<EpisodeModel> _episodes;
+  SeasonModel _season;
+
   bool _isBusy = false;
 
-  List<EpisodeModel> get episodes => List.unmodifiable(_episodes);
+  SeasonModel get season => _season;
+
+  List<EpisodeModel> get episodes =>
+      List.unmodifiable(_season.episodes);
+
   bool get isBusy => _isBusy;
 
   int get nextEpisodeNumber {
-    if (_episodes.isEmpty) return 1;
-    return _episodes.map((e) => e.number).reduce((a, b) => a > b ? a : b) + 1;
+    if (_season.episodes.isEmpty) {
+      return 1;
+    }
+
+    return _season.episodes
+            .map((episode) => episode.episodeNumber)
+            .reduce((a, b) => a > b ? a : b) +
+        1;
   }
 
   EpisodeModel? findEpisode(String id) {
-    for (final episode in _episodes) {
-      if (episode.id == id) return episode;
+    for (final episode in _season.episodes) {
+      if (episode.id == id) {
+        return episode;
+      }
     }
+
     return null;
   }
 
   Future<EpisodeModel> createEpisode({
     String? name,
-    int clipCount = 0,
   }) async {
     _setBusy(true);
+
     try {
       final number = nextEpisodeNumber;
-      final cleanName = name?.trim() ?? '';
+      final cleaned = name?.trim() ?? '';
+
       final episode = EpisodeModel(
         id: _createId(number),
-        number: number,
-        name: cleanName.isEmpty ? null : cleanName,
-        clipCount: clipCount < 0 ? 0 : clipCount,
+        name: cleaned.isEmpty
+            ? 'Episode $number'
+            : cleaned,
+        episodeNumber: number,
+        clips: const [],
       );
-      _episodes.add(episode);
+
+      _season = _season.copyWith(
+        episodes: [
+          ..._season.episodes,
+          episode,
+        ],
+      );
+
       notifyListeners();
+
       return episode;
     } finally {
       _setBusy(false);
@@ -88,48 +78,84 @@ class EpisodesController extends ChangeNotifier {
     required String newName,
   }) async {
     final episode = findEpisode(episodeId);
-    if (episode == null) return false;
 
-    final cleanName = newName.trim();
-    episode.name = cleanName.isEmpty ? null : cleanName;
+    if (episode == null) {
+      return false;
+    }
+
+    final cleaned = newName.trim();
+
+    final updatedEpisode = episode.copyWith(
+      name: cleaned.isEmpty
+          ? 'Episode ${episode.episodeNumber}'
+          : cleaned,
+    );
+
+    final updatedEpisodes =
+        _season.episodes.map((item) {
+      if (item.id == episodeId) {
+        return updatedEpisode;
+      }
+
+      return item;
+    }).toList();
+
+    _season = _season.copyWith(
+      episodes: updatedEpisodes,
+    );
+
     notifyListeners();
+
     return true;
   }
 
   Future<bool> deleteEpisode(String episodeId) async {
     _setBusy(true);
+
     try {
-      final index = _episodes.indexWhere((e) => e.id == episodeId);
-      if (index == -1) return false;
-      _episodes.removeAt(index);
+      final exists = _season.episodes.any(
+        (episode) => episode.id == episodeId,
+      );
+
+      if (!exists) {
+        return false;
+      }
+
+      final updatedEpisodes =
+          _season.episodes
+              .where((episode) => episode.id != episodeId)
+              .toList();
+
+      _season = _season.copyWith(
+        episodes: updatedEpisodes,
+      );
+
       notifyListeners();
+
       return true;
     } finally {
       _setBusy(false);
     }
   }
 
-  void updateClipCount({
-    required String episodeId,
-    required int clipCount,
-  }) {
-    final episode = findEpisode(episodeId);
-    if (episode == null) return;
-    episode.clipCount = clipCount < 0 ? 0 : clipCount;
-    notifyListeners();
-  }
-
   String getClipLabel(EpisodeModel episode) {
-    return episode.clipCount == 1
-        ? '1 Clip'
-        : '${episode.clipCount} Clips';
+    if (episode.clipCount == 1) {
+      return '1 Clip';
+    }
+
+    return '${episode.clipCount} Clips';
   }
 
-  String _createId(int number) =>
-      'episode_${number}_${DateTime.now().microsecondsSinceEpoch}';
+  String _createId(int number) {
+    return 'episode_${number}_'
+        '${DateTime.now().microsecondsSinceEpoch}';
+  }
 
   void _setBusy(bool value) {
-    if (_isBusy == value) return;
+    if (_isBusy == value) {
+      return;
+    }
+
     _isBusy = value;
     notifyListeners();
   }

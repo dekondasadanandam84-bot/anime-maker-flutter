@@ -1,41 +1,41 @@
 import 'package:flutter/foundation.dart';
 
+import '../models/anime_movie_model.dart';
 import '../models/clip_model.dart';
-import '../models/episode_model.dart';
 
-class ClipsController extends ChangeNotifier {
-  ClipsController({
-    required this._episode,
+class MovieClipsController extends ChangeNotifier {
+  MovieClipsController({
+    required this._movie,
     required this.fps,
   });
 
-  EpisodeModel _episode;
+  AnimeMovieModel _movie;
   final int fps;
 
   bool _isBusy = false;
 
-  EpisodeModel get episode => _episode;
+  AnimeMovieModel get movie => _movie;
 
   List<ClipModel> get clips =>
-      List.unmodifiable(_episode.clips);
+      List.unmodifiable(_movie.clips);
 
   bool get isBusy => _isBusy;
 
-  int get clipCount => _episode.clips.length;
+  int get clipCount => _movie.clips.length;
 
   int get nextClipNumber {
-    if (_episode.clips.isEmpty) {
+    if (_movie.clips.isEmpty) {
       return 1;
     }
 
-    return _episode.clips
+    return _movie.clips
             .map((clip) => clip.number)
             .reduce((a, b) => a > b ? a : b) +
         1;
   }
 
   ClipModel? findClip(String id) {
-    for (final clip in _episode.clips) {
+    for (final clip in _movie.clips) {
       if (clip.id == id) {
         return clip;
       }
@@ -52,10 +52,7 @@ class ClipsController extends ChangeNotifier {
     try {
       final number = nextClipNumber;
 
-      // Every new clip starts at the maximum allowed duration.
       const int durationSeconds = 60;
-
-      // Frame count is determined by the project's FPS.
       final int frameCount = durationSeconds * fps;
 
       final trimmedName = name?.trim() ?? '';
@@ -70,9 +67,9 @@ class ClipsController extends ChangeNotifier {
         frameCount: frameCount,
       );
 
-      _episode = _episode.copyWith(
+      _movie = _movie.copyWith(
         clips: [
-          ..._episode.clips,
+          ..._movie.clips,
           clip,
         ],
       );
@@ -103,7 +100,7 @@ class ClipsController extends ChangeNotifier {
           : trimmed,
     );
 
-    final updatedClips = _episode.clips.map((item) {
+    final updatedClips = _movie.clips.map((item) {
       if (item.id == clipId) {
         return updatedClip;
       }
@@ -111,7 +108,7 @@ class ClipsController extends ChangeNotifier {
       return item;
     }).toList();
 
-    _episode = _episode.copyWith(
+    _movie = _movie.copyWith(
       clips: updatedClips,
     );
 
@@ -124,7 +121,7 @@ class ClipsController extends ChangeNotifier {
     _setBusy(true);
 
     try {
-      final exists = _episode.clips.any(
+      final exists = _movie.clips.any(
         (clip) => clip.id == clipId,
       );
 
@@ -132,11 +129,11 @@ class ClipsController extends ChangeNotifier {
         return false;
       }
 
-      final updatedClips = _episode.clips
+      final updatedClips = _movie.clips
           .where((clip) => clip.id != clipId)
           .toList();
 
-      _episode = _episode.copyWith(
+      _movie = _movie.copyWith(
         clips: updatedClips,
       );
 
@@ -153,12 +150,12 @@ class ClipsController extends ChangeNotifier {
     required int newIndex,
   }) {
     if (oldIndex < 0 ||
-        oldIndex >= _episode.clips.length) {
+        oldIndex >= _movie.clips.length) {
       return;
     }
 
     if (newIndex < 0 ||
-        newIndex > _episode.clips.length) {
+        newIndex > _movie.clips.length) {
       return;
     }
 
@@ -172,7 +169,7 @@ class ClipsController extends ChangeNotifier {
     }
 
     final updatedClips =
-        List<ClipModel>.from(_episode.clips);
+        List<ClipModel>.from(_movie.clips);
 
     final clip = updatedClips.removeAt(oldIndex);
     updatedClips.insert(newIndex, clip);
@@ -187,7 +184,7 @@ class ClipsController extends ChangeNotifier {
       );
     }
 
-    _episode = _episode.copyWith(
+    _movie = _movie.copyWith(
       clips: renumbered,
     );
 
@@ -204,17 +201,16 @@ class ClipsController extends ChangeNotifier {
       return;
     }
 
-    // Clips can be adjusted later, but never below 1 second
-    // or above the 60-second maximum.
-    final safeDuration = durationSeconds.clamp(1, 60);
+    final safeDuration =
+        durationSeconds.clamp(1, 60);
 
     final updatedClip = clip.copyWith(
       durationSeconds: safeDuration,
       frameCount: safeDuration * fps,
     );
 
-    _episode = _episode.copyWith(
-      clips: _episode.clips.map((item) {
+    _movie = _movie.copyWith(
+      clips: _movie.clips.map((item) {
         if (item.id == clipId) {
           return updatedClip;
         }
@@ -227,7 +223,7 @@ class ClipsController extends ChangeNotifier {
   }
 
   String _createId(int number) {
-    return 'clip_${number}_'
+    return 'movie_clip_${number}_'
         '${DateTime.now().microsecondsSinceEpoch}';
   }
 

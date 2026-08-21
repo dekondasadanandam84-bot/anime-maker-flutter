@@ -4,6 +4,12 @@ import 'package:flutter_application_1/home/home_controller.dart';
 import 'package:flutter_application_1/core/app_media.dart';
 import 'package:flutter_application_1/search/search_ui.dart';
 import 'package:flutter_application_1/home/create_project_button.dart';
+import 'project_controller.dart';
+import 'models/project_model.dart';
+import 'project_card_ui.dart';
+import 'package:flutter_application_1/home/anime/seasons_ui.dart';
+import 'package:flutter_application_1/home/anime/movie_clips_ui.dart';
+import 'package:flutter_application_1/editor/editor_ui.dart';
 
 class HomeUI extends StatefulWidget {
   const HomeUI({super.key});
@@ -15,6 +21,8 @@ class HomeUI extends StatefulWidget {
 class _HomeUIState extends State<HomeUI> {
   final HomeController controller = const HomeController();
 
+  final ProjectController projectController = ProjectController();
+
   // 0 = Series
   // 1 = Movies
   // 2 = Manga
@@ -22,6 +30,165 @@ class _HomeUIState extends State<HomeUI> {
   //
   // Movies is the default tab.
   int _selectedTab = 1;
+
+  // ============================================================
+  // PROJECT CREATED
+  // ============================================================
+
+  void _onProjectCreated(ProjectModel project) {
+    projectController.addProject(project);
+
+    setState(() {
+      switch (project.projectType) {
+        case ProjectType.animeSeries:
+          _selectedTab = 0;
+          break;
+
+        case ProjectType.animeMovie:
+          _selectedTab = 1;
+          break;
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    projectController.addListener(_onProjectsChanged);
+  }
+
+  void _onProjectsChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  // ============================================================
+  // PROJECTS FOR SELECTED CATEGORY
+  // ============================================================
+
+  List<ProjectModel> _projectsForSelectedTab() {
+    switch (_selectedTab) {
+      case 0:
+        return projectController.projects
+            .where((project) => project.projectType == ProjectType.animeSeries)
+            .toList();
+
+      case 1:
+        return projectController.projects
+            .where((project) => project.projectType == ProjectType.animeMovie)
+            .toList();
+
+      case 2:
+        // Manga will be added later.
+        return const [];
+
+      case 3:
+        // Manga Book will be added later.
+        return const [];
+
+      default:
+        return const [];
+    }
+  }
+
+  // ============================================================
+  // PROJECT EMOJI
+  // ============================================================
+
+  String _emojiForProject(ProjectModel project) {
+    switch (project.projectType) {
+      case ProjectType.animeSeries:
+        return '📺';
+
+      case ProjectType.animeMovie:
+        return '🎬';
+    }
+  }
+
+  // ============================================================
+  // DELETE PROJECT
+  // ============================================================
+
+  void _deleteProject(ProjectModel project) {
+    projectController.deleteProject(project.id);
+
+    setState(() {});
+  }
+
+  // ============================================================
+  // EDIT PROJECT
+  // ============================================================
+
+  void _editProject(ProjectModel project) {
+  // ============================================================
+  // ANIME SERIES
+  // ============================================================
+
+  if (project.projectType == ProjectType.animeSeries &&
+      project.animeSeries != null) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SeasonsScreen(
+          series: project.animeSeries!,
+          settings: project.settings,
+        ),
+      ),
+    );
+
+    return;
+  }
+
+  // ============================================================
+  // ANIME MOVIE
+  // ============================================================
+
+  if (project.projectType == ProjectType.animeMovie &&
+      project.animeMovie != null) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MovieClipsScreen(
+          movie: project.animeMovie!,
+          settings: project.settings,
+
+          // When a movie clip is tapped, open the editor.
+          onOpenClip: (clip) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => EditorScreen(
+                  clipId: clip.id,
+                  clipName: clip.name,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    return;
+  }
+}
+
+  // ============================================================
+  // DOWNLOAD PROJECT
+  // ============================================================
+
+  void _downloadProject(ProjectModel project) {
+    // Download workflow will be connected later.
+    debugPrint('Download project: ${project.name}');
+  }
+
+  @override
+  void dispose() {
+    projectController.removeListener(_onProjectsChanged);
+    projectController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +213,10 @@ class _HomeUIState extends State<HomeUI> {
               MaterialPageRoute(builder: (_) => const DrawerUI()),
             );
           },
-          icon: const Icon(Icons.menu, color: Colors.black, size: 28),
+          icon: const Text(
+            '☰',
+            style: TextStyle(fontSize: 28, color: Colors.black, height: 1),
+          ),
         ),
 
         title: const Text(
@@ -67,11 +237,7 @@ class _HomeUIState extends State<HomeUI> {
                 MaterialPageRoute(builder: (_) => const SearchUI()),
               );
             },
-            icon: const Icon(
-              Icons.search,
-              color: Color.fromARGB(255, 220, 14, 207),
-              size: 34,
-            ),
+            icon: const Text('🔍', style: TextStyle(fontSize: 30)),
           ),
         ],
 
@@ -97,10 +263,19 @@ class _HomeUIState extends State<HomeUI> {
 
               const SizedBox(height: 20),
 
-              // Boxing Demo remains visible on EVERY TAB.
-              const ProjectCard(),
-
-              const Spacer(),
+              // ======================================================
+              // PROJECT GRID
+              // ======================================================
+              Expanded(
+  child: _ProjectContent(
+    selectedTab: _selectedTab,
+    projects: _projectsForSelectedTab(),
+    emojiBuilder: _emojiForProject,
+    onEdit: _editProject,
+    onDelete: _deleteProject,
+    onDownload: _downloadProject,
+  ),
+),
             ],
           ),
         ),
@@ -116,6 +291,133 @@ class _HomeUIState extends State<HomeUI> {
             _selectedTab = index;
           });
         },
+        onProjectCreated: _onProjectCreated,
+      ),
+    );
+  }
+}
+
+// ================================================================
+// PROJECT CONTENT
+// ================================================================
+
+class _ProjectContent extends StatelessWidget {
+  final int selectedTab;
+  final List<ProjectModel> projects;
+  final String Function(ProjectModel) emojiBuilder;
+  final void Function(ProjectModel) onEdit;
+  final void Function(ProjectModel) onDelete;
+  final void Function(ProjectModel) onDownload;
+
+  const _ProjectContent({
+    required this.selectedTab,
+    required this.projects,
+    required this.emojiBuilder,
+    required this.onEdit,
+    required this.onDelete,
+    required this.onDownload,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> cards = [];
+
+    // ============================================================
+    // EXISTING DEMO CARDS
+    // ============================================================
+
+    if (selectedTab == 0 || selectedTab == 1) {
+  cards.add(
+    const ProjectCard(
+      imageAsset: 'assets/screen.png',
+      projectName: 'Boxing Demo',
+    ),
+  );
+}
+
+if (selectedTab == 2 || selectedTab == 3) {
+  cards.add(
+    const ProjectCard(
+      imageAsset: 'assets/screen13.png',
+      projectName: 'Manga Conversation Demo',
+    ),
+  );
+}
+
+    // ============================================================
+    // CREATED PROJECTS
+    // ============================================================
+
+    for (final project in projects) {
+      cards.add(
+        ProjectCardUI(
+          title: project.name,
+          emoji: emojiBuilder(project),
+          onEdit: () => onEdit(project),
+          onDelete: () => onDelete(project),
+          onDownload: () => onDownload(project),
+        ),
+      );
+    }
+
+    // ============================================================
+    // CONTENT
+    // ============================================================
+
+    if (cards.isEmpty) {
+      return const _EmptyProjectState();
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.only(bottom: 20),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 180,
+        mainAxisExtent: 185,
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 20,
+        childAspectRatio: 1,
+      ),
+      itemCount: cards.length,
+      itemBuilder: (context, index) {
+        return cards[index];
+      },
+    );
+  }
+}
+
+// ================================================================
+// EMPTY PROJECT STATE
+// ================================================================
+
+class _EmptyProjectState extends StatelessWidget {
+  const _EmptyProjectState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('📁', style: TextStyle(fontSize: 48)),
+
+          const SizedBox(height: 12),
+
+          const Text(
+            'No projects yet',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
+
+          const SizedBox(height: 5),
+
+          const Text(
+            'Create a project to get started.',
+            style: TextStyle(fontSize: 13, color: Color(0xff777777)),
+          ),
+        ],
       ),
     );
   }
@@ -141,8 +443,10 @@ class _SelectedCategorySection extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Row(
             children: [
-              Icon(data.icon, size: 22, color: data.color),
+              Text(data.icon, style: const TextStyle(fontSize: 22)),
+
               const SizedBox(width: 8),
+
               Text(
                 data.title,
                 style: const TextStyle(
@@ -184,7 +488,7 @@ class _SelectedCategorySection extends StatelessWidget {
 class _CategoryData {
   final String title;
   final String description;
-  final IconData icon;
+  final String icon;
   final Color color;
 
   const _CategoryData({
@@ -200,7 +504,7 @@ class _CategoryData {
         return const _CategoryData(
           title: 'Series',
           description: 'Create and organize episodic anime projects.',
-          icon: Icons.movie_creation_outlined,
+          icon: '📺',
           color: Color(0xff7C3AED),
         );
 
@@ -208,7 +512,7 @@ class _CategoryData {
         return const _CategoryData(
           title: 'Movies',
           description: 'Create and manage long-form animated movies.',
-          icon: Icons.theaters_outlined,
+          icon: '🎬',
           color: Color(0xffE11D48),
         );
 
@@ -216,7 +520,7 @@ class _CategoryData {
         return const _CategoryData(
           title: 'Manga',
           description: 'Create and organize manga series and pages.',
-          icon: Icons.auto_stories_outlined,
+          icon: '📚',
           color: Color(0xff0EA5E9),
         );
 
@@ -224,7 +528,7 @@ class _CategoryData {
         return const _CategoryData(
           title: 'Book',
           description: 'Create and manage standalone manga books.',
-          icon: Icons.menu_book_outlined,
+          icon: '📖',
           color: Color(0xff16A34A),
         );
 
@@ -232,78 +536,10 @@ class _CategoryData {
         return const _CategoryData(
           title: 'Movies',
           description: 'Create and manage long-form animated movies.',
-          icon: Icons.theaters_outlined,
+          icon: '🎬',
           color: Color(0xffE11D48),
         );
     }
-  }
-}
-
-// ================================================================
-// PROJECT CARD
-// ================================================================
-
-class ProjectCard extends StatelessWidget {
-  const ProjectCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 160,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 160,
-            height: 120,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xffEAEAEA)),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x10000000),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: Image.asset(
-                "assets/screen.png",
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) {
-                  return Container(
-                    color: const Color(0xffF4F4F4),
-                    child: const Center(
-                      child: Icon(
-                        Icons.image_outlined,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          const Center(
-            child: Text(
-              "Boxing Demo",
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.black,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -335,11 +571,13 @@ class CreateBottomItem extends StatelessWidget {
 class HomeBottomBar extends StatelessWidget {
   final int selectedTab;
   final ValueChanged<int> onTabSelected;
+  final ValueChanged<ProjectModel> onProjectCreated;
 
   const HomeBottomBar({
     super.key,
     required this.selectedTab,
     required this.onTabSelected,
+    required this.onProjectCreated,
   });
 
   @override
@@ -356,7 +594,7 @@ class HomeBottomBar extends StatelessWidget {
           children: [
             Expanded(
               child: _BottomItem(
-                icon: Icons.movie_creation_outlined,
+                icon: '📺',
                 title: "Series",
                 color: const Color(0xff7C3AED),
                 selected: selectedTab == 0,
@@ -366,7 +604,7 @@ class HomeBottomBar extends StatelessWidget {
 
             Expanded(
               child: _BottomItem(
-                icon: Icons.theaters_outlined,
+                icon: '🎬',
                 title: "Movies",
                 color: const Color(0xffE11D48),
                 selected: selectedTab == 1,
@@ -376,11 +614,15 @@ class HomeBottomBar extends StatelessWidget {
 
             // Center create button uses the same width as every
             // other navigation slot, so there is no large gap.
-            Expanded(child: Center(child: const CreateProjectButton())),
+            Expanded(
+              child: Center(
+                child: CreateProjectButton(onProjectCreated: onProjectCreated),
+              ),
+            ),
 
             Expanded(
               child: _BottomItem(
-                icon: Icons.auto_stories_outlined,
+                icon: '📚',
                 title: "Manga",
                 color: const Color(0xff0EA5E9),
                 selected: selectedTab == 2,
@@ -390,7 +632,7 @@ class HomeBottomBar extends StatelessWidget {
 
             Expanded(
               child: _BottomItem(
-                icon: Icons.menu_book_outlined,
+                icon: '📖',
                 title: "Book",
                 color: const Color(0xff16A34A),
                 selected: selectedTab == 3,
@@ -405,11 +647,89 @@ class HomeBottomBar extends StatelessWidget {
 }
 
 // ================================================================
+// DEMO PROJECT CARD
+// ================================================================
+
+class ProjectCard extends StatelessWidget {
+  final String imageAsset;
+  final String projectName;
+
+  const ProjectCard({
+    super.key,
+    required this.imageAsset,
+    required this.projectName,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 160,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 160,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: const Color(0xffEAEAEA),
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x10000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(18),
+              child: Image.asset(
+                imageAsset,
+                fit: BoxFit.cover,
+                errorBuilder: (_, _, _) {
+                  return Container(
+                    color: const Color(0xffF4F4F4),
+                    child: const Center(
+                      child: Icon(
+                        Icons.image_outlined,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          Center(
+            child: Text(
+              projectName,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ================================================================
 // BOTTOM NAV ITEM
 // ================================================================
 
 class _BottomItem extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final String title;
   final Color color;
   final bool selected;
@@ -450,7 +770,7 @@ class _BottomItem extends StatelessWidget {
               AnimatedScale(
                 scale: selected ? 1.08 : 1.0,
                 duration: const Duration(milliseconds: 180),
-                child: Icon(icon, size: 23, color: color),
+                child: Text(icon, style: const TextStyle(fontSize: 23)),
               ),
 
               const SizedBox(height: 3),
@@ -494,7 +814,9 @@ class RecentSection extends StatelessWidget {
             ),
           ),
         ),
+
         const SizedBox(height: 12),
+
         const Divider(height: 1, thickness: 1, color: Color(0xffEAEAEA)),
       ],
     );

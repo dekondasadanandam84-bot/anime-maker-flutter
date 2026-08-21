@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 
 import 'episodes_controller.dart';
+import '../models/season_model.dart';
+import '../models/episode_model.dart';
+import 'clips_ui.dart';
+import '../models/project_settings_model.dart';
 
 class EpisodesScreen extends StatefulWidget {
   const EpisodesScreen({
-    super.key,
-    this.seasonName = 'Season 1',
-    this.controller,
-    this.onOpenEpisode,
-  });
+  super.key,
+  required this.season,
+  required this.settings,
+  this.controller,
+});
 
-  final String seasonName;
-  final EpisodesController? controller;
-  final ValueChanged<EpisodeModel>? onOpenEpisode;
+final SeasonModel season;
+final ProjectSettingsModel settings;
+final EpisodesController? controller;
+  
 
   @override
   State<EpisodesScreen> createState() => _EpisodesScreenState();
@@ -25,8 +30,11 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   @override
   void initState() {
     super.initState();
+
     _ownsController = widget.controller == null;
-    _controller = widget.controller ?? EpisodesController();
+
+    _controller =
+        widget.controller ?? EpisodesController(season: widget.season);
   }
 
   @override
@@ -74,19 +82,19 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   }
 
   Future<void> _renameEpisode(EpisodeModel episode) async {
-    final controller = TextEditingController(text: episode.name ?? '');
+    final controller = TextEditingController(text: episode.name);
 
     final save = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Rename Episode ${episode.number}'),
+        title: Text('Rename Episode ${episode.episodeNumber}'),
         content: TextField(
           controller: controller,
           autofocus: true,
           textInputAction: TextInputAction.done,
           decoration: InputDecoration(
             labelText: 'Episode Name',
-            hintText: 'Episode ${episode.number}',
+            hintText: 'Episode ${episode.episodeNumber}',
           ),
           onSubmitted: (_) => Navigator.of(dialogContext).pop(true),
         ),
@@ -107,10 +115,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     controller.dispose();
     if (save != true || !mounted) return;
 
-    await _controller.renameEpisode(
-      episodeId: episode.id,
-      newName: name,
-    );
+    await _controller.renameEpisode(episodeId: episode.id, newName: name);
   }
 
   Future<void> _deleteEpisode(EpisodeModel episode) async {
@@ -165,9 +170,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
               ),
               title: Text(
                 'Delete',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               ),
               onTap: () {
                 Navigator.of(sheetContext).pop();
@@ -219,10 +222,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
         ],
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Divider(
-            height: 1,
-            color: theme.colorScheme.outlineVariant,
-          ),
+          child: Divider(height: 1, color: theme.colorScheme.outlineVariant),
         ),
         centerTitle: true,
         title: Column(
@@ -235,7 +235,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
               ),
             ),
             Text(
-              widget.seasonName,
+              widget.season.displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
@@ -300,7 +302,16 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     return Material(
       color: theme.colorScheme.surface,
       child: InkWell(
-        onTap: () => widget.onOpenEpisode?.call(episode),
+       onTap: () {
+  Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => ClipsScreen(
+        episode: episode,
+        settings: widget.settings,
+      ),
+    ),
+  );
+},
         borderRadius: BorderRadius.circular(10),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
@@ -405,9 +416,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface.withValues(alpha: 0.96),
         border: Border(
-          top: BorderSide(
-            color: theme.colorScheme.surfaceContainerHighest,
-          ),
+          top: BorderSide(color: theme.colorScheme.surfaceContainerHighest),
         ),
       ),
       child: SafeArea(

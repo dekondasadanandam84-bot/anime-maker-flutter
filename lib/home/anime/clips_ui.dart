@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/home/models/clip_model.dart';
+import 'package:flutter_application_1/home/models/episode_model.dart';
+import '../models/project_settings_model.dart';
+import 'package:flutter_application_1/editor/editor_ui.dart';
 
 import 'clips_controller.dart';
 
 class ClipsScreen extends StatefulWidget {
   const ClipsScreen({
     super.key,
-    this.contextLabel = 'Season 1 · Episode 1',
+    required this.episode,
+    required this.settings,
     this.controller,
     this.onOpenClip,
   });
 
-  final String contextLabel;
+  final EpisodeModel episode;
+  final ProjectSettingsModel settings;
   final ClipsController? controller;
   final ValueChanged<ClipModel>? onOpenClip;
 
@@ -26,7 +32,12 @@ class _ClipsScreenState extends State<ClipsScreen> {
   void initState() {
     super.initState();
     _ownsController = widget.controller == null;
-    _controller = widget.controller ?? ClipsController();
+    _controller =
+        widget.controller ??
+        ClipsController(
+          episode: widget.episode,
+          fps: widget.settings.fps.round(),
+        );
   }
 
   @override
@@ -37,48 +48,34 @@ class _ClipsScreenState extends State<ClipsScreen> {
 
   Future<void> _createClip() async {
     final nameController = TextEditingController();
-    final durationController = TextEditingController(text: '120');
 
-    final result = await showDialog<_CreateClipResult>(
+    final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           title: const Text('Create Clip'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  labelText: 'Clip Name',
-                  hintText: 'Enter clip name',
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: durationController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Duration (seconds)',
-                ),
-              ),
-            ],
+          content: TextField(
+            controller: nameController,
+            autofocus: true,
+            textInputAction: TextInputAction.done,
+            decoration: const InputDecoration(
+              labelText: 'Clip Name',
+              hintText: 'Enter clip name',
+            ),
+            onSubmitted: (_) {
+              Navigator.of(dialogContext).pop(nameController.text.trim());
+            },
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
               child: const Text('Cancel'),
             ),
             FilledButton(
               onPressed: () {
-                final duration = int.tryParse(durationController.text.trim()) ?? 120;
-                Navigator.of(dialogContext).pop(
-                  _CreateClipResult(
-                    name: nameController.text.trim(),
-                    durationSeconds: duration,
-                  ),
-                );
+                Navigator.of(dialogContext).pop(nameController.text.trim());
               },
               child: const Text('Create Clip'),
             ),
@@ -88,14 +85,12 @@ class _ClipsScreenState extends State<ClipsScreen> {
     );
 
     nameController.dispose();
-    durationController.dispose();
 
-    if (result == null || !mounted) return;
+    if (name == null || !mounted) {
+      return;
+    }
 
-    await _controller.createClip(
-      name: result.name,
-      durationSeconds: result.durationSeconds,
-    );
+    await _controller.createClip(name: name);
   }
 
   Future<void> _renameClip(ClipModel clip) async {
@@ -132,10 +127,7 @@ class _ClipsScreenState extends State<ClipsScreen> {
 
     if (shouldSave != true || !mounted) return;
 
-    await _controller.renameClip(
-      clipId: clip.id,
-      newName: name,
-    );
+    await _controller.renameClip(clipId: clip.id, newName: name);
   }
 
   Future<void> _deleteClip(ClipModel clip) async {
@@ -236,10 +228,12 @@ class _ClipsScreenState extends State<ClipsScreen> {
           children: [
             Text(
               'Clips',
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
             ),
             Text(
-              widget.contextLabel,
+              widget.episode.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelMedium?.copyWith(
@@ -305,13 +299,13 @@ class _ClipsScreenState extends State<ClipsScreen> {
                       ),
                     ),
                     SliverReorderableList(
-  itemCount: clips.length,
-  onReorderItem: (oldIndex, newIndex) {
-    _controller.reorderClip(
-      oldIndex: oldIndex,
-      newIndex: newIndex,
-    );
-  },
+                      itemCount: clips.length,
+                      onReorderItem: (oldIndex, newIndex) {
+                        _controller.reorderClip(
+                          oldIndex: oldIndex,
+                          newIndex: newIndex,
+                        );
+                      },
                       itemBuilder: (context, index) {
                         final clip = clips[index];
                         return _buildClipRow(
@@ -358,15 +352,20 @@ class _ClipsScreenState extends State<ClipsScreen> {
       child: Material(
         color: theme.colorScheme.surface,
         child: InkWell(
-          onTap: () => widget.onOpenClip?.call(clip),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) =>
+                    EditorScreen(clipId: clip.id, clipName: clip.name),
+              ),
+            );
+          },
           child: Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.symmetric(vertical: 16),
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(
-                  color: theme.colorScheme.outlineVariant,
-                ),
+                bottom: BorderSide(color: theme.colorScheme.outlineVariant),
               ),
             ),
             child: Row(
@@ -445,7 +444,9 @@ class _ClipsScreenState extends State<ClipsScreen> {
         Text(
           'No clips yet',
           textAlign: TextAlign.center,
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -486,7 +487,10 @@ class _ClipsScreenState extends State<ClipsScreen> {
                 icon: const Icon(Icons.add),
                 label: const Text('Create Clip'),
                 style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 14,
+                  ),
                   shape: const StadiumBorder(),
                 ),
               ),
@@ -519,14 +523,4 @@ class _ClipsScreenState extends State<ClipsScreen> {
       },
     );
   }
-}
-
-class _CreateClipResult {
-  const _CreateClipResult({
-    required this.name,
-    required this.durationSeconds,
-  });
-
-  final String name;
-  final int durationSeconds;
 }

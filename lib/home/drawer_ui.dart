@@ -63,7 +63,7 @@ class DrawerUI extends StatelessWidget {
                       children: [
                         Expanded(
                           child: _QuickActionCard(
-                            icon: Icons.settings,
+                            icon: '⚙️',
                             color: Colors.blue,
                             title: "Settings",
                             onTap: () => controller.openSettings(context),
@@ -72,16 +72,16 @@ class DrawerUI extends StatelessWidget {
                         SizedBox(width: 16),
                         Expanded(
                           child: _QuickActionCard(
-                            icon: Icons.dashboard_customize,
+                            icon: '🎨',
                             color: Colors.purple,
-                            onTap: () => controller.openTemplates(context),
                             title: "Templates",
+                            onTap: () => controller.openTemplates(context),
                           ),
                         ),
                         SizedBox(width: 16),
                         Expanded(
                           child: _QuickActionCard(
-                            icon: Icons.school,
+                            icon: '🎓',
                             color: Colors.green,
                             title: "Tutorials",
                             onTap: () => controller.openTutorials(context),
@@ -94,7 +94,7 @@ class DrawerUI extends StatelessWidget {
 
                     //================ MENU =================//
                     _MenuTile(
-                      icon: Icons.diamond_rounded,
+                      icon: '💎',
                       iconColor: Colors.indigo,
                       title: "Go Plus",
                       onTapDown: () {
@@ -105,7 +105,7 @@ class DrawerUI extends StatelessWidget {
                     const Divider(color: dividerColor, height: 1),
 
                     _MenuTile(
-                      icon: Icons.group_rounded,
+                      icon: '🤝',
                       iconColor: Colors.orange,
                       title: "Collaborations",
                       onTapDown: () {
@@ -116,7 +116,7 @@ class DrawerUI extends StatelessWidget {
                     const Divider(color: dividerColor, height: 1),
 
                     _MenuTile(
-                      icon: Icons.monetization_on_rounded,
+                      icon: '🪙',
                       iconColor: Colors.amber,
                       title: "Earn Coins",
                       onTapDown: () {
@@ -127,7 +127,7 @@ class DrawerUI extends StatelessWidget {
                     const Divider(color: dividerColor, height: 1),
 
                     _MenuTile(
-                      icon: Icons.public,
+                      icon: '🌐',
                       iconColor: Colors.blue,
                       title: "Follow Us",
                       onTapDown: () {
@@ -138,7 +138,7 @@ class DrawerUI extends StatelessWidget {
                     const Divider(color: dividerColor, height: 1),
 
                     _MenuTile(
-                      icon: Icons.info,
+                      icon: 'ℹ️',
                       iconColor: Colors.teal,
                       title: "About Us",
                       onTapDown: () {
@@ -148,7 +148,7 @@ class DrawerUI extends StatelessWidget {
                     const Divider(color: dividerColor, height: 1),
 
                     _MenuTile(
-                      icon: Icons.help_center,
+                      icon: '💡',
                       iconColor: Colors.green,
                       title: "Help & Guide",
                       onTapDown: () {
@@ -183,7 +183,7 @@ class DrawerUI extends StatelessWidget {
 }
 
 class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final Color color;
   final String title;
   final VoidCallback? onTap;
@@ -219,7 +219,19 @@ class _QuickActionCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: AppMedia.icon(34)),
+            Center(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: Center(
+                  child: Text(
+                    icon,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 28, height: 1),
+                  ),
+                ),
+              ),
+            ),
 
             const SizedBox(height: 10),
 
@@ -240,7 +252,7 @@ class _QuickActionCard extends StatelessWidget {
 }
 
 class _MenuTile extends StatelessWidget {
-  final IconData icon;
+  final String icon;
   final Color iconColor;
   final String title;
   final VoidCallback? onTapDown;
@@ -262,7 +274,17 @@ class _MenuTile extends StatelessWidget {
         height: 60,
         child: Row(
           children: [
-            Icon(icon, color: iconColor, size: 26),
+            SizedBox(
+              width: 30,
+              height: 30,
+              child: Center(
+                child: Text(
+                  icon,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(fontSize: 25, height: 1),
+                ),
+              ),
+            ),
             const SizedBox(width: 18),
             Expanded(
               child: Text(
@@ -292,13 +314,23 @@ class _AccountTile extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 36,
-              height: 36,
+              width: 37,
+              height: 37,
               decoration: const BoxDecoration(
                 color: Color(0xFFE3F2FD),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.person, color: Colors.blue, size: 20),
+              child: const SizedBox(
+                width: 36,
+                height: 36,
+                child: Center(
+                  child: Text(
+                    '👤',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 22, height: 1),
+                  ),
+                ),
+              ),
             ),
             const SizedBox(width: 18),
             const Expanded(
