@@ -12,11 +12,13 @@ class EpisodesScreen extends StatefulWidget {
   required this.season,
   required this.settings,
   this.controller,
+  this.onSeasonChanged,
 });
 
 final SeasonModel season;
 final ProjectSettingsModel settings;
 final EpisodesController? controller;
+final ValueChanged<SeasonModel>? onSeasonChanged;
   
 
   @override
@@ -210,7 +212,11 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           tooltip: 'Back',
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () {
+  Navigator.of(context).pop(
+    _controller.season,
+  );
+},
           icon: const Icon(Icons.arrow_back),
         ),
         actions: [
@@ -293,92 +299,106 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   }
 
   Widget _buildEpisodeRow(
-    ThemeData theme,
-    EpisodeModel episode, {
-    required bool isLast,
-  }) {
-    final empty = episode.clipCount == 0;
+  ThemeData theme,
+  EpisodeModel episode, {
+  required bool isLast,
+}) {
+  final empty = episode.clipCount == 0;
 
-    return Material(
-      color: theme.colorScheme.surface,
-      child: InkWell(
-       onTap: () {
-  Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) => ClipsScreen(
-        episode: episode,
-        settings: widget.settings,
+  return Material(
+    color: theme.colorScheme.surface,
+    child: InkWell(
+      onTap: () async {
+        final updatedEpisode =
+            await Navigator.of(context).push<EpisodeModel>(
+          MaterialPageRoute(
+            builder: (_) => ClipsScreen(
+              episode: episode,
+              settings: widget.settings,
+            ),
+          ),
+        );
+
+        if (updatedEpisode == null || !mounted) {
+          return;
+        }
+
+        _controller.updateEpisode(updatedEpisode);
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 8,
+          vertical: 16,
+        ),
+        decoration: BoxDecoration(
+          border: isLast
+              ? null
+              : Border(
+                  bottom: BorderSide(
+                    color: theme.colorScheme.surfaceContainerHighest,
+                  ),
+                ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                Icons.video_library_outlined,
+                color: empty
+                    ? theme.colorScheme.onSurface.withValues(alpha: 0.5)
+                    : theme.colorScheme.onSurface,
+              ),
+            ),
+
+            const SizedBox(width: 16),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    episode.displayName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    _controller.getClipLabel(episode),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            IconButton(
+              tooltip: 'Rename',
+              onPressed: () => _renameEpisode(episode),
+              icon: const Icon(Icons.edit_outlined),
+            ),
+
+            IconButton(
+              tooltip: 'More options',
+              onPressed: () => _showEpisodeMenu(episode),
+              icon: const Icon(Icons.more_horiz),
+            ),
+          ],
+        ),
       ),
     ),
   );
-},
-        borderRadius: BorderRadius.circular(10),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-          decoration: BoxDecoration(
-            border: isLast
-                ? null
-                : Border(
-                    bottom: BorderSide(
-                      color: theme.colorScheme.surfaceContainerHighest,
-                    ),
-                  ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHigh,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.video_library_outlined,
-                  color: empty
-                      ? theme.colorScheme.onSurface.withValues(alpha: 0.5)
-                      : theme.colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      episode.displayName,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _controller.getClipLabel(episode),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                tooltip: 'Rename',
-                onPressed: () => _renameEpisode(episode),
-                icon: const Icon(Icons.edit_outlined),
-              ),
-              IconButton(
-                tooltip: 'More options',
-                onPressed: () => _showEpisodeMenu(episode),
-                icon: const Icon(Icons.more_horiz),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+}
 
   Widget _buildEmptyState(ThemeData theme) {
     return Padding(

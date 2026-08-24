@@ -260,8 +260,10 @@ class _MovieClipsScreenState
         leading: IconButton(
           tooltip: 'Back',
           onPressed: () {
-            Navigator.of(context).maybePop();
-          },
+  Navigator.of(context).pop(
+    _controller.movie,
+  );
+},
           icon: const Icon(Icons.arrow_back),
         ),
         actions: [

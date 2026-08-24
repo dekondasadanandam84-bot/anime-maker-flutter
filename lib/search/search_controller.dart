@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/templates/templates_controller.dart';
 import 'package:flutter_application_1/tutorials/tutorials_controller.dart';
 
+import '../home/project_controller.dart';
+import '../home/models/project_model.dart';
+
 class AnimeClipSearchController extends ChangeNotifier {
+  AnimeClipSearchController({
+    required this.projectController,
+  });
+
+  final ProjectController projectController;
+
   final TextEditingController searchController = TextEditingController();
 
   final TemplatesController templatesController = TemplatesController();
@@ -28,7 +37,26 @@ class AnimeClipSearchController extends ChangeNotifier {
     searchController.clear();
   }
 
-  /// Searches the existing AnimeClip templates.
+  // =============================================================
+  // PROJECT SEARCH
+  // =============================================================
+
+  List<ProjectModel> get projects {
+    if (!hasQuery) {
+      return [];
+    }
+
+    final searchQuery = _query.trim().toLowerCase();
+
+    return projectController.projects.where((project) {
+      return project.name.toLowerCase().contains(searchQuery);
+    }).toList();
+  }
+
+  // =============================================================
+  // TEMPLATE SEARCH
+  // =============================================================
+
   List<TemplateModel> get templates {
     if (!hasQuery) {
       return [];
@@ -41,6 +69,10 @@ class AnimeClipSearchController extends ChangeNotifier {
           template.description.toLowerCase().contains(query);
     }).toList();
   }
+
+  // =============================================================
+  // TUTORIAL SEARCH
+  // =============================================================
 
   List<TutorialItem> get tutorials {
     if (!hasQuery) {
@@ -61,8 +93,13 @@ class AnimeClipSearchController extends ChangeNotifier {
   void dispose() {
     searchController.removeListener(_onSearchChanged);
     searchController.dispose();
+
+    // Do NOT dispose projectController.
+    // It belongs to HomeUI.
+
     templatesController.dispose();
     tutorialsController.dispose();
+
     super.dispose();
   }
 }

@@ -1,15 +1,17 @@
 import 'season_model.dart';
 
 class AnimeSeriesModel {
-  final String id;
-  final String name;
-  final List<SeasonModel> seasons;
-
   const AnimeSeriesModel({
     required this.id,
     required this.name,
     this.seasons = const [],
   });
+
+  final String id;
+  final String name;
+  final List<SeasonModel> seasons;
+
+  int get seasonCount => seasons.length;
 
   AnimeSeriesModel copyWith({
     String? id,

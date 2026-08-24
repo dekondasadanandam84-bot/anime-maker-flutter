@@ -8,15 +8,6 @@ enum ProjectType {
 }
 
 class ProjectModel {
-  final String id;
-  final String name;
-  final ProjectType projectType;
-
-  final ProjectSettingsModel settings;
-
-  final AnimeSeriesModel? animeSeries;
-  final AnimeMovieModel? animeMovie;
-
   const ProjectModel({
     required this.id,
     required this.name,
@@ -25,4 +16,29 @@ class ProjectModel {
     this.animeSeries,
     this.animeMovie,
   });
+
+  final String id;
+  final String name;
+  final ProjectType projectType;
+  final ProjectSettingsModel settings;
+  final AnimeSeriesModel? animeSeries;
+  final AnimeMovieModel? animeMovie;
+
+  ProjectModel copyWith({
+    String? id,
+    String? name,
+    ProjectType? projectType,
+    ProjectSettingsModel? settings,
+    AnimeSeriesModel? animeSeries,
+    AnimeMovieModel? animeMovie,
+  }) {
+    return ProjectModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      projectType: projectType ?? this.projectType,
+      settings: settings ?? this.settings,
+      animeSeries: animeSeries ?? this.animeSeries,
+      animeMovie: animeMovie ?? this.animeMovie,
+    );
+  }
 }

@@ -178,4 +178,26 @@ class SeasonsController extends ChangeNotifier {
     _isBusy = value;
     notifyListeners();
   }
+
+  void updateSeason(SeasonModel updatedSeason) {
+  final index = _series.seasons.indexWhere(
+    (season) => season.id == updatedSeason.id,
+  );
+
+  if (index == -1) {
+    return;
+  }
+
+  final updatedSeasons = List<SeasonModel>.from(
+    _series.seasons,
+  );
+
+  updatedSeasons[index] = updatedSeason;
+
+  _series = _series.copyWith(
+    seasons: updatedSeasons,
+  );
+
+  notifyListeners();
+}
 }

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/home/drawer_ui.dart';
 import 'package:flutter_application_1/home/home_controller.dart';
 import 'package:flutter_application_1/core/app_media.dart';
+import 'package:flutter_application_1/home/models/anime_movie_model.dart';
+import 'package:flutter_application_1/home/models/anime_series_model.dart';
 import 'package:flutter_application_1/search/search_ui.dart';
 import 'package:flutter_application_1/home/create_project_button.dart';
 import 'project_controller.dart';
@@ -121,58 +123,67 @@ class _HomeUIState extends State<HomeUI> {
   // EDIT PROJECT
   // ============================================================
 
-  void _editProject(ProjectModel project) {
-  // ============================================================
-  // ANIME SERIES
-  // ============================================================
+  Future<void> _editProject(ProjectModel project) async {
+    // ============================================================
+    // ANIME SERIES
+    // ============================================================
 
-  if (project.projectType == ProjectType.animeSeries &&
-      project.animeSeries != null) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => SeasonsScreen(
-          series: project.animeSeries!,
-          settings: project.settings,
+    if (project.projectType == ProjectType.animeSeries &&
+        project.animeSeries != null) {
+      final updatedSeries = await Navigator.of(context).push<AnimeSeriesModel>(
+        MaterialPageRoute(
+          builder: (_) => SeasonsScreen(
+            series: project.animeSeries!,
+            settings: project.settings,
+          ),
         ),
-      ),
-    );
+      );
 
-    return;
-  }
+      if (updatedSeries == null || !mounted) {
+        return;
+      }
 
-  // ============================================================
-  // ANIME MOVIE
-  // ============================================================
+      final updatedProject = project.copyWith(animeSeries: updatedSeries);
 
-  if (project.projectType == ProjectType.animeMovie &&
-      project.animeMovie != null) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MovieClipsScreen(
-          movie: project.animeMovie!,
-          settings: project.settings,
+      projectController.updateProject(updatedProject);
 
-          // When a movie clip is tapped, open the editor.
-          onOpenClip: (clip) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => EditorScreen(
-                  clipId: clip.id,
-                  clipName: clip.name,
+      return;
+    }
+
+    // ============================================================
+    // ANIME MOVIE
+    // ============================================================
+
+    if (project.projectType == ProjectType.animeMovie &&
+        project.animeMovie != null) {
+      final updatedMovie = await Navigator.of(context).push<AnimeMovieModel>(
+        MaterialPageRoute(
+          builder: (_) => MovieClipsScreen(
+            movie: project.animeMovie!,
+            settings: project.settings,
+            onOpenClip: (clip) {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      EditorScreen(clipId: clip.id, clipName: clip.name),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
-      ),
-    );
+      );
 
-    return;
+      if (updatedMovie == null || !mounted) {
+        return;
+      }
+
+      final updatedProject = project.copyWith(animeMovie: updatedMovie);
+
+      projectController.updateProject(updatedProject);
+
+      return;
+    }
   }
-}
 
   // ============================================================
   // DOWNLOAD PROJECT
@@ -234,7 +245,10 @@ class _HomeUIState extends State<HomeUI> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const SearchUI()),
+                MaterialPageRoute(
+                  builder: (_) =>
+                      SearchUI(projectController: projectController),
+                ),
               );
             },
             icon: const Text('🔍', style: TextStyle(fontSize: 30)),
@@ -267,15 +281,15 @@ class _HomeUIState extends State<HomeUI> {
               // PROJECT GRID
               // ======================================================
               Expanded(
-  child: _ProjectContent(
-    selectedTab: _selectedTab,
-    projects: _projectsForSelectedTab(),
-    emojiBuilder: _emojiForProject,
-    onEdit: _editProject,
-    onDelete: _deleteProject,
-    onDownload: _downloadProject,
-  ),
-),
+                child: _ProjectContent(
+                  selectedTab: _selectedTab,
+                  projects: _projectsForSelectedTab(),
+                  emojiBuilder: _emojiForProject,
+                  onEdit: _editProject,
+                  onDelete: _deleteProject,
+                  onDownload: _downloadProject,
+                ),
+              ),
             ],
           ),
         ),
@@ -327,22 +341,22 @@ class _ProjectContent extends StatelessWidget {
     // ============================================================
 
     if (selectedTab == 0 || selectedTab == 1) {
-  cards.add(
-    const ProjectCard(
-      imageAsset: 'assets/screen.png',
-      projectName: 'Boxing Demo',
-    ),
-  );
-}
+      cards.add(
+        const ProjectCard(
+          imageAsset: 'assets/screen.png',
+          projectName: 'Boxing Demo',
+        ),
+      );
+    }
 
-if (selectedTab == 2 || selectedTab == 3) {
-  cards.add(
-    const ProjectCard(
-      imageAsset: 'assets/screen13.png',
-      projectName: 'Manga Conversation Demo',
-    ),
-  );
-}
+    if (selectedTab == 2 || selectedTab == 3) {
+      cards.add(
+        const ProjectCard(
+          imageAsset: 'assets/screen13.png',
+          projectName: 'Manga Conversation Demo',
+        ),
+      );
+    }
 
     // ============================================================
     // CREATED PROJECTS
@@ -673,9 +687,7 @@ class ProjectCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: const Color(0xffEAEAEA),
-              ),
+              border: Border.all(color: const Color(0xffEAEAEA)),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x10000000),

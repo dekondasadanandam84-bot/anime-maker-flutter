@@ -1,28 +1,41 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/editor/editor_ui.dart';
+import 'package:flutter_application_1/home/anime/movie_clips_ui.dart';
+import 'package:flutter_application_1/home/anime/seasons_ui.dart';
+import 'package:flutter_application_1/home/models/project_model.dart';
+import 'package:flutter_application_1/home/project_controller.dart';
 import 'package:flutter_application_1/tutorials/tutorials_controller.dart';
 import 'search_controller.dart';
 import 'package:flutter_application_1/templates/templates_controller.dart';
 
 class SearchUI extends StatefulWidget {
-  const SearchUI({super.key});
+  final ProjectController projectController;
+
+  const SearchUI({
+    super.key,
+    required this.projectController,
+  });
 
   @override
   State<SearchUI> createState() => _SearchUIState();
 }
 
 class _SearchUIState extends State<SearchUI> {
-  final AnimeClipSearchController controller =
-      AnimeClipSearchController();
+  late final AnimeClipSearchController controller;
 
   @override
-  void initState() {
-    super.initState();
+void initState() {
+  super.initState();
 
-    controller.init();
+  controller = AnimeClipSearchController(
+    projectController: widget.projectController,
+  );
 
-    controller.addListener(_onSearchChanged);
-  }
+  controller.init();
+
+  controller.addListener(_onSearchChanged);
+}
 
   void _onSearchChanged() {
     if (mounted) {
@@ -216,72 +229,107 @@ class _SearchResults extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final templates = controller.templates;
-    final tutorials = controller.tutorials;
+  @override
+Widget build(BuildContext context) {
+  final projects = controller.projects;
+  final templates = controller.templates;
+  final tutorials = controller.tutorials;
 
-    if (templates.isEmpty && tutorials.isEmpty) {
-      return const Center(
-        child: Text(
-          "No results found",
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
-        ),
-      );
-    }
+    if (projects.isEmpty &&
+    templates.isEmpty &&
+    tutorials.isEmpty) {
+  return const Center(
+    child: Text(
+      "No results found",
+      style: TextStyle(
+        fontSize: 16,
+        color: Colors.grey,
+      ),
+    ),
+  );
+}
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        20,
-        16,
-        40,
+  padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+  children: [
+
+    // ===========================================================
+    // PROJECTS
+    // ===========================================================
+
+    if (projects.isNotEmpty) ...[
+      const Text(
+        "Projects",
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Colors.black,
+        ),
       ),
-      children: [
-        if (templates.isNotEmpty) ...[
-          const Text(
-            "Templates",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 12),
 
-          ...templates.map(
-            (template) => _TemplateResultCard(
-              template: template,
-              controller: controller,
-            ),
-          ),
-        ],
+      const SizedBox(height: 12),
 
-        if (templates.isNotEmpty && tutorials.isNotEmpty)
-          const SizedBox(height: 28),
+      ...projects.map(
+        (project) => _ProjectSearchResultCard(
+          project: project,
+        ),
+      ),
 
-        if (tutorials.isNotEmpty) ...[
-          const Text(
-            "Tutorials",
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.black,
-            ),
-          ),
-          const SizedBox(height: 12),
+      const SizedBox(height: 28),
+    ],
 
-          ...tutorials.map(
-            (tutorial) => _TutorialResultCard(
-              tutorial: tutorial,
-              controller: controller,
-            ),
-          ),
-        ],
-      ],
-    );
+    // ===========================================================
+    // TEMPLATES
+    // ===========================================================
+
+    if (templates.isNotEmpty) ...[
+      const Text(
+        "Templates",
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Colors.black,
+        ),
+      ),
+
+      const SizedBox(height: 12),
+
+      ...templates.map(
+        (template) => _TemplateResultCard(
+          template: template,
+          controller: controller,
+        ),
+      ),
+    ],
+
+    if (templates.isNotEmpty && tutorials.isNotEmpty)
+      const SizedBox(height: 28),
+
+    // ===========================================================
+    // TUTORIALS
+    // ===========================================================
+
+    if (tutorials.isNotEmpty) ...[
+      const Text(
+        "Tutorials",
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: Colors.black,
+        ),
+      ),
+
+      const SizedBox(height: 12),
+
+      ...tutorials.map(
+        (tutorial) => _TutorialResultCard(
+          tutorial: tutorial,
+          controller: controller,
+        ),
+      ),
+    ],
+  ],
+);
   }
 }
 
@@ -480,6 +528,175 @@ class _TutorialResultCard extends StatelessWidget {
                 ),
 
                 const SizedBox(width: 8),
+
+                const Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ProjectSearchResultCard extends StatelessWidget {
+  final ProjectModel project;
+
+  const _ProjectSearchResultCard({
+    required this.project,
+  });
+
+  String _projectEmoji() {
+    switch (project.projectType) {
+      case ProjectType.animeSeries:
+        return '📺';
+
+      case ProjectType.animeMovie:
+        return '🎬';
+    }
+  }
+
+  String _projectTypeName() {
+    switch (project.projectType) {
+      case ProjectType.animeSeries:
+        return 'Anime Series';
+
+      case ProjectType.animeMovie:
+        return 'Anime Movie';
+    }
+  }
+
+  void _openProject(BuildContext context) {
+    // ===========================================================
+    // ANIME SERIES
+    // ===========================================================
+
+    if (project.projectType == ProjectType.animeSeries &&
+        project.animeSeries != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => SeasonsScreen(
+            series: project.animeSeries!,
+            settings: project.settings,
+          ),
+        ),
+      );
+
+      return;
+    }
+
+    // ===========================================================
+    // ANIME MOVIE
+    // ===========================================================
+
+    if (project.projectType == ProjectType.animeMovie &&
+        project.animeMovie != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MovieClipsScreen(
+            movie: project.animeMovie!,
+            settings: project.settings,
+            onOpenClip: (clip) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EditorScreen(
+                    clipId: clip.id,
+                    clipName: clip.name,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFFEAEAEA),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () => _openProject(context),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              children: [
+                // PROJECT ICON
+
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F3F4),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      _projectEmoji(),
+                      style: const TextStyle(fontSize: 28),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // PROJECT DETAILS
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        project.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black,
+                        ),
+                      ),
+
+                      const SizedBox(height: 5),
+
+                      Text(
+                        _projectTypeName(),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
+                        '${project.settings.fps} FPS',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
 
                 const Icon(
                   Icons.chevron_right,

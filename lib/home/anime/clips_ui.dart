@@ -13,12 +13,14 @@ class ClipsScreen extends StatefulWidget {
     required this.settings,
     this.controller,
     this.onOpenClip,
+    this.onEpisodeChanged,
   });
 
   final EpisodeModel episode;
   final ProjectSettingsModel settings;
   final ClipsController? controller;
   final ValueChanged<ClipModel>? onOpenClip;
+  final ValueChanged<EpisodeModel>? onEpisodeChanged;
 
   @override
   State<ClipsScreen> createState() => _ClipsScreenState();
@@ -208,7 +210,9 @@ class _ClipsScreenState extends State<ClipsScreen> {
         scrolledUnderElevation: 0,
         leading: IconButton(
           tooltip: 'Back',
-          onPressed: () => Navigator.of(context).maybePop(),
+          onPressed: () {
+            Navigator.of(context).pop(_controller.episode);
+          },
           icon: const Icon(Icons.arrow_back),
         ),
         actions: [
@@ -353,6 +357,11 @@ class _ClipsScreenState extends State<ClipsScreen> {
         color: theme.colorScheme.surface,
         child: InkWell(
           onTap: () {
+            if (widget.onOpenClip != null) {
+              widget.onOpenClip!.call(clip);
+              return;
+            }
+
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) =>

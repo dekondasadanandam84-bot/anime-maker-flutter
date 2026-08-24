@@ -1,7 +1,7 @@
 import 'episode_model.dart';
 
 class SeasonModel {
-  SeasonModel({
+  const SeasonModel({
     required this.id,
     required this.number,
     required this.name,
@@ -10,7 +10,7 @@ class SeasonModel {
 
   final String id;
   final int number;
-  String name;
+  final String name;
   final List<EpisodeModel> episodes;
 
   int get episodeCount => episodes.length;

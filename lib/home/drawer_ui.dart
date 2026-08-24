@@ -59,35 +59,39 @@ class DrawerUI extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     //================ QUICK ACTIONS =================//
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _QuickActionCard(
-                            icon: '⚙️',
-                            color: Colors.blue,
-                            title: "Settings",
-                            onTap: () => controller.openSettings(context),
+                    SizedBox(
+                      height: 100,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: '⚙️',
+                              color: Colors.blue,
+                              title: 'Settings',
+                              onTap: () => controller.openSettings(context),
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: _QuickActionCard(
-                            icon: '🎨',
-                            color: Colors.purple,
-                            title: "Templates",
-                            onTap: () => controller.openTemplates(context),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: '🎨',
+                              color: Colors.purple,
+                              title: 'Templates',
+                              onTap: () => controller.openTemplates(context),
+                            ),
                           ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: _QuickActionCard(
-                            icon: '🎓',
-                            color: Colors.green,
-                            title: "Tutorials",
-                            onTap: () => controller.openTutorials(context),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: _QuickActionCard(
+                              icon: '🎓',
+                              color: Colors.green,
+                              title: 'Tutorials',
+                              onTap: () => controller.openTutorials(context),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 40),
@@ -201,8 +205,7 @@ class _QuickActionCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppMedia.r(18)),
       child: Container(
-        height: AppMedia.h(100),
-        width: AppMedia.w(100),
+        constraints: const BoxConstraints(minHeight: 100),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(AppMedia.r(18)),
@@ -215,26 +218,22 @@ class _QuickActionCard extends StatelessWidget {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Center(
-              child: SizedBox(
-                width: 40,
-                height: 40,
-                child: Center(
-                  child: Text(
-                    icon,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 28, height: 1),
-                  ),
+            SizedBox(
+              width: 36,
+              height: 36,
+              child: Center(
+                child: Text(
+                  icon,
+                  style: const TextStyle(fontSize: 24, height: 1),
                 ),
               ),
             ),
-
-            const SizedBox(height: 10),
-
+            const SizedBox(height: 2),
             Text(
               title,
               textAlign: TextAlign.center,
