@@ -12,6 +12,7 @@ class SeasonsScreen extends StatefulWidget {
     required this.series,
     required this.settings,
     this.controller,
+     required this.projectName,
     this.onSeriesChanged,
   });
 
@@ -19,6 +20,8 @@ class SeasonsScreen extends StatefulWidget {
   final ProjectSettingsModel settings;
   final SeasonsController? controller;
   final ValueChanged<AnimeSeriesModel>? onSeriesChanged;
+  
+   final String projectName;
 
   @override
   State<SeasonsScreen> createState() => _SeasonsScreenState();
@@ -365,7 +368,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
           final updatedSeason = await Navigator.of(context).push<SeasonModel>(
             MaterialPageRoute(
               builder: (_) =>
-                  EpisodesScreen(season: season, settings: widget.settings),
+                  EpisodesScreen(season: season, settings: widget.settings, projectName: widget.projectName,),
             ),
           );
 

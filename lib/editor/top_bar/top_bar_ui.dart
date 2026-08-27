@@ -16,8 +16,7 @@ class EditorTopBar extends StatefulWidget {
     required this.onFitToScreen,
     required this.onHidePanels,
     required this.onProjectSettings,
-required this.onFramesViewer,
-
+    required this.onFramesViewer,
   });
 
   final String projectName;
@@ -34,8 +33,7 @@ required this.onFramesViewer,
   final VoidCallback onFitToScreen;
   final VoidCallback onHidePanels;
   final VoidCallback onProjectSettings;
-final VoidCallback onFramesViewer;
-
+  final VoidCallback onFramesViewer;
 
   @override
   State<EditorTopBar> createState() => _EditorTopBarState();
@@ -44,7 +42,6 @@ final VoidCallback onFramesViewer;
 class _EditorTopBarState extends State<EditorTopBar> {
   bool _onionSkinEnabled = false;
   bool _gridEnabled = false;
-  bool _panelsHidden = false;
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +53,10 @@ class _EditorTopBarState extends State<EditorTopBar> {
         border: Border(bottom: BorderSide(color: Color(0xFFEAEAEA), width: 1)),
       ),
       child: Stack(
-        alignment: Alignment.center,
         children: [
-          // Left side
+          // =========================================================
+          // LEFT SIDE
+          // =========================================================
           Align(
             alignment: Alignment.centerLeft,
             child: Row(
@@ -95,33 +93,60 @@ class _EditorTopBarState extends State<EditorTopBar> {
             ),
           ),
 
-          // Fit to screen - exact middle
-          _customTopBarAction(
-            icon: const _FitScreenIcon(),
-            label: 'Fit',
-            onPressed: widget.onFitToScreen,
-            tooltip: 'Fit to Screen',
+          // =========================================================
+          // EXACT CENTER FIT-TO-SCREEN ICON
+          // =========================================================
+          Positioned.fill(
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: widget.onFitToScreen,
+                  borderRadius: BorderRadius.circular(8),
+                  splashColor: Colors.blue.withValues(alpha: 0.18),
+                  highlightColor: Colors.blue.withValues(alpha: 0.10),
+                  child: SizedBox(
+                    width: 50,
+                    height: 56,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(
+                          width: 26,
+                          height: 26,
+                          child: _FitScreenIcon(),
+                        ),
+                        const Text(
+                          'Fit',
+                          style: TextStyle(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
 
-          // Right side
+          // =========================================================
+          // RIGHT SIDE
+          // =========================================================
           Align(
             alignment: Alignment.centerRight,
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Hide
                 _topBarAction(
-                  icon: _panelsHidden
-                      ? Icons.fit_screen_outlined
-                      : Icons.fit_screen,
-                  label: _panelsHidden ? 'Hide' : 'Show',
-                  onPressed: () {
-                    setState(() {
-                      _panelsHidden = !_panelsHidden;
-                    });
-
-                    widget.onHidePanels();
-                  },
-                  tooltip: _panelsHidden ? 'Show' : 'Hide',
+                  icon: Icons.fit_screen_outlined,
+                  label: 'Hide',
+                  onPressed: widget.onHidePanels,
+                  tooltip: 'Hide Controls',
                 ),
 
                 // Undo
@@ -180,7 +205,7 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Diamond',
                 ),
 
-                // Three dots
+                // More
                 _topBarAction(
                   icon: Icons.more_vert_rounded,
                   label: 'More',
@@ -198,51 +223,55 @@ class _EditorTopBarState extends State<EditorTopBar> {
     );
   }
 
+  // ================================================================
+  // TOP BAR ACTION
+  // ================================================================
+
   Widget _topBarAction({
-  required IconData icon,
-  required String label,
-  required VoidCallback onPressed,
-  required String tooltip,
-}) {
-  return SizedBox(
-    width: 44,
-    height: 52,
-    child: Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          onTap: onPressed,
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+    required String tooltip,
+  }) {
+    return SizedBox(
+      width: 44,
+      height: 52,
+      child: Tooltip(
+        message: tooltip,
+        child: Material(
+          color: Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          splashColor: Colors.blue.withValues(alpha: 0.18),
-          highlightColor: Colors.blue.withValues(alpha: 0.10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                icon,
-                size: 20,
-                color: Colors.black,
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 9,
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w500,
+          child: InkWell(
+            onTap: onPressed,
+            borderRadius: BorderRadius.circular(8),
+            splashColor: Colors.blue.withValues(alpha: 0.18),
+            highlightColor: Colors.blue.withValues(alpha: 0.10),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 20, color: Colors.black),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
+
+  // ================================================================
+  // TOOLS SHEET
+  // ================================================================
 
   void _showToolsBottomSheet(BuildContext context) {
     showModalBottomSheet<void>(
@@ -298,27 +327,22 @@ class _EditorTopBarState extends State<EditorTopBar> {
                           padding: const EdgeInsets.all(20),
                           children: [
                             _toolAction(
-                              icon: Icons.settings_outlined,
-                              title: 'Project Settings',
-                              onTap: () {
-                                Navigator.of(context).pop();
+  icon: Icons.settings_outlined,
+  title: 'Project Settings',
+  onTap: () {
+    Navigator.of(context).pop();
+    widget.onProjectSettings();
+  },
+),
 
-                                // Open project settings here.
-                                // Example:
-                                // widget.onProjectSettings();
-                              },
-                            ),
-
-                            // Frames Viewer
                             _toolAction(
                               icon: Icons.movie_outlined,
                               title: 'Frames Viewer',
                               onTap: () {
                                 Navigator.of(context).pop();
-
-                                // Open frames viewer here.
                               },
                             ),
+
                             _toolAction(
                               icon: Icons.image_outlined,
                               title: 'Add Image',
@@ -380,11 +404,14 @@ class _EditorTopBarState extends State<EditorTopBar> {
     );
   }
 
+  // ================================================================
+  // TOOL ACTION
+  // ================================================================
+
   Widget _toolAction({
     required IconData icon,
     required String title,
     required VoidCallback onTap,
-    
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -419,6 +446,10 @@ class _EditorTopBarState extends State<EditorTopBar> {
     );
   }
 
+  // ================================================================
+  // TOOL TOGGLE
+  // ================================================================
+
   Widget _toolToggle({
     required IconData icon,
     required String title,
@@ -437,7 +468,9 @@ class _EditorTopBarState extends State<EditorTopBar> {
         child: Row(
           children: [
             Icon(icon, color: Colors.black, size: 22),
+
             const SizedBox(width: 14),
+
             Expanded(
               child: Text(
                 title,
@@ -449,7 +482,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
               ),
             ),
 
-            // Edit
             TextButton(
               onPressed: onEdit,
               style: TextButton.styleFrom(
@@ -469,7 +501,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
 
             const SizedBox(width: 8),
 
-            // Tap-only toggle
             GestureDetector(
               onTap: () {
                 onChanged(!value);
@@ -504,55 +535,11 @@ class _EditorTopBarState extends State<EditorTopBar> {
       ),
     );
   }
+}
 
-  Widget _customTopBarAction({
-  required Widget icon,
-  required String label,
-  required VoidCallback onPressed,
-  required String tooltip,
-}) {
-  return SizedBox(
-    width: 44,
-    height: 52,
-    child: Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(8),
-        child: InkWell(
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(8),
-          splashColor: Colors.blue.withValues(alpha: 0.18),
-          highlightColor: Colors.blue.withValues(alpha: 0.10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 20,
-                height: 20,
-                child: Center(
-                  child: icon,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 9,
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ),
-  );
-}
-}
+// =====================================================================
+// FIT TO SCREEN ICON
+// =====================================================================
 
 class _FitScreenIcon extends StatelessWidget {
   const _FitScreenIcon();
@@ -560,7 +547,7 @@ class _FitScreenIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
-      size: const Size(24, 24),
+      size: const Size(30, 30),
       painter: _FitScreenIconPainter(),
     );
   }
@@ -571,38 +558,42 @@ class _FitScreenIconPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.black87
-      ..strokeWidth = 1.8
+      ..strokeWidth = 2.4
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    // Top-left corner
-    canvas.drawLine(const Offset(6, 4), const Offset(4, 4), paint);
-    canvas.drawLine(const Offset(4, 4), const Offset(4, 6), paint);
+    // =========================================================
+    // TOP-LEFT
+    // =========================================================
+    canvas.drawLine(const Offset(11, 4), const Offset(4, 4), paint);
 
-    // Top-right corner
-    canvas.drawLine(const Offset(18, 4), const Offset(20, 4), paint);
-    canvas.drawLine(const Offset(20, 4), const Offset(20, 6), paint);
+    canvas.drawLine(const Offset(4, 4), const Offset(4, 11), paint);
 
-    // Bottom-left corner
-    canvas.drawLine(const Offset(4, 18), const Offset(4, 20), paint);
-    canvas.drawLine(const Offset(4, 20), const Offset(6, 20), paint);
+    // =========================================================
+    // TOP-RIGHT
+    // =========================================================
+    canvas.drawLine(const Offset(19, 4), const Offset(26, 4), paint);
 
-    // Bottom-right corner
-    canvas.drawLine(const Offset(18, 20), const Offset(20, 20), paint);
-    canvas.drawLine(const Offset(20, 18), const Offset(20, 20), paint);
+    canvas.drawLine(const Offset(26, 4), const Offset(26, 11), paint);
 
-    // ↗ arrow
-    canvas.drawLine(const Offset(7, 17), const Offset(17, 7), paint);
-    canvas.drawLine(const Offset(17, 7), const Offset(13, 7), paint);
-    canvas.drawLine(const Offset(17, 7), const Offset(17, 11), paint);
+    // =========================================================
+    // BOTTOM-LEFT
+    // =========================================================
+    canvas.drawLine(const Offset(4, 19), const Offset(4, 26), paint);
 
-    // ↙ arrow
-    canvas.drawLine(const Offset(17, 17), const Offset(7, 7), paint);
-    canvas.drawLine(const Offset(7, 17), const Offset(7, 13), paint);
-    canvas.drawLine(const Offset(7, 17), const Offset(11, 17), paint);
+    canvas.drawLine(const Offset(4, 26), const Offset(11, 26), paint);
+
+    // =========================================================
+    // BOTTOM-RIGHT
+    // =========================================================
+    canvas.drawLine(const Offset(19, 26), const Offset(26, 26), paint);
+
+    canvas.drawLine(const Offset(26, 26), const Offset(26, 19), paint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
 }

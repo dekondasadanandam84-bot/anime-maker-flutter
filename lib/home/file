@@ -1,1 +1,7 @@
-required LeftPanelController controller
+home/create_project_screen.dart
+
+home/anime/seasons_ui.dart
+home/anime/seasons_controller.dart
+
+home/anime/movie_clips_ui.dart
+home/anime/movie_clips_controller.dart

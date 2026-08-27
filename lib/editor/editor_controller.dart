@@ -3,24 +3,55 @@ import 'package:flutter/foundation.dart';
 import 'left_panel/left_panel_controller.dart';
 import 'top_bar/top_bar_controller.dart';
 import 'bottom_bar/bottom_bar_controller.dart';
+import 'middle/middle_controller.dart';
 
 class EditorController extends ChangeNotifier {
   EditorController({
-  required this.clipId,
-  required this.clipName,
-})  : topBarController = TopBarController(
-      clipId: clipId,
-      clipName: clipName,
-    ),
-    leftPanelController = LeftPanelController(),
-    bottomBarController = BottomBarController();
+    required this.clipId,
+    required this.clipName,
+    required double aspectRatio,
+    required String resolution,
+    required this._fps,
+  })  : _aspectRatio = aspectRatio,
+        _resolution = resolution,
+        topBarController = TopBarController(
+          clipId: clipId,
+          clipName: clipName,
+        ),
+        leftPanelController = LeftPanelController(),
+        bottomBarController = BottomBarController(),
+        middleController = MiddleController(
+          aspectRatio: aspectRatio,
+          resolution: resolution,
+        );
 
   final String clipId;
   final String clipName;
 
+  // ------------------------------------------------------------
+  // Project settings
+  // ------------------------------------------------------------
+
+  double _aspectRatio;
+  String _resolution;
+  double _fps;
+
+  double get aspectRatio => _aspectRatio;
+  String get resolution => _resolution;
+  double get fps => _fps;
+
+  // ------------------------------------------------------------
+  // Controllers
+  // ------------------------------------------------------------
+
   final TopBarController topBarController;
   final LeftPanelController leftPanelController;
   final BottomBarController bottomBarController;
+  final MiddleController middleController;
+
+  // ------------------------------------------------------------
+  // Saving
+  // ------------------------------------------------------------
 
   bool _isSaving = false;
 
@@ -83,27 +114,6 @@ class EditorController extends ChangeNotifier {
   }
 
   // ------------------------------------------------------------
-  // Save
-  // ------------------------------------------------------------
-
-  Future<void> save() async {
-    if (_isSaving) return;
-
-    _isSaving = true;
-    notifyListeners();
-
-    try {
-      // Save logic will be added later.
-      await Future<void>.delayed(
-        const Duration(milliseconds: 500),
-      );
-    } finally {
-      _isSaving = false;
-      notifyListeners();
-    }
-  }
-
-    // ------------------------------------------------------------
   // Bottom bar update receivers
   // ------------------------------------------------------------
 
@@ -119,19 +129,65 @@ class EditorController extends ChangeNotifier {
     bottomBarController.nextFrame();
   }
 
-  void onAddFramePressed() {
-    bottomBarController.addFrame();
+  void onAddFramesPressed(int count) {
+    bottomBarController.addFrames(count);
   }
 
   void onFrameSelected(int frame) {
     bottomBarController.selectFrame(frame);
   }
 
+  // ------------------------------------------------------------
+  // Project settings
+  // ------------------------------------------------------------
+
+  void updateProjectSettings({
+    required double aspectRatio,
+    required String resolution,
+    required double fps,
+  }) {
+    _aspectRatio = aspectRatio;
+    _resolution = resolution;
+    _fps = fps;
+
+    middleController.updateCanvasSettings(
+      aspectRatio: aspectRatio,
+      resolution: resolution,
+    );
+
+    notifyListeners();
+  }
+
+  // ------------------------------------------------------------
+  // Save
+  // ------------------------------------------------------------
+
+  Future<void> save() async {
+    if (_isSaving) return;
+
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      await Future<void>.delayed(
+        const Duration(milliseconds: 500),
+      );
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  // ------------------------------------------------------------
+  // Dispose
+  // ------------------------------------------------------------
+
   @override
-void dispose() {
-  leftPanelController.dispose();
-  topBarController.dispose();
-  bottomBarController.dispose();
-  super.dispose();
-}
+  void dispose() {
+    leftPanelController.dispose();
+    topBarController.dispose();
+    bottomBarController.dispose();
+    middleController.dispose();
+    super.dispose();
+  }
 }

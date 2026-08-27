@@ -1,27 +1,47 @@
 import 'package:flutter/material.dart';
+
+import 'package:flutter_application_1/home/models/anime_movie_model.dart';
 import 'package:flutter_application_1/home/models/anime_series_model.dart';
 import 'package:flutter_application_1/home/models/project_model.dart';
 import 'package:flutter_application_1/home/models/project_settings_model.dart';
-import 'package:flutter_application_1/home/models/anime_movie_model.dart';
 
-enum CreateProjectType { animeSeries, animeMovie, mangaSeries, mangaBook }
+enum CreateProjectType {
+  animeSeries,
+  animeMovie,
+  mangaSeries,
+  mangaBook,
+}
 
 class CreateProjectScreen extends StatefulWidget {
-  final CreateProjectType projectType;
-  final ValueChanged<ProjectModel> onProjectCreated;
-
   const CreateProjectScreen({
     super.key,
     required this.projectType,
     required this.onProjectCreated,
+    this.initialName,
+    this.initialAspectRatio,
+    this.initialResolution,
+    this.initialFps,
+    this.initialQuality,
+    this.editMode = false,
   });
+
+  final CreateProjectType projectType;
+  final ValueChanged<ProjectModel> onProjectCreated;
+
+  final String? initialName;
+  final String? initialAspectRatio;
+  final String? initialResolution;
+  final double? initialFps;
+  final String? initialQuality;
+
+  final bool editMode;
 
   @override
   State<CreateProjectScreen> createState() => _CreateProjectScreenState();
 }
 
 class _CreateProjectScreenState extends State<CreateProjectScreen> {
-  final TextEditingController _titleController = TextEditingController();
+  late final TextEditingController _titleController;
 
   // ============================================================
   // ANIME
@@ -51,10 +71,32 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       widget.projectType == CreateProjectType.mangaBook;
 
   // ============================================================
+  // INITIALIZATION
+  // ============================================================
+
+  @override
+  void initState() {
+    super.initState();
+
+    _titleController = TextEditingController(
+      text: widget.initialName ?? '',
+    );
+
+    _aspectRatio = widget.initialAspectRatio ?? '16:9';
+    _resolution = widget.initialResolution ?? '1920 × 1080';
+    _fps = widget.initialFps ?? 12;
+    _quality = widget.initialQuality ?? 'High';
+  }
+
+  // ============================================================
   // SCREEN TITLE
   // ============================================================
 
   String get screenTitle {
+    if (widget.editMode) {
+      return 'Project Settings';
+    }
+
     switch (widget.projectType) {
       case CreateProjectType.animeSeries:
         return 'Create Anime Series';
@@ -124,12 +166,21 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     }
   }
 
+  // ============================================================
+  // PARSE ASPECT RATIO
+  // ============================================================
+
   ProjectAspectRatio _parseAspectRatio(String value) {
     switch (value) {
       case '9:16':
         return ProjectAspectRatio.ratio9x16;
+
       case '1:1':
         return ProjectAspectRatio.ratio1x1;
+
+      case '4:1':
+        return ProjectAspectRatio.ratio4x1;
+
       case '16:9':
       default:
         return ProjectAspectRatio.ratio16x9;
@@ -137,122 +188,118 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   }
 
   // ============================================================
-  // CREATE PROJECT
+  // CREATE / UPDATE PROJECT
   // ============================================================
 
   void _createProject() {
-  final name = _titleController.text.trim();
+    final name = _titleController.text.trim();
 
-  if (name.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Please enter the ${nameLabel.toLowerCase()}.',
+    if (name.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please enter the ${nameLabel.toLowerCase()}.',
+          ),
         ),
-      ),
+      );
+      return;
+    }
+
+    final projectData = <String, dynamic>{
+      'projectType': widget.projectType.name,
+      'name': name,
+    };
+
+    if (isAnime) {
+      projectData.addAll({
+        'aspectRatio': _aspectRatio,
+        'resolution': _resolution,
+        'fps': _fps.round(),
+        'structure': projectStructure,
+      });
+    }
+
+    if (isManga) {
+      projectData.addAll({
+        'paperSize': _paperSize,
+        'quality': _quality,
+        'structure': projectStructure,
+      });
+    }
+
+    debugPrint(
+      widget.editMode ? 'UPDATE PROJECT' : 'CREATE PROJECT',
     );
-    return;
+    debugPrint(projectData.toString());
+
+    // ============================================================
+    // ANIME SERIES
+    // ============================================================
+
+    if (widget.projectType == CreateProjectType.animeSeries) {
+      final settings = ProjectSettingsModel(
+        aspectRatio: _parseAspectRatio(_aspectRatio),
+        resolution: _resolution,
+        fps: _fps.roundToDouble(),
+        quality: _quality,
+      );
+
+      final series = AnimeSeriesModel(
+        id: 'series_${DateTime.now().microsecondsSinceEpoch}',
+        name: name,
+        seasons: const [],
+      );
+
+      final project = ProjectModel(
+        id: 'project_${DateTime.now().microsecondsSinceEpoch}',
+        name: name,
+        projectType: ProjectType.animeSeries,
+        settings: settings,
+        animeSeries: series,
+      );
+
+      widget.onProjectCreated(project);
+
+      Navigator.of(context).pop();
+
+      return;
+    }
+
+    // ============================================================
+    // ANIME MOVIE
+    // ============================================================
+
+    if (widget.projectType == CreateProjectType.animeMovie) {
+      final settings = ProjectSettingsModel(
+        aspectRatio: _parseAspectRatio(_aspectRatio),
+        resolution: _resolution,
+        fps: _fps.roundToDouble(),
+        quality: _quality,
+      );
+
+      final movie = AnimeMovieModel(
+        id: 'movie_${DateTime.now().microsecondsSinceEpoch}',
+        name: name,
+        clips: const [],
+      );
+
+      final project = ProjectModel(
+        id: 'project_${DateTime.now().microsecondsSinceEpoch}',
+        name: name,
+        projectType: ProjectType.animeMovie,
+        settings: settings,
+        animeMovie: movie,
+      );
+
+      widget.onProjectCreated(project);
+
+      Navigator.of(context).pop();
+
+      return;
+    }
+
+    Navigator.of(context).pop(projectData);
   }
-
-  final projectData = <String, dynamic>{
-    'projectType': widget.projectType.name,
-    'name': name,
-  };
-
-  if (isAnime) {
-    projectData.addAll({
-      'aspectRatio': _aspectRatio,
-      'resolution': _resolution,
-      'fps': _fps.round(),
-      'structure': projectStructure,
-    });
-  }
-
-  if (isManga) {
-    projectData.addAll({
-      'paperSize': _paperSize,
-      'quality': _quality,
-      'structure': projectStructure,
-    });
-  }
-
-  debugPrint('CREATE PROJECT');
-  debugPrint(projectData.toString());
-
-  // ============================================================
-  // ANIME SERIES
-  // ============================================================
-
-  if (widget.projectType == CreateProjectType.animeSeries) {
-    final settings = ProjectSettingsModel(
-      aspectRatio: _parseAspectRatio(_aspectRatio),
-      fps: _fps.roundToDouble(),
-      quality: _quality,
-    );
-
-    final series = AnimeSeriesModel(
-      id: 'series_${DateTime.now().microsecondsSinceEpoch}',
-      name: name,
-      seasons: const [],
-    );
-
-    final project = ProjectModel(
-      id: 'project_${DateTime.now().microsecondsSinceEpoch}',
-      name: name,
-      projectType: ProjectType.animeSeries,
-      settings: settings,
-      animeSeries: series,
-    );
-
-    // Send the project back to HomeUI.
-    widget.onProjectCreated(project);
-
-    // Return to Home.
-    Navigator.of(context).pop();
-
-    return;
-  }
-
-  // ============================================================
-  // ANIME MOVIE
-  // ============================================================
-
-  if (widget.projectType == CreateProjectType.animeMovie) {
-    final settings = ProjectSettingsModel(
-      aspectRatio: _parseAspectRatio(_aspectRatio),
-      fps: _fps.roundToDouble(),
-      quality: _quality,
-    );
-
-    final movie = AnimeMovieModel(
-      id: 'movie_${DateTime.now().microsecondsSinceEpoch}',
-      name: name,
-      clips: const [],
-    );
-
-    final project = ProjectModel(
-      id: 'project_${DateTime.now().microsecondsSinceEpoch}',
-      name: name,
-      projectType: ProjectType.animeMovie,
-      settings: settings,
-      animeMovie: movie,
-    );
-
-    // Send the project back to HomeUI.
-    widget.onProjectCreated(project);
-
-    // Return to Home.
-    Navigator.of(context).pop();
-
-    return;
-  }
-
-  // ============================================================
-  // OTHER PROJECT TYPES
-  // ============================================================
-
-  Navigator.of(context).pop(projectData);
-}
 
   @override
   void dispose() {
@@ -268,24 +315,21 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
-      // ==========================================================
-      // APP BAR
-      // ==========================================================
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-
         leading: IconButton(
           tooltip: 'Back',
           onPressed: () {
             Navigator.of(context).maybePop();
           },
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+          ),
         ),
-
         title: Text(
           screenTitle,
           style: const TextStyle(
@@ -294,32 +338,36 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
-
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: Color(0xFFEAEAEA)),
+          child: Divider(
+            height: 1,
+            thickness: 1,
+            color: Color(0xFFEAEAEA),
+          ),
         ),
       ),
-
-      // ==========================================================
-      // BODY
-      // ==========================================================
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 26, 20, 32),
+          padding: const EdgeInsets.fromLTRB(
+            20,
+            26,
+            20,
+            32,
+          ),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
+              constraints: const BoxConstraints(
+                maxWidth: 720,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // ==================================================
-                  // PROJECT DETAILS
-                  // ==================================================
                   const _SectionHeader(
                     title: 'Project Details',
-                    subtitle: 'Enter the basic information for your project.',
+                    subtitle:
+                        'Enter the basic information for your project.',
                   ),
 
                   const SizedBox(height: 18),
@@ -335,13 +383,11 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
                   const SizedBox(height: 32),
 
-                  // ==================================================
-                  // ANIME SETTINGS
-                  // ==================================================
                   if (isAnime) ...[
                     const _SectionHeader(
                       title: 'Anime Settings',
-                      subtitle: 'Configure the basic animation settings.',
+                      subtitle:
+                          'Configure the basic animation settings.',
                     ),
 
                     const SizedBox(height: 20),
@@ -349,7 +395,12 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     _SimpleDropdown<String>(
                       label: 'Aspect Ratio',
                       value: _aspectRatio,
-                      items: const ['16:9', '9:16', '1:1', '4:1'],
+                      items: const [
+                        '16:9',
+                        '9:16',
+                        '1:1',
+                        '4:1',
+                      ],
                       onChanged: (value) {
                         if (value == null) return;
 
@@ -381,9 +432,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
                     const SizedBox(height: 26),
 
-                    // ==================================================
-                    // FPS SLIDER
-                    // ==================================================
                     _SliderSetting(
                       label: 'Frame Rate',
                       value: _fps,
@@ -399,16 +447,16 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
                     const SizedBox(height: 28),
 
-                    _StructureSection(value: projectStructure),
+                    _StructureSection(
+                      value: projectStructure,
+                    ),
                   ],
 
-                  // ==================================================
-                  // MANGA SETTINGS
-                  // ==================================================
                   if (isManga) ...[
                     const _SectionHeader(
                       title: 'Manga Settings',
-                      subtitle: 'Configure the basic manga settings.',
+                      subtitle:
+                          'Configure the basic manga settings.',
                     ),
 
                     const SizedBox(height: 20),
@@ -416,7 +464,14 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     _SimpleDropdown<String>(
                       label: 'Paper Size',
                       value: _paperSize,
-                      items: const ['A4', 'A5', 'A3', 'B5', 'Letter', 'Legal'],
+                      items: const [
+                        'A4',
+                        'A5',
+                        'A3',
+                        'B5',
+                        'Letter',
+                        'Legal',
+                      ],
                       onChanged: (value) {
                         if (value == null) return;
 
@@ -431,7 +486,12 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     _SimpleDropdown<String>(
                       label: 'Quality',
                       value: _quality,
-                      items: const ['Draft', 'Medium', 'High', 'Maximum'],
+                      items: const [
+                        'Draft',
+                        'Medium',
+                        'High',
+                        'Maximum',
+                      ],
                       onChanged: (value) {
                         if (value == null) return;
 
@@ -443,14 +503,13 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
                     const SizedBox(height: 28),
 
-                    _StructureSection(value: projectStructure),
+                    _StructureSection(
+                      value: projectStructure,
+                    ),
                   ],
 
                   const SizedBox(height: 34),
 
-                  // ==================================================
-                  // CREATE BUTTON
-                  // ==================================================
                   SizedBox(
                     height: 54,
                     child: ElevatedButton(
@@ -464,7 +523,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                         ),
                       ),
                       child: Text(
-                        'Create ${isAnime ? 'Anime' : 'Manga'} Project',
+                        widget.editMode
+                            ? 'Save Settings'
+                            : 'Create ${isAnime ? 'Anime' : 'Manga'} Project',
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -490,7 +551,10 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SectionHeader({required this.title, required this.subtitle});
+  const _SectionHeader({
+    required this.title,
+    required this.subtitle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -505,9 +569,7 @@ class _SectionHeader extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-
         const SizedBox(height: 5),
-
         Text(
           subtitle,
           style: const TextStyle(
@@ -544,20 +606,32 @@ class _TitleField extends StatelessWidget {
       controller: controller,
       textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: const Color(0xFF555555)),
+        prefixIcon: Icon(
+          icon,
+          color: const Color(0xFF555555),
+        ),
         labelText: label,
         hintText: hint,
         filled: true,
         fillColor: const Color(0xFFF9F9F9),
-        labelStyle: const TextStyle(color: Color(0xFF444444)),
-        hintStyle: const TextStyle(color: Color(0xFF999999)),
+        labelStyle: const TextStyle(
+          color: Color(0xFF444444),
+        ),
+        hintStyle: const TextStyle(
+          color: Color(0xFF999999),
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xFFE2E2E2)),
+          borderSide: const BorderSide(
+            color: Color(0xFFE2E2E2),
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Colors.black, width: 1.2),
+          borderSide: const BorderSide(
+            color: Colors.black,
+            width: 1.2,
+          ),
         ),
       ),
     );
@@ -595,7 +669,6 @@ class _SimpleDropdown<T> extends StatelessWidget {
             ),
           ),
         ),
-
         DropdownButtonHideUnderline(
           child: DropdownButton<T>(
             value: value,
@@ -647,7 +720,8 @@ class _SliderSetting extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween,
           children: [
             Text(
               label,
@@ -657,7 +731,6 @@ class _SliderSetting extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-
             Text(
               valueText,
               style: const TextStyle(
@@ -668,9 +741,7 @@ class _SliderSetting extends StatelessWidget {
             ),
           ],
         ),
-
         const SizedBox(height: 4),
-
         Slider(
           value: value,
           min: min,
@@ -679,18 +750,23 @@ class _SliderSetting extends StatelessWidget {
           label: valueText,
           onChanged: onChanged,
         ),
-
         const Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment:
+              MainAxisAlignment.spaceBetween,
           children: [
             Text(
               '1 FPS',
-              style: TextStyle(color: Color(0xFF888888), fontSize: 11),
+              style: TextStyle(
+                color: Color(0xFF888888),
+                fontSize: 11,
+              ),
             ),
-
             Text(
               '30 FPS',
-              style: TextStyle(color: Color(0xFF888888), fontSize: 11),
+              style: TextStyle(
+                color: Color(0xFF888888),
+                fontSize: 11,
+              ),
             ),
           ],
         ),
@@ -706,7 +782,9 @@ class _SliderSetting extends StatelessWidget {
 class _StructureSection extends StatelessWidget {
   final String value;
 
-  const _StructureSection({required this.value});
+  const _StructureSection({
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -721,9 +799,7 @@ class _StructureSection extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-
         const SizedBox(height: 8),
-
         Text(
           value,
           style: const TextStyle(
@@ -732,10 +808,12 @@ class _StructureSection extends StatelessWidget {
             height: 1.5,
           ),
         ),
-
         const SizedBox(height: 14),
-
-        const Divider(height: 1, thickness: 1, color: Color(0xFFEAEAEA)),
+        const Divider(
+          height: 1,
+          thickness: 1,
+          color: Color(0xFFEAEAEA),
+        ),
       ],
     );
   }

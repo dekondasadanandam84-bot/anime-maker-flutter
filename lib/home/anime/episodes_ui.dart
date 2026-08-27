@@ -13,12 +13,15 @@ class EpisodesScreen extends StatefulWidget {
   required this.settings,
   this.controller,
   this.onSeasonChanged,
+  required this.projectName,
 });
 
 final SeasonModel season;
 final ProjectSettingsModel settings;
 final EpisodesController? controller;
 final ValueChanged<SeasonModel>? onSeasonChanged;
+
+   final String projectName;
   
 
   @override
@@ -313,6 +316,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             await Navigator.of(context).push<EpisodeModel>(
           MaterialPageRoute(
             builder: (_) => ClipsScreen(
+              projectName: widget.projectName,
               episode: episode,
               settings: widget.settings,
             ),

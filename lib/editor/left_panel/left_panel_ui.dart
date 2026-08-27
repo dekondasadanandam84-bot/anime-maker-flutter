@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/editor/left_panel/left_panel_controller.dart';
 
 class LeftPanelUI extends StatelessWidget {
-  const LeftPanelUI({
-    super.key,
-    required this.controller,
-  });
+const LeftPanelUI({
+  super.key,
+  required this.controller,
+  this.compact = false,
+});
 
-  final LeftPanelController controller;
+final LeftPanelController controller;
+final bool compact;
 
   static const List<_LeftTool> _tools = [
     _LeftTool(
@@ -62,6 +64,43 @@ class LeftPanelUI extends StatelessWidget {
     return AnimatedBuilder(
       animation: controller,
       builder: (context, child) {
+        if (compact) {
+  final tool = _findTool(controller.selectedTool);
+
+  if (tool == null) {
+    return const SizedBox.shrink();
+  }
+
+  return Container(
+    width: 72,
+    padding: const EdgeInsets.symmetric(
+      horizontal: 8,
+      vertical: 10,
+    ),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(
+        color: const Color(0xFFEAEAEA),
+      ),
+      boxShadow: const [
+        BoxShadow(
+          color: Color(0x18000000),
+          blurRadius: 12,
+          offset: Offset(0, 4),
+        ),
+      ],
+    ),
+    child: _ToolButton(
+      icon: tool.icon,
+      label: tool.label,
+      selected: true,
+      onTap: () {
+        controller.selectTool(tool.id);
+      },
+    ),
+  );
+}
         return Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -194,6 +233,22 @@ class LeftPanelUI extends StatelessWidget {
       },
     );
   }
+  
+  _LeftTool? _findTool(int id) {
+  for (final tool in _tools) {
+    if (tool.id == id) {
+      return tool;
+    }
+  }
+
+  for (final tool in _moreTools) {
+    if (tool.id == id) {
+      return tool;
+    }
+  }
+
+  return null;
+}
 }
 
 class _ToolButton extends StatelessWidget {

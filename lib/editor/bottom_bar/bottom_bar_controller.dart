@@ -33,15 +33,23 @@ class BottomBarController extends ChangeNotifier {
 
   int get selectedFrame => _selectedFrame;
 
+  
+
   // ============================================================
-  // ADD FRAME
+  // ADD MULTIPLE FRAMES
   // ============================================================
 
-  void addFrame() {
-    final int nextFrame = _frames.length + 1;
+  void addFrames(int count) {
+    if (count <= 0) return;
 
-    _frames.add(nextFrame);
-    _selectedFrame = nextFrame;
+    final int startFrame = _frames.length + 1;
+
+    for (int i = 0; i < count; i++) {
+      _frames.add(startFrame + i);
+    }
+
+    // Select the last frame that was added.
+    _selectedFrame = _frames.last;
 
     notifyListeners();
   }
@@ -63,8 +71,7 @@ class BottomBarController extends ChangeNotifier {
   // ============================================================
 
   void previousFrame() {
-    final int currentIndex =
-        _frames.indexOf(_selectedFrame);
+    final int currentIndex = _frames.indexOf(_selectedFrame);
 
     if (currentIndex <= 0) return;
 
@@ -78,8 +85,7 @@ class BottomBarController extends ChangeNotifier {
   // ============================================================
 
   void nextFrame() {
-    final int currentIndex =
-        _frames.indexOf(_selectedFrame);
+    final int currentIndex = _frames.indexOf(_selectedFrame);
 
     if (currentIndex < 0 ||
         currentIndex >= _frames.length - 1) {

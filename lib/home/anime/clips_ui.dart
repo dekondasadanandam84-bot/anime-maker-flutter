@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/home/create_project_screen.dart';
+
 import 'package:flutter_application_1/home/models/clip_model.dart';
 import 'package:flutter_application_1/home/models/episode_model.dart';
+
 import '../models/project_settings_model.dart';
 import 'package:flutter_application_1/editor/editor_ui.dart';
 
@@ -11,6 +14,7 @@ class ClipsScreen extends StatefulWidget {
     super.key,
     required this.episode,
     required this.settings,
+    required this.projectName,
     this.controller,
     this.onOpenClip,
     this.onEpisodeChanged,
@@ -18,6 +22,7 @@ class ClipsScreen extends StatefulWidget {
 
   final EpisodeModel episode;
   final ProjectSettingsModel settings;
+  final String projectName;
   final ClipsController? controller;
   final ValueChanged<ClipModel>? onOpenClip;
   final ValueChanged<EpisodeModel>? onEpisodeChanged;
@@ -30,10 +35,28 @@ class _ClipsScreenState extends State<ClipsScreen> {
   late final ClipsController _controller;
   late final bool _ownsController;
 
+  double _aspectRatioValue(ProjectAspectRatio ratio) {
+    switch (ratio) {
+      case ProjectAspectRatio.ratio16x9:
+        return 16 / 9;
+
+      case ProjectAspectRatio.ratio9x16:
+        return 9 / 16;
+
+      case ProjectAspectRatio.ratio1x1:
+        return 1;
+
+      case ProjectAspectRatio.ratio4x1:
+        return 4;
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
     _ownsController = widget.controller == null;
+
     _controller =
         widget.controller ??
         ClipsController(
@@ -44,7 +67,10 @@ class _ClipsScreenState extends State<ClipsScreen> {
 
   @override
   void dispose() {
-    if (_ownsController) _controller.dispose();
+    if (_ownsController) {
+      _controller.dispose();
+    }
+
     super.dispose();
   }
 
@@ -365,7 +391,15 @@ class _ClipsScreenState extends State<ClipsScreen> {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) =>
-                    EditorScreen(clipId: clip.id, clipName: clip.name),
+                    EditorScreen(
+                       projectName: widget.projectName,
+  clipId: clip.id,
+  clipName: clip.name,
+  projectType: CreateProjectType.animeSeries,
+  aspectRatio: _aspectRatioValue(widget.settings.aspectRatio),
+  resolution: widget.settings.resolution,
+  fps: widget.settings.fps,
+),
               ),
             );
           },

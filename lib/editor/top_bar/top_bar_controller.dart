@@ -12,35 +12,52 @@ class TopBarController extends ChangeNotifier {
   bool _isAudioEnabled = true;
   bool _canUndo = false;
   bool _canRedo = false;
+  bool _panelsHidden = false;
 
   bool get isAudioEnabled => _isAudioEnabled;
   bool get canUndo => _canUndo;
   bool get canRedo => _canRedo;
+
+  bool get panelsHidden => _panelsHidden;
+
+  void hidePanels() {
+  _panelsHidden = !_panelsHidden;
+  notifyListeners();
+}
+
+  // ============================================================
+  // AUDIO
+  // ============================================================
 
   void toggleAudio() {
     _isAudioEnabled = !_isAudioEnabled;
     notifyListeners();
   }
 
+  // ============================================================
+  // COPY / PASTE / DUPLICATE
+  // ============================================================
+
   void copy() {
-    // Top-bar copy action.
-    // Actual editor selection/clipboard logic will be coordinated
-    // by EditorController later.
+    // Actual editor clipboard logic later.
   }
 
   void paste() {
-    // Top-bar paste action.
+    // Actual editor clipboard logic later.
   }
 
   void duplicate() {
-    // Top-bar duplicate action.
+    // Actual duplicate logic later.
   }
+
+  // ============================================================
+  // UNDO / REDO
+  // ============================================================
 
   void undo() {
     if (!_canUndo) return;
 
-    // Actual undo operation will be coordinated
-    // by EditorController later.
+    // Actual undo logic later.
 
     notifyListeners();
   }
@@ -48,8 +65,7 @@ class TopBarController extends ChangeNotifier {
   void redo() {
     if (!_canRedo) return;
 
-    // Actual redo operation will be coordinated
-    // by EditorController later.
+    // Actual redo logic later.
 
     notifyListeners();
   }
@@ -68,21 +84,38 @@ class TopBarController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ============================================================
+  // OTHER ACTIONS
+  // ============================================================
+
   void diamondAction() {
-    // Reserved for the diamond button.
-    // Behavior can be connected later.
+    // Reserved for later.
   }
 
   void moreAction() {
-    // Reserved for the three-dot button.
-    // Its purpose will be added later.
+    // Reserved for later.
   }
 
   void fitToScreen() {
-  // Fit-to-screen update will be implemented later.
-}
+    // Fit-to-screen later.
+  }
 
-void hidePanels() {
-  // Hide-panels update will be implemented later.
-}
+  // ============================================================
+  // HIDE / SHOW CONTROLS
+  // ============================================================
+
+  
+
+  // ============================================================
+  // RESET
+  // ============================================================
+
+  void reset() {
+    _panelsHidden = false;
+    _isAudioEnabled = true;
+    _canUndo = false;
+    _canRedo = false;
+
+    notifyListeners();
+  }
 }

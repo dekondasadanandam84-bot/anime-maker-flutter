@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/home/create_project_screen.dart';
 import 'package:flutter_application_1/home/drawer_ui.dart';
 import 'package:flutter_application_1/home/home_controller.dart';
 import 'package:flutter_application_1/core/app_media.dart';
 import 'package:flutter_application_1/home/models/anime_movie_model.dart';
 import 'package:flutter_application_1/home/models/anime_series_model.dart';
+import 'package:flutter_application_1/home/models/project_settings_model.dart';
 import 'package:flutter_application_1/search/search_ui.dart';
 import 'package:flutter_application_1/home/create_project_button.dart';
 import 'project_controller.dart';
@@ -14,16 +16,36 @@ import 'package:flutter_application_1/home/anime/movie_clips_ui.dart';
 import 'package:flutter_application_1/editor/editor_ui.dart';
 
 class HomeUI extends StatefulWidget {
-  const HomeUI({super.key});
+  const HomeUI({super.key, });
+  
+  
 
   @override
   State<HomeUI> createState() => _HomeUIState();
 }
 
 class _HomeUIState extends State<HomeUI> {
+
+  double _aspectRatioValue(ProjectAspectRatio ratio) {
+  switch (ratio) {
+    case ProjectAspectRatio.ratio16x9:
+      return 16 / 9;
+
+    case ProjectAspectRatio.ratio9x16:
+      return 9 / 16;
+
+    case ProjectAspectRatio.ratio1x1:
+      return 1;
+
+    case ProjectAspectRatio.ratio4x1:
+      return 4;
+  }
+}
   final HomeController controller = const HomeController();
 
   final ProjectController projectController = ProjectController();
+
+  
 
   // 0 = Series
   // 1 = Movies
@@ -133,9 +155,10 @@ class _HomeUIState extends State<HomeUI> {
       final updatedSeries = await Navigator.of(context).push<AnimeSeriesModel>(
         MaterialPageRoute(
           builder: (_) => SeasonsScreen(
-            series: project.animeSeries!,
-            settings: project.settings,
-          ),
+  projectName: project.name,
+  series: project.animeSeries!,
+  settings: project.settings,
+),
         ),
       );
 
@@ -165,7 +188,17 @@ class _HomeUIState extends State<HomeUI> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) =>
-                      EditorScreen(clipId: clip.id, clipName: clip.name),
+                     EditorScreen(
+  projectName: project.name,
+  clipId: clip.id,
+  clipName: clip.name,
+  projectType: CreateProjectType.animeMovie,
+  aspectRatio: _aspectRatioValue(
+    project.settings.aspectRatio,
+  ),
+  resolution: project.settings.resolution,
+  fps: project.settings.fps,
+),
                 ),
               );
             },

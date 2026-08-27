@@ -1,16 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/home/models/project_settings_model.dart';
 
 import 'editor_controller.dart';
 import 'left_panel/left_panel_ui.dart';
 import 'right_panel/right_panel_ui.dart';
 import 'top_bar/top_bar_ui.dart';
 import 'bottom_bar/bottom_bar_ui.dart';
+import 'middle/middle_ui.dart';
+import 'package:flutter_application_1/home/create_project_screen.dart';
 
 class EditorScreen extends StatefulWidget {
-  const EditorScreen({super.key, required this.clipId, required this.clipName});
+  const EditorScreen({
+    super.key,
+    required this.clipId,
+    required this.projectName,
+    required this.clipName,
+    required this.projectType,
+    required this.aspectRatio,
+    required this.resolution,
+    required this.fps,
+  });
 
   final String clipId;
   final String clipName;
+  final CreateProjectType projectType;
+  final double aspectRatio;
+  final String resolution;
+  final double fps;
+  final String projectName;
 
   @override
   State<EditorScreen> createState() => _EditorScreenState();
@@ -19,21 +36,87 @@ class EditorScreen extends StatefulWidget {
 class _EditorScreenState extends State<EditorScreen> {
   late final EditorController _controller;
 
+  String _projectName = '';
+  double _aspectRatio = 16 / 9;
+  String _resolution = '1920 × 1080';
+  double _fps = 12;
+
+  // ============================================================
+  // ASPECT RATIO HELPERS
+  // ============================================================
+
+  double _aspectRatioFromEnum(ProjectAspectRatio ratio) {
+    switch (ratio) {
+      case ProjectAspectRatio.ratio16x9:
+        return 16 / 9;
+
+      case ProjectAspectRatio.ratio9x16:
+        return 9 / 16;
+
+      case ProjectAspectRatio.ratio1x1:
+        return 1;
+
+      case ProjectAspectRatio.ratio4x1:
+        return 4;
+    }
+  }
+
+
+  String _aspectRatioText(double value) {
+    if ((value - 16 / 9).abs() < 0.001) {
+      return '16:9';
+    }
+
+    if ((value - 9 / 16).abs() < 0.001) {
+      return '9:16';
+    }
+
+    if ((value - 1).abs() < 0.001) {
+      return '1:1';
+    }
+
+    if ((value - 4).abs() < 0.001) {
+      return '4:1';
+    }
+
+    return '16:9';
+  }
+
+  // ============================================================
+  // INIT
+  // ============================================================
+
   @override
   void initState() {
     super.initState();
 
+    _projectName = widget.projectName;
+    _aspectRatio = widget.aspectRatio;
+    _resolution = widget.resolution;
+    _fps = widget.fps;
+
     _controller = EditorController(
       clipId: widget.clipId,
       clipName: widget.clipName,
+      aspectRatio: widget.aspectRatio,
+      resolution: widget.resolution,
+      fps: widget.fps,
     );
   }
+
+  // ============================================================
+  // DISPOSE
+  // ============================================================
 
   @override
   void dispose() {
     _controller.dispose();
     super.dispose();
   }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +130,10 @@ class _EditorScreenState extends State<EditorScreen> {
       },
     );
   }
+
+  // ============================================================
+  // PORTRAIT ORIENTATION SCREEN
+  // ============================================================
 
   Widget _buildOrientationScreen() {
     return Scaffold(
@@ -63,7 +150,9 @@ class _EditorScreenState extends State<EditorScreen> {
                   size: 88,
                   color: Colors.black,
                 ),
+
                 const SizedBox(height: 28),
+
                 const Text(
                   'Rotate Your Device',
                   textAlign: TextAlign.center,
@@ -73,7 +162,9 @@ class _EditorScreenState extends State<EditorScreen> {
                     color: Colors.black,
                   ),
                 ),
+
                 const SizedBox(height: 12),
+
                 const Text(
                   'Turn your device sideways to use the editor in landscape mode.',
                   textAlign: TextAlign.center,
@@ -91,6 +182,10 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
+  // ============================================================
+  // LANDSCAPE EDITOR
+  // ============================================================
+
   Widget _buildEditor() {
     return Scaffold(
       backgroundColor: Colors.white,
@@ -99,15 +194,30 @@ class _EditorScreenState extends State<EditorScreen> {
           // =========================================================
           // TOP BAR
           // =========================================================
+
           AnimatedBuilder(
             animation: _controller.topBarController,
             builder: (context, child) {
+              final topBar = _controller.topBarController;
+
+              if (topBar.panelsHidden) {
+                return const SizedBox.shrink();
+              }
+
               return EditorTopBar(
-                projectName: widget.clipName,
+                projectName: _projectName,
+
+                // -------------------------------------------------
+                // BACK
+                // -------------------------------------------------
 
                 onBack: () {
                   Navigator.of(context).pop();
                 },
+
+                // -------------------------------------------------
+                // TOP BAR ACTIONS
+                // -------------------------------------------------
 
                 onDiamond: _controller.onDiamondPressed,
 
@@ -125,17 +235,92 @@ class _EditorScreenState extends State<EditorScreen> {
 
                 onMore: _controller.onMorePressed,
 
+                // -------------------------------------------------
+                // PROJECT SETTINGS
+                // -------------------------------------------------
+
                 onProjectSettings: () {
-                  // Open Project Settings later.
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => CreateProjectScreen(
+                        projectType: widget.projectType,
+
+                        onProjectCreated: (updatedProject) {
+                          final newAspectRatio =
+                              _aspectRatioFromEnum(
+                            updatedProject.settings.aspectRatio,
+                          );
+
+                          final newResolution =
+                              updatedProject.settings.resolution;
+
+                          final newFps =
+                              updatedProject.settings.fps;
+
+                          setState(() {
+                            _projectName =
+                                updatedProject.name;
+
+                            _aspectRatio =
+                                newAspectRatio;
+
+                            _resolution =
+                                newResolution;
+
+                            _fps = newFps;
+                          });
+
+                          _controller.updateProjectSettings(
+                            aspectRatio: newAspectRatio,
+                            resolution: newResolution,
+                            fps: newFps,
+                          );
+                        },
+
+                        // IMPORTANT:
+                        // Use CURRENT editor values,
+                        // not widget's original values.
+
+                        initialName: _projectName,
+
+                        initialAspectRatio:
+                            _aspectRatioText(_aspectRatio),
+
+                        initialResolution:
+                            _resolution,
+
+                        initialFps:
+                            _fps,
+
+                        initialQuality: 'High',
+
+                        editMode: true,
+                      ),
+                    ),
+                  );
                 },
+
+                // -------------------------------------------------
+                // FRAMES VIEWER
+                // -------------------------------------------------
 
                 onFramesViewer: () {
                   // Open Frames Viewer later.
                 },
 
-                onFitToScreen: _controller.onFitToScreen,
+                // -------------------------------------------------
+                // FIT
+                // -------------------------------------------------
 
-                onHidePanels: _controller.onHidePanels,
+                onFitToScreen:
+                    _controller.onFitToScreen,
+
+                // -------------------------------------------------
+                // HIDE PANELS
+                // -------------------------------------------------
+
+                onHidePanels:
+                    _controller.onHidePanels,
               );
             },
           ),
@@ -143,150 +328,289 @@ class _EditorScreenState extends State<EditorScreen> {
           // =========================================================
           // EDITOR AREA
           // =========================================================
+
           Expanded(
             child: AnimatedBuilder(
               animation: Listenable.merge([
+                _controller.topBarController,
                 _controller.leftPanelController,
                 _controller.bottomBarController,
               ]),
               builder: (context, child) {
-                final leftPanel = _controller.leftPanelController;
+                final leftPanel =
+                    _controller.leftPanelController;
+
+                final topBar =
+                    _controller.topBarController;
+
+                final controlsHidden =
+                    topBar.panelsHidden == true;
 
                 return Stack(
                   children: [
                     // =================================================
                     // CANVAS
                     // =================================================
-                    const Positioned.fill(
-                      child: Center(
-                        child: Text(
-                          'Canvas',
-                          style: TextStyle(color: Colors.black54),
-                        ),
+
+                    Positioned.fill(
+                      child: MiddleUI(
+                        controller:
+                            _controller.middleController,
                       ),
                     ),
 
                     // =================================================
                     // LEFT FLOATING TOOLBAR
                     // =================================================
-                    Positioned(
-                      left: 16,
-                      top: 0,
-                      bottom: 0,
-                      child: Center(child: LeftPanelUI(controller: leftPanel)),
-                    ),
+
+                    if (!leftPanel.paintSheetOpen)
+                      Positioned(
+                        left: 16,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: LeftPanelUI(
+                            controller: leftPanel,
+                            compact: controlsHidden,
+                          ),
+                        ),
+                      ),
 
                     // =================================================
                     // RIGHT FLOATING TOOL PANEL
                     // =================================================
+
                     if (leftPanel.rightPanelOpen)
                       Positioned(
                         right: 16,
                         top: 0,
                         bottom: 0,
                         child: Center(
-                          child: RightPanelUI(tool: leftPanel.selectedTool),
+                          child: RightPanelUI(
+                            tool:
+                                leftPanel.selectedTool,
+                          ),
                         ),
                       ),
 
                     // =================================================
-// FULL-SCREEN PAINT SHEET
-// =================================================
-if (leftPanel.paintSheetOpen)
-  Positioned.fill(
-    child: Material(
-      color: Colors.white,
-      child: SafeArea(
-        child: Column(
-          children: [
-            Container(
-              height: 64,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                border: Border(
-                  bottom: BorderSide(
-                    color: Color(0xFFEAEAEA),
-                  ),
-                ),
-              ),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      leftPanel.closePaintSheet();
-                    },
-                    icon: const Icon(
-                      Icons.arrow_back_rounded,
-                      color: Colors.black,
-                    ),
-                  ),
+                    // FULL-SCREEN PAINT SHEET
+                    // =================================================
 
-                  const Expanded(
-                    child: Center(
-                      child: Text(
-                        'Paint',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.black,
+                    if (leftPanel.paintSheetOpen)
+                      Positioned.fill(
+                        child: Material(
+                          color: Colors.white,
+                          child: SafeArea(
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 64,
+                                  padding:
+                                      const EdgeInsets
+                                          .symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  decoration:
+                                      const BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color:
+                                            Color(0xFFEAEAEA),
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          leftPanel
+                                              .closePaintSheet();
+                                        },
+                                        icon: const Icon(
+                                          Icons
+                                              .arrow_back_rounded,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+
+                                      const Expanded(
+                                        child: Center(
+                                          child: Text(
+                                            'Paint',
+                                            style:
+                                                TextStyle(
+                                              fontSize: 18,
+                                              fontWeight:
+                                                  FontWeight
+                                                      .w700,
+                                              color:
+                                                  Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+
+                                      const SizedBox(
+                                        width: 48,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      'Paint',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        color:
+                                            Colors.black54,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  const SizedBox(width: 48),
-                ],
-              ),
-            ),
+                    // =================================================
+                    // BOTTOM BAR
+                    // =================================================
 
-            const Expanded(
-              child: Center(
-                child: Text(
-                  'Paint',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.black54,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  ),
+                    if (!leftPanel.paintSheetOpen)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: BottomBarUI(
+                          controller:
+                              _controller
+                                  .bottomBarController,
 
-// =================================================
-// BOTTOM BAR
-// =================================================
-if (!leftPanel.paintSheetOpen)
-  Positioned(
-    left: 0,
-    right: 0,
-    bottom: 0,
-    child: BottomBarUI(
-      controller: _controller.bottomBarController,
-      onPreviousFrame:
-          _controller.onPreviousFramePressed,
-      onPlayPause:
-          _controller.onPlayPausePressed,
-      onNextFrame:
-          _controller.onNextFramePressed,
-      onAddFrame:
-          _controller.onAddFramePressed,
-      onFrameSelected:
-          _controller.onFrameSelected,
-    ),
-  ),
-                  
-        ]);
+                          onPreviousFrame:
+                              _controller
+                                  .onPreviousFramePressed,
+
+                          onPlayPause:
+                              _controller
+                                  .onPlayPausePressed,
+
+                          onNextFrame:
+                              _controller
+                                  .onNextFramePressed,
+
+                          onAddFrames:
+                              _controller
+                                  .onAddFramesPressed,
+
+                          onFrameSelected:
+                              _controller
+                                  .onFrameSelected,
+
+                          onCopy:
+                              _controller
+                                  .onCopyPressed,
+
+                          onPaste:
+                              _controller
+                                  .onPastePressed,
+
+                          controlsHidden:
+                              controlsHidden,
+                        ),
+                      ),
+
+                    // =================================================
+                    // SHOW CONTROLS BUTTON
+                    // =================================================
+
+                    if (controlsHidden &&
+                        !leftPanel.paintSheetOpen)
+                      Positioned(
+                        top: 4,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: _ShowControlsButton(
+                            onTap:
+                                _controller
+                                    .onHidePanels,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ================================================================
+// SHOW CONTROLS BUTTON
+// ================================================================
+
+class _ShowControlsButton extends StatelessWidget {
+  const _ShowControlsButton({
+    required this.onTap,
+  });
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 6,
+          ),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFFEAEAEA),
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x18000000),
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.fit_screen_rounded,
+                size: 17,
+                color: Colors.black87,
+              ),
+              SizedBox(height: 1),
+              Text(
+                'Show',
+                style: TextStyle(
+                  fontSize: 8,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

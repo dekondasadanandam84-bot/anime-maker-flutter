@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/editor/editor_ui.dart';
 import 'package:flutter_application_1/home/anime/movie_clips_ui.dart';
 import 'package:flutter_application_1/home/anime/seasons_ui.dart';
+import 'package:flutter_application_1/home/create_project_screen.dart';
 import 'package:flutter_application_1/home/models/project_model.dart';
+import 'package:flutter_application_1/home/models/project_settings_model.dart';
 import 'package:flutter_application_1/home/project_controller.dart';
 import 'package:flutter_application_1/tutorials/tutorials_controller.dart';
 import 'search_controller.dart';
@@ -228,8 +230,7 @@ class _SearchResults extends StatelessWidget {
     required this.controller,
   });
 
-  @override
-  @override
+    @override
 Widget build(BuildContext context) {
   final projects = controller.projects;
   final templates = controller.templates;
@@ -558,7 +559,21 @@ class _ProjectSearchResultCard extends StatelessWidget {
         return '🎬';
     }
   }
+  double _aspectRatioValue(ProjectAspectRatio ratio) {
+  switch (ratio) {
+    case ProjectAspectRatio.ratio16x9:
+      return 16 / 9;
 
+    case ProjectAspectRatio.ratio9x16:
+      return 9 / 16;
+
+    case ProjectAspectRatio.ratio1x1:
+      return 1;
+
+    case ProjectAspectRatio.ratio4x1:
+      return 4;
+  }
+}
   String _projectTypeName() {
     switch (project.projectType) {
       case ProjectType.animeSeries:
@@ -580,6 +595,7 @@ class _ProjectSearchResultCard extends StatelessWidget {
         context,
         MaterialPageRoute(
           builder: (_) => SeasonsScreen(
+            projectName: project.animeMovie!.name,
             series: project.animeSeries!,
             settings: project.settings,
           ),
@@ -606,9 +622,16 @@ class _ProjectSearchResultCard extends StatelessWidget {
                 context,
                 MaterialPageRoute(
                   builder: (_) => EditorScreen(
-                    clipId: clip.id,
-                    clipName: clip.name,
-                  ),
+                    projectName: project.animeMovie!.name,
+  clipId: clip.id,
+  clipName: clip.name,
+  projectType: CreateProjectType.animeMovie,
+  aspectRatio: _aspectRatioValue(
+    project.settings.aspectRatio,
+  ),
+  resolution: project.settings.resolution,
+  fps: project.settings.fps,
+),
                 ),
               );
             },
