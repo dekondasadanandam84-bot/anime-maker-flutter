@@ -23,7 +23,8 @@ class ClipModel {
 
   String get frameLabel => '$frameCount Frames';
 
-  String get metadataLabel => '$durationLabel • $frameLabel';
+  String get metadataLabel =>
+      '$durationLabel • $frameLabel';
 
   ClipModel copyWith({
     String? id,
@@ -36,7 +37,8 @@ class ClipModel {
       id: id ?? this.id,
       name: name ?? this.name,
       number: number ?? this.number,
-      durationSeconds: durationSeconds ?? this.durationSeconds,
+      durationSeconds:
+          durationSeconds ?? this.durationSeconds,
       frameCount: frameCount ?? this.frameCount,
     );
   }

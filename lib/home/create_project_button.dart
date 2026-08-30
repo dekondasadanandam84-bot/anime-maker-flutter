@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
+
 import 'create_project_screen.dart';
-import 'models/project_model.dart';
+import 'project_controller.dart';
+import 'project_scope.dart';
 
 class CreateProjectButton extends StatelessWidget {
   const CreateProjectButton({
     super.key,
-    required this.onProjectCreated,
   });
-
-  final ValueChanged<ProjectModel> onProjectCreated;
 
   void _openCreateProjectSheet(BuildContext context) {
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: false,
-      builder: (context) {
-        return _CreateProjectSheet(
-          onProjectCreated: onProjectCreated,
-        );
+      builder: (_) {
+        return const _CreateProjectSheet();
       },
     );
   }
@@ -46,59 +43,66 @@ class CreateProjectButton extends StatelessWidget {
 }
 
 class _CreateProjectSheet extends StatelessWidget {
-  const _CreateProjectSheet({
-    required this.onProjectCreated,
-  });
-
-  final ValueChanged<ProjectModel> onProjectCreated;
+  const _CreateProjectSheet();
 
   void _selectProjectType(
     BuildContext context,
     CreateProjectOption type,
   ) {
+    final projectController =
+        ProjectScope.read(context);
+
     Navigator.of(context).pop();
 
     switch (type) {
       case CreateProjectOption.animeSeries:
+        projectController.beginCreateProject(
+          ProjectFlowType.animeSeries,
+        );
+
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => CreateProjectScreen(
-              projectType: CreateProjectType.animeSeries,
-              onProjectCreated: onProjectCreated,
-            ),
+            builder: (_) =>
+                const CreateProjectScreen(),
           ),
         );
         break;
 
       case CreateProjectOption.animeMovie:
+        projectController.beginCreateProject(
+          ProjectFlowType.animeMovie,
+        );
+
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => CreateProjectScreen(
-              projectType: CreateProjectType.animeMovie,
-              onProjectCreated: onProjectCreated,
-            ),
+            builder: (_) =>
+                const CreateProjectScreen(),
           ),
         );
         break;
 
       case CreateProjectOption.mangaSeries:
+        projectController.beginCreateProject(
+          ProjectFlowType.mangaSeries,
+        );
+
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => CreateProjectScreen(
-              projectType: CreateProjectType.mangaSeries,
-              onProjectCreated: onProjectCreated,
-            ),
+            builder: (_) =>
+                const CreateProjectScreen(),
           ),
         );
         break;
 
       case CreateProjectOption.mangaBook:
+        projectController.beginCreateProject(
+          ProjectFlowType.mangaBook,
+        );
+
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) => CreateProjectScreen(
-              projectType: CreateProjectType.mangaBook,
-              onProjectCreated: onProjectCreated,
-            ),
+            builder: (_) =>
+                const CreateProjectScreen(),
           ),
         );
         break;
@@ -115,7 +119,8 @@ class _CreateProjectSheet extends StatelessWidget {
       top: false,
       child: Container(
         constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.85,
+          maxHeight:
+              MediaQuery.of(context).size.height * 0.85,
         ),
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -124,7 +129,12 @@ class _CreateProjectSheet extends StatelessWidget {
           ),
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+          padding: const EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            24,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -133,7 +143,8 @@ class _CreateProjectSheet extends StatelessWidget {
                 height: 5,
                 decoration: BoxDecoration(
                   color: const Color(0xFFD6D6D6),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius:
+                      BorderRadius.circular(20),
                 ),
               ),
 
@@ -162,7 +173,8 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '📺',
-                iconColor: const Color(0xff7C3AED),
+                iconColor:
+                    const Color(0xff7C3AED),
                 title: 'Anime Series',
                 description:
                     'Create an episodic anime project with seasons and episodes.',
@@ -176,7 +188,8 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '🎬',
-                iconColor: const Color(0xffE11D48),
+                iconColor:
+                    const Color(0xffE11D48),
                 title: 'Anime Movie',
                 description:
                     'Create a long-form animated movie project.',
@@ -190,7 +203,8 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '📚',
-                iconColor: const Color(0xff0EA5E9),
+                iconColor:
+                    const Color(0xff0EA5E9),
                 title: 'Manga Series',
                 description:
                     'Create a manga series containing multiple books.',
@@ -204,7 +218,8 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '📖',
-                iconColor: const Color(0xff16A34A),
+                iconColor:
+                    const Color(0xff16A34A),
                 title: 'Manga Book',
                 description:
                     'Create a standalone manga book project.',
@@ -218,7 +233,8 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '📤',
-                iconColor: const Color(0xFFF59E0B),
+                iconColor:
+                    const Color(0xFFF59E0B),
                 title: 'Import Project',
                 description:
                     'Import an existing AnimeClip project file.',
@@ -235,7 +251,8 @@ class _CreateProjectSheet extends StatelessWidget {
   }
 }
 
-class _CreateProjectOption extends StatelessWidget {
+class _CreateProjectOption
+    extends StatelessWidget {
   final String icon;
   final Color iconColor;
   final String title;
@@ -256,16 +273,19 @@ class _CreateProjectOption extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius:
+            BorderRadius.circular(14),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(14),
+          padding:
+              const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: const Color(0xFFF9F9F9),
             border: Border.all(
               color: const Color(0xFFE5E5E5),
             ),
-            borderRadius: BorderRadius.circular(14),
+            borderRadius:
+                BorderRadius.circular(14),
           ),
           child: Row(
             children: [
@@ -273,12 +293,17 @@ class _CreateProjectOption extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(12),
+                  color: iconColor.withValues(
+                    alpha: 0.10,
+                  ),
+                  borderRadius:
+                      BorderRadius.circular(12),
                 ),
                 child: Text(
                   icon,
-                  style: const TextStyle(fontSize: 27),
+                  style: const TextStyle(
+                    fontSize: 27,
+                  ),
                 ),
               ),
 
@@ -286,14 +311,18 @@ class _CreateProjectOption extends StatelessWidget {
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Color(0xFF1A1C1C),
+                      style:
+                          const TextStyle(
+                        color:
+                            Color(0xFF1A1C1C),
                         fontSize: 15,
-                        fontWeight: FontWeight.w700,
+                        fontWeight:
+                            FontWeight.w700,
                       ),
                     ),
 
@@ -301,8 +330,10 @@ class _CreateProjectOption extends StatelessWidget {
 
                     Text(
                       description,
-                      style: const TextStyle(
-                        color: Color(0xFF6B6B6B),
+                      style:
+                          const TextStyle(
+                        color:
+                            Color(0xFF6B6B6B),
                         fontSize: 12.5,
                         height: 1.35,
                       ),

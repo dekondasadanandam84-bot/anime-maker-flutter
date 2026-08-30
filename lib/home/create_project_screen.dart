@@ -1,74 +1,64 @@
 import 'package:flutter/material.dart';
 
-import 'package:flutter_application_1/home/models/anime_movie_model.dart';
-import 'package:flutter_application_1/home/models/anime_series_model.dart';
-import 'package:flutter_application_1/home/models/project_model.dart';
-import 'package:flutter_application_1/home/models/project_settings_model.dart';
-
-enum CreateProjectType {
-  animeSeries,
-  animeMovie,
-  mangaSeries,
-  mangaBook,
-}
+import 'project_controller.dart';
+import 'project_scope.dart';
+import 'models/project_model.dart';
+import 'models/project_settings_model.dart';
 
 class CreateProjectScreen extends StatefulWidget {
   const CreateProjectScreen({
     super.key,
-    required this.projectType,
-    required this.onProjectCreated,
-    this.initialName,
-    this.initialAspectRatio,
-    this.initialResolution,
-    this.initialFps,
-    this.initialQuality,
-    this.editMode = false,
   });
 
-  final CreateProjectType projectType;
-  final ValueChanged<ProjectModel> onProjectCreated;
-
-  final String? initialName;
-  final String? initialAspectRatio;
-  final String? initialResolution;
-  final double? initialFps;
-  final String? initialQuality;
-
-  final bool editMode;
-
   @override
-  State<CreateProjectScreen> createState() => _CreateProjectScreenState();
+  State<CreateProjectScreen> createState() =>
+      _CreateProjectScreenState();
 }
 
 class _CreateProjectScreenState extends State<CreateProjectScreen> {
   late final TextEditingController _titleController;
 
   // ============================================================
-  // ANIME
+  // TEMPORARY FORM STATE
+  // ============================================================
+  //
+  // These values are only draft values while the user is filling
+  // the form.
+  //
+  // They are NOT the source of truth for a saved project.
+  // The final saved values go into ProjectController.
   // ============================================================
 
   String _aspectRatio = '16:9';
   String _resolution = '1920 × 1080';
   double _fps = 12;
 
-  // ============================================================
-  // MANGA
-  // ============================================================
-
   String _paperSize = 'A4';
   String _quality = 'High';
 
+  bool _loadedCurrentProject = false;
+
   // ============================================================
-  // TYPE HELPERS
+  // PROJECT CONTROLLER
   // ============================================================
+
+  ProjectController get projectController =>
+      ProjectScope.of(context);
+
+  ProjectFlowType? get flowType =>
+      projectController.projectFlowType;
+
+  bool get isEditing =>
+      projectController.isEditingProject;
 
   bool get isAnime =>
-      widget.projectType == CreateProjectType.animeSeries ||
-      widget.projectType == CreateProjectType.animeMovie;
+      flowType == ProjectFlowType.animeSeries ||
+      flowType == ProjectFlowType.animeMovie ||
+      isEditing;
 
   bool get isManga =>
-      widget.projectType == CreateProjectType.mangaSeries ||
-      widget.projectType == CreateProjectType.mangaBook;
+      flowType == ProjectFlowType.mangaSeries ||
+      flowType == ProjectFlowType.mangaBook;
 
   // ============================================================
   // INITIALIZATION
@@ -78,14 +68,41 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   void initState() {
     super.initState();
 
-    _titleController = TextEditingController(
-      text: widget.initialName ?? '',
+    _titleController = TextEditingController();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+
+      _loadCurrentProject();
+    });
+  }
+
+  void _loadCurrentProject() {
+    if (_loadedCurrentProject || !isEditing) {
+      return;
+    }
+
+    final project = projectController.currentProject;
+
+    if (project == null) {
+      return;
+    }
+
+    _titleController.text = project.name;
+
+    _aspectRatio = _aspectRatioText(
+      project.settings.aspectRatio,
     );
 
-    _aspectRatio = widget.initialAspectRatio ?? '16:9';
-    _resolution = widget.initialResolution ?? '1920 × 1080';
-    _fps = widget.initialFps ?? 12;
-    _quality = widget.initialQuality ?? 'High';
+    _resolution = project.settings.resolution;
+    _fps = project.settings.fps;
+    _quality = project.settings.quality;
+
+    _loadedCurrentProject = true;
+
+    setState(() {});
   }
 
   // ============================================================
@@ -93,56 +110,78 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   // ============================================================
 
   String get screenTitle {
-    if (widget.editMode) {
+    if (isEditing) {
       return 'Project Settings';
     }
 
-    switch (widget.projectType) {
-      case CreateProjectType.animeSeries:
+    switch (flowType) {
+      case ProjectFlowType.animeSeries:
         return 'Create Anime Series';
 
-      case CreateProjectType.animeMovie:
+      case ProjectFlowType.animeMovie:
         return 'Create Anime Movie';
 
-      case CreateProjectType.mangaSeries:
+      case ProjectFlowType.mangaSeries:
         return 'Create Manga Series';
 
-      case CreateProjectType.mangaBook:
+      case ProjectFlowType.mangaBook:
         return 'Create Manga Book';
+
+      case ProjectFlowType.editCurrentProject:
+      case null:
+        return 'Create Project';
     }
   }
 
   // ============================================================
-  // NAME
+  // NAME LABEL
   // ============================================================
 
   String get nameLabel {
-    switch (widget.projectType) {
-      case CreateProjectType.animeSeries:
-      case CreateProjectType.mangaSeries:
-        return 'Series Name';
-
-      case CreateProjectType.animeMovie:
+    switch (flowType) {
+      case ProjectFlowType.animeMovie:
         return 'Movie Name';
 
-      case CreateProjectType.mangaBook:
+      case ProjectFlowType.mangaSeries:
+        return 'Series Name';
+
+      case ProjectFlowType.mangaBook:
         return 'Book Name';
+
+      case ProjectFlowType.animeSeries:
+      case ProjectFlowType.editCurrentProject:
+      case null:
+        if (isEditing &&
+            projectController.currentProjectType ==
+                ProjectType.animeMovie) {
+          return 'Movie Name';
+        }
+
+        return 'Series Name';
     }
   }
 
+  // ============================================================
+  // NAME HINT
+  // ============================================================
+
   String get nameHint {
-    switch (widget.projectType) {
-      case CreateProjectType.animeSeries:
+    switch (flowType) {
+      case ProjectFlowType.animeSeries:
         return 'Enter anime series name';
 
-      case CreateProjectType.animeMovie:
+      case ProjectFlowType.animeMovie:
         return 'Enter anime movie name';
 
-      case CreateProjectType.mangaSeries:
+      case ProjectFlowType.mangaSeries:
         return 'Enter manga series name';
 
-      case CreateProjectType.mangaBook:
+      case ProjectFlowType.mangaBook:
         return 'Enter manga book name';
+
+      case ProjectFlowType.editCurrentProject:
+      case null:
+        return 'Enter project name';
     }
   }
 
@@ -151,26 +190,37 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   // ============================================================
 
   String get projectStructure {
-    switch (widget.projectType) {
-      case CreateProjectType.animeSeries:
+    switch (flowType) {
+      case ProjectFlowType.animeSeries:
         return 'Series → Seasons → Episodes → Clips → Frames';
 
-      case CreateProjectType.animeMovie:
+      case ProjectFlowType.animeMovie:
         return 'Movie → Clips → Frames';
 
-      case CreateProjectType.mangaSeries:
+      case ProjectFlowType.mangaSeries:
         return 'Series → Books → Pages → Editor';
 
-      case CreateProjectType.mangaBook:
+      case ProjectFlowType.mangaBook:
         return 'Book → Pages → Editor';
+
+      case ProjectFlowType.editCurrentProject:
+      case null:
+        if (projectController.currentProjectType ==
+            ProjectType.animeMovie) {
+          return 'Movie → Clips → Frames';
+        }
+
+        return 'Series → Seasons → Episodes → Clips → Frames';
     }
   }
 
   // ============================================================
-  // PARSE ASPECT RATIO
+  // ASPECT RATIO
   // ============================================================
 
-  ProjectAspectRatio _parseAspectRatio(String value) {
+  ProjectAspectRatio _parseAspectRatio(
+    String value,
+  ) {
     switch (value) {
       case '9:16':
         return ProjectAspectRatio.ratio9x16;
@@ -187,11 +237,29 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     }
   }
 
+  String _aspectRatioText(
+    ProjectAspectRatio ratio,
+  ) {
+    switch (ratio) {
+      case ProjectAspectRatio.ratio16x9:
+        return '16:9';
+
+      case ProjectAspectRatio.ratio9x16:
+        return '9:16';
+
+      case ProjectAspectRatio.ratio1x1:
+        return '1:1';
+
+      case ProjectAspectRatio.ratio4x1:
+        return '4:1';
+    }
+  }
+
   // ============================================================
-  // CREATE / UPDATE PROJECT
+  // SAVE / CREATE
   // ============================================================
 
-  void _createProject() {
+  void _saveProject() {
     final name = _titleController.text.trim();
 
     if (name.isEmpty) {
@@ -202,104 +270,134 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           ),
         ),
       );
+
       return;
     }
 
-    final projectData = <String, dynamic>{
-      'projectType': widget.projectType.name,
-      'name': name,
-    };
+    final controller = projectController;
 
-    if (isAnime) {
-      projectData.addAll({
-        'aspectRatio': _aspectRatio,
-        'resolution': _resolution,
-        'fps': _fps.round(),
-        'structure': projectStructure,
-      });
+    // ==========================================================
+    // EDIT CURRENT PROJECT
+    // ==========================================================
+
+    if (isEditing) {
+      final currentProject = controller.currentProject;
+
+      if (currentProject == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No current project found.',
+            ),
+          ),
+        );
+
+        return;
+      }
+
+      final updatedSettings =
+          currentProject.settings.copyWith(
+        aspectRatio: _parseAspectRatio(_aspectRatio),
+        resolution: _resolution,
+        fps: _fps.roundToDouble(),
+        quality: _quality,
+      );
+
+      // ONE central project update.
+      //
+      // ProjectController remains the single source of truth.
+      // Name and settings are committed together.
+      controller.updateCurrentProject(
+        name: name,
+        settings: updatedSettings,
+      );
+
+      controller.clearProjectFlow();
+
+      Navigator.of(context).pop();
+
+      return;
     }
+
+    // ==========================================================
+    // MANGA
+    // ==========================================================
 
     if (isManga) {
-      projectData.addAll({
-        'paperSize': _paperSize,
-        'quality': _quality,
-        'structure': projectStructure,
-      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Manga project models are not implemented yet.',
+          ),
+        ),
+      );
+
+      return;
     }
 
-    debugPrint(
-      widget.editMode ? 'UPDATE PROJECT' : 'CREATE PROJECT',
+    // ==========================================================
+    // ANIME SETTINGS
+    // ==========================================================
+
+    final settings = ProjectSettingsModel(
+      aspectRatio: _parseAspectRatio(_aspectRatio),
+      resolution: _resolution,
+      fps: _fps.roundToDouble(),
+      quality: _quality,
     );
-    debugPrint(projectData.toString());
 
-    // ============================================================
+    // ==========================================================
     // ANIME SERIES
-    // ============================================================
+    // ==========================================================
 
-    if (widget.projectType == CreateProjectType.animeSeries) {
-      final settings = ProjectSettingsModel(
-        aspectRatio: _parseAspectRatio(_aspectRatio),
-        resolution: _resolution,
-        fps: _fps.roundToDouble(),
-        quality: _quality,
-      );
-
-      final series = AnimeSeriesModel(
-        id: 'series_${DateTime.now().microsecondsSinceEpoch}',
-        name: name,
-        seasons: const [],
-      );
-
-      final project = ProjectModel(
-        id: 'project_${DateTime.now().microsecondsSinceEpoch}',
-        name: name,
+    if (flowType == ProjectFlowType.animeSeries) {
+      controller.createProject(
         projectType: ProjectType.animeSeries,
+        name: name,
         settings: settings,
-        animeSeries: series,
       );
 
-      widget.onProjectCreated(project);
+      controller.clearProjectFlow();
 
       Navigator.of(context).pop();
 
       return;
     }
 
-    // ============================================================
+    // ==========================================================
     // ANIME MOVIE
-    // ============================================================
+    // ==========================================================
 
-    if (widget.projectType == CreateProjectType.animeMovie) {
-      final settings = ProjectSettingsModel(
-        aspectRatio: _parseAspectRatio(_aspectRatio),
-        resolution: _resolution,
-        fps: _fps.roundToDouble(),
-        quality: _quality,
-      );
-
-      final movie = AnimeMovieModel(
-        id: 'movie_${DateTime.now().microsecondsSinceEpoch}',
-        name: name,
-        clips: const [],
-      );
-
-      final project = ProjectModel(
-        id: 'project_${DateTime.now().microsecondsSinceEpoch}',
-        name: name,
+    if (flowType == ProjectFlowType.animeMovie) {
+      controller.createProject(
         projectType: ProjectType.animeMovie,
+        name: name,
         settings: settings,
-        animeMovie: movie,
       );
 
-      widget.onProjectCreated(project);
+      controller.clearProjectFlow();
 
       Navigator.of(context).pop();
 
       return;
     }
 
-    Navigator.of(context).pop(projectData);
+    // ==========================================================
+    // NO PROJECT TYPE
+    // ==========================================================
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text(
+          'Please select a project type.',
+        ),
+      ),
+    );
   }
+
+  // ============================================================
+  // DISPOSE
+  // ============================================================
 
   @override
   void dispose() {
@@ -313,16 +411,23 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Establish the reactive dependency on ProjectController.
+    ProjectScope.of(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+
         leading: IconButton(
           tooltip: 'Back',
           onPressed: () {
+            projectController.clearProjectFlow();
+
             Navigator.of(context).maybePop();
           },
           icon: const Icon(
@@ -330,6 +435,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
             color: Colors.black,
           ),
         ),
+
         title: Text(
           screenTitle,
           style: const TextStyle(
@@ -338,6 +444,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
             fontWeight: FontWeight.w700,
           ),
         ),
+
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(1),
           child: Divider(
@@ -347,6 +454,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
           ),
         ),
       ),
+
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
@@ -362,7 +470,8 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                 maxWidth: 720,
               ),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment:
+                    CrossAxisAlignment.stretch,
                 children: [
                   const _SectionHeader(
                     title: 'Project Details',
@@ -402,7 +511,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                         '4:1',
                       ],
                       onChanged: (value) {
-                        if (value == null) return;
+                        if (value == null) {
+                          return;
+                        }
 
                         setState(() {
                           _aspectRatio = value;
@@ -422,7 +533,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                         '3840 × 2160',
                       ],
                       onChanged: (value) {
-                        if (value == null) return;
+                        if (value == null) {
+                          return;
+                        }
 
                         setState(() {
                           _resolution = value;
@@ -473,7 +586,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                         'Legal',
                       ],
                       onChanged: (value) {
-                        if (value == null) return;
+                        if (value == null) {
+                          return;
+                        }
 
                         setState(() {
                           _paperSize = value;
@@ -493,7 +608,9 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                         'Maximum',
                       ],
                       onChanged: (value) {
-                        if (value == null) return;
+                        if (value == null) {
+                          return;
+                        }
 
                         setState(() {
                           _quality = value;
@@ -513,17 +630,18 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                   SizedBox(
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: _createProject,
+                      onPressed: _saveProject,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius:
+                              BorderRadius.circular(14),
                         ),
                       ),
                       child: Text(
-                        widget.editMode
+                        isEditing
                             ? 'Save Settings'
                             : 'Create ${isAnime ? 'Anime' : 'Manga'} Project',
                         style: const TextStyle(
@@ -673,18 +791,20 @@ class _SimpleDropdown<T> extends StatelessWidget {
           child: DropdownButton<T>(
             value: value,
             borderRadius: BorderRadius.circular(12),
-            items: items.map((item) {
-              return DropdownMenuItem<T>(
-                value: item,
-                child: Text(
-                  item.toString(),
-                  style: const TextStyle(
-                    color: Color(0xFF1A1C1C),
-                    fontSize: 14,
+            items: items.map(
+              (item) {
+                return DropdownMenuItem<T>(
+                  value: item,
+                  child: Text(
+                    item.toString(),
+                    style: const TextStyle(
+                      color: Color(0xFF1A1C1C),
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-              );
-            }).toList(),
+                );
+              },
+            ).toList(),
             onChanged: onChanged,
           ),
         ),

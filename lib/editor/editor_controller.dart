@@ -1,5 +1,8 @@
 import 'package:flutter/foundation.dart';
 
+import '../home/project_controller.dart';
+import '../home/models/project_settings_model.dart';
+
 import 'left_panel/left_panel_controller.dart';
 import 'top_bar/top_bar_controller.dart';
 import 'bottom_bar/bottom_bar_controller.dart';
@@ -7,59 +10,98 @@ import 'middle/middle_controller.dart';
 
 class EditorController extends ChangeNotifier {
   EditorController({
+    required this.projectController,
     required this.clipId,
-    required this.clipName,
-    required double aspectRatio,
-    required String resolution,
-    required this._fps,
-  })  : _aspectRatio = aspectRatio,
-        _resolution = resolution,
-        topBarController = TopBarController(
-          clipId: clipId,
-          clipName: clipName,
-        ),
+  })  : topBarController = TopBarController(),
         leftPanelController = LeftPanelController(),
         bottomBarController = BottomBarController(),
         middleController = MiddleController(
-          aspectRatio: aspectRatio,
-          resolution: resolution,
-        );
+          aspectRatio: _aspectRatioValue(
+            projectController.currentAspectRatio ??
+                ProjectAspectRatio.ratio16x9,
+          ),
+          resolution:
+              projectController.currentResolution ??
+                  '1920 × 1080',
+        ) {
+    projectController.addListener(
+      _onProjectControllerChanged,
+    );
+  }
+
+  // ============================================================
+  // PROJECT CONTEXT
+  // ============================================================
+  //
+  // ProjectController is the single source of truth.
+  // This controller does not store project settings locally.
+  // ============================================================
+
+  final ProjectController projectController;
 
   final String clipId;
-  final String clipName;
 
-  // ------------------------------------------------------------
-  // Project settings
-  // ------------------------------------------------------------
+  // ============================================================
+  // CURRENT PROJECT DATA
+  // ============================================================
+  //
+  // These are derived values only.
+  // Nothing is duplicated or stored here.
+  // ============================================================
 
-  double _aspectRatio;
-  String _resolution;
-  double _fps;
+  ProjectSettingsModel? get settings =>
+      projectController.currentSettings;
 
-  double get aspectRatio => _aspectRatio;
-  String get resolution => _resolution;
-  double get fps => _fps;
+  double get aspectRatio {
+    final ratio =
+        projectController.currentAspectRatio;
 
-  // ------------------------------------------------------------
-  // Controllers
-  // ------------------------------------------------------------
+    if (ratio == null) {
+      return 16 / 9;
+    }
+
+    return _aspectRatioValue(ratio);
+  }
+
+  String get resolution =>
+      projectController.currentResolution ??
+      '1920 × 1080';
+
+  double get fps =>
+      projectController.currentFps ?? 12;
+
+  String? get projectName =>
+      projectController.currentProjectName;
+
+  // ============================================================
+  // CURRENT CLIP
+  // ============================================================
+
+  String? get currentClipName =>
+      projectController
+          .findCurrentClipById(clipId)
+          ?.name;
+
+  // ============================================================
+  // EDITOR CONTROLLERS
+  // ============================================================
 
   final TopBarController topBarController;
   final LeftPanelController leftPanelController;
   final BottomBarController bottomBarController;
   final MiddleController middleController;
 
-  // ------------------------------------------------------------
-  // Saving
-  // ------------------------------------------------------------
+  // ============================================================
+  // SAVING
+  // ============================================================
 
   bool _isSaving = false;
 
   bool get isSaving => _isSaving;
 
-  // ------------------------------------------------------------
-  // Top bar update receivers
-  // ------------------------------------------------------------
+  // ============================================================
+  // TOP BAR UPDATE RECEIVERS
+  // ============================================================
 
   void onDiamondPressed() {
     topBarController.diamondAction();
@@ -101,9 +143,9 @@ class EditorController extends ChangeNotifier {
     topBarController.hidePanels();
   }
 
-  // ------------------------------------------------------------
-  // Left panel update receivers
-  // ------------------------------------------------------------
+  // ============================================================
+  // LEFT PANEL UPDATE RECEIVERS
+  // ============================================================
 
   void onLeftToolSelected(int toolId) {
     leftPanelController.selectTool(toolId);
@@ -113,9 +155,9 @@ class EditorController extends ChangeNotifier {
     leftPanelController.toggleMoreTools();
   }
 
-  // ------------------------------------------------------------
-  // Bottom bar update receivers
-  // ------------------------------------------------------------
+  // ============================================================
+  // BOTTOM BAR UPDATE RECEIVERS
+  // ============================================================
 
   void onPlayPausePressed() {
     bottomBarController.togglePlayback();
@@ -137,19 +179,46 @@ class EditorController extends ChangeNotifier {
     bottomBarController.selectFrame(frame);
   }
 
-  // ------------------------------------------------------------
-  // Project settings
-  // ------------------------------------------------------------
+  // ============================================================
+  // PROJECT SETTINGS UPDATE
+  // ============================================================
+  //
+  // IMPORTANT:
+  // Settings are written directly into ProjectController.
+  //
+  // There is NO:
+  // _aspectRatio = ...
+  // _resolution = ...
+  // _fps = ...
+  //
+  // ProjectController updates the project and notifies every
+  // screen that depends on it.
+  // ============================================================
 
   void updateProjectSettings({
     required double aspectRatio,
     required String resolution,
     required double fps,
   }) {
-    _aspectRatio = aspectRatio;
-    _resolution = resolution;
-    _fps = fps;
+    projectController.updateCurrentProjectSettings(
+      aspectRatio: _projectAspectRatio(aspectRatio),
+      resolution: resolution,
+      fps: fps,
+    );
+  }
 
+  // ============================================================
+  // PROJECT CONTROLLER CHANGES
+  // ============================================================
+  //
+  // Whenever ANY screen changes the project's settings,
+  // ProjectController notifies us.
+  //
+  // The Editor then updates its canvas from the NEW central
+  // values instead of keeping an old snapshot.
+  // ============================================================
+
+  void _onProjectControllerChanged() {
     middleController.updateCanvasSettings(
       aspectRatio: aspectRatio,
       resolution: resolution,
@@ -158,12 +227,14 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ------------------------------------------------------------
-  // Save
-  // ------------------------------------------------------------
+  // ============================================================
+  // SAVE
+  // ============================================================
 
   Future<void> save() async {
-    if (_isSaving) return;
+    if (_isSaving) {
+      return;
+    }
 
     _isSaving = true;
     notifyListeners();
@@ -178,16 +249,65 @@ class EditorController extends ChangeNotifier {
     }
   }
 
-  // ------------------------------------------------------------
-  // Dispose
-  // ------------------------------------------------------------
+  // ============================================================
+  // ASPECT RATIO HELPERS
+  // ============================================================
+
+  static double _aspectRatioValue(
+    ProjectAspectRatio ratio,
+  ) {
+    switch (ratio) {
+      case ProjectAspectRatio.ratio16x9:
+        return 16 / 9;
+
+      case ProjectAspectRatio.ratio9x16:
+        return 9 / 16;
+
+      case ProjectAspectRatio.ratio1x1:
+        return 1;
+
+      case ProjectAspectRatio.ratio4x1:
+        return 4;
+    }
+  }
+
+  static ProjectAspectRatio _projectAspectRatio(
+    double value,
+  ) {
+    if ((value - (16 / 9)).abs() < 0.001) {
+      return ProjectAspectRatio.ratio16x9;
+    }
+
+    if ((value - (9 / 16)).abs() < 0.001) {
+      return ProjectAspectRatio.ratio9x16;
+    }
+
+    if ((value - 1).abs() < 0.001) {
+      return ProjectAspectRatio.ratio1x1;
+    }
+
+    if ((value - 4).abs() < 0.001) {
+      return ProjectAspectRatio.ratio4x1;
+    }
+
+    return ProjectAspectRatio.ratio16x9;
+  }
+
+  // ============================================================
+  // DISPOSE
+  // ============================================================
 
   @override
   void dispose() {
+    projectController.removeListener(
+      _onProjectControllerChanged,
+    );
+
     leftPanelController.dispose();
     topBarController.dispose();
     bottomBarController.dispose();
     middleController.dispose();
+
     super.dispose();
   }
 }

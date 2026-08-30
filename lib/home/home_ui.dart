@@ -1,90 +1,102 @@
+
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/home/create_project_screen.dart';
+
 import 'package:flutter_application_1/home/drawer_ui.dart';
-import 'package:flutter_application_1/home/home_controller.dart';
 import 'package:flutter_application_1/core/app_media.dart';
-import 'package:flutter_application_1/home/models/anime_movie_model.dart';
-import 'package:flutter_application_1/home/models/anime_series_model.dart';
-import 'package:flutter_application_1/home/models/project_settings_model.dart';
 import 'package:flutter_application_1/search/search_ui.dart';
-import 'package:flutter_application_1/home/create_project_button.dart';
+
+import 'create_project_button.dart';
 import 'project_controller.dart';
+import 'project_scope.dart';
 import 'models/project_model.dart';
 import 'project_card_ui.dart';
+
 import 'package:flutter_application_1/home/anime/seasons_ui.dart';
 import 'package:flutter_application_1/home/anime/movie_clips_ui.dart';
-import 'package:flutter_application_1/editor/editor_ui.dart';
 
 class HomeUI extends StatefulWidget {
-  const HomeUI({super.key, });
-  
-  
+  const HomeUI({
+    super.key,
+  });
 
   @override
   State<HomeUI> createState() => _HomeUIState();
 }
 
 class _HomeUIState extends State<HomeUI> {
-
-  double _aspectRatioValue(ProjectAspectRatio ratio) {
-  switch (ratio) {
-    case ProjectAspectRatio.ratio16x9:
-      return 16 / 9;
-
-    case ProjectAspectRatio.ratio9x16:
-      return 9 / 16;
-
-    case ProjectAspectRatio.ratio1x1:
-      return 1;
-
-    case ProjectAspectRatio.ratio4x1:
-      return 4;
-  }
-}
-  final HomeController controller = const HomeController();
-
-  final ProjectController projectController = ProjectController();
-
-  
-
+  // ============================================================
   // 0 = Series
   // 1 = Movies
   // 2 = Manga
   // 3 = Book
   //
   // Movies is the default tab.
+  // ============================================================
+
   int _selectedTab = 1;
 
+  // Used only to detect when a completely different project
+  // becomes the current project.
+  //
+  // Project data itself is NOT stored here.
+  String? _lastKnownProjectId;
+
   // ============================================================
-  // PROJECT CREATED
+  // PROJECT CONTEXT
   // ============================================================
 
-  void _onProjectCreated(ProjectModel project) {
-    projectController.addProject(project);
+  ProjectController get projectController =>
+      ProjectScope.read(context);
+
+  // ============================================================
+  // DEPENDENCY CHANGES
+  // ============================================================
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // This establishes the reactive dependency on ProjectController.
+    final controller = ProjectScope.of(context);
+
+    final currentProjectId = controller.currentProjectId;
+
+    // Settings/name/list updates for the SAME project should simply
+    // rebuild through ProjectScope. They should not change the tab.
+    if (currentProjectId == _lastKnownProjectId) {
+      return;
+    }
+
+    _lastKnownProjectId = currentProjectId;
+
+    final project = controller.currentProject;
+
+    if (project == null) {
+      return;
+    }
+
+    final tab = _tabForProjectType(project.projectType);
+
+    if (_selectedTab == tab) {
+      return;
+    }
 
     setState(() {
-      switch (project.projectType) {
-        case ProjectType.animeSeries:
-          _selectedTab = 0;
-          break;
-
-        case ProjectType.animeMovie:
-          _selectedTab = 1;
-          break;
-      }
+      _selectedTab = tab;
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
+  // ============================================================
+  // TAB FOR PROJECT TYPE
+  // ============================================================
 
-    projectController.addListener(_onProjectsChanged);
-  }
+  int _tabForProjectType(ProjectType type) {
+    switch (type) {
+      case ProjectType.animeSeries:
+        return 0;
 
-  void _onProjectsChanged() {
-    if (mounted) {
-      setState(() {});
+      case ProjectType.animeMovie:
+        return 1;
     }
   }
 
@@ -92,17 +104,15 @@ class _HomeUIState extends State<HomeUI> {
   // PROJECTS FOR SELECTED CATEGORY
   // ============================================================
 
-  List<ProjectModel> _projectsForSelectedTab() {
+  List<ProjectModel> _projectsForSelectedTab(
+    ProjectController controller,
+  ) {
     switch (_selectedTab) {
       case 0:
-        return projectController.projects
-            .where((project) => project.projectType == ProjectType.animeSeries)
-            .toList();
+        return controller.animeSeriesProjects;
 
       case 1:
-        return projectController.projects
-            .where((project) => project.projectType == ProjectType.animeMovie)
-            .toList();
+        return controller.animeMovieProjects;
 
       case 2:
         // Manga will be added later.
@@ -137,84 +147,63 @@ class _HomeUIState extends State<HomeUI> {
 
   void _deleteProject(ProjectModel project) {
     projectController.deleteProject(project.id);
-
-    setState(() {});
   }
 
   // ============================================================
-  // EDIT PROJECT
+  // OPEN PROJECT
   // ============================================================
 
   Future<void> _editProject(ProjectModel project) async {
-    // ============================================================
-    // ANIME SERIES
-    // ============================================================
+    final controller = ProjectScope.read(context);
 
-    if (project.projectType == ProjectType.animeSeries &&
-        project.animeSeries != null) {
-      final updatedSeries = await Navigator.of(context).push<AnimeSeriesModel>(
-        MaterialPageRoute(
-          builder: (_) => SeasonsScreen(
-  projectName: project.name,
-  series: project.animeSeries!,
-  settings: project.settings,
-),
-        ),
-      );
+    final selected = controller.selectProject(project.id);
 
-      if (updatedSeries == null || !mounted) {
-        return;
-      }
-
-      final updatedProject = project.copyWith(animeSeries: updatedSeries);
-
-      projectController.updateProject(updatedProject);
-
+    if (!selected) {
       return;
     }
 
-    // ============================================================
-    // ANIME MOVIE
-    // ============================================================
+    // Always get the project again from ProjectController.
+    // Do not continue using a potentially stale ProjectModel copy.
+    final selectedProject = controller.currentProject;
 
-    if (project.projectType == ProjectType.animeMovie &&
-        project.animeMovie != null) {
-      final updatedMovie = await Navigator.of(context).push<AnimeMovieModel>(
-        MaterialPageRoute(
-          builder: (_) => MovieClipsScreen(
-            movie: project.animeMovie!,
-            settings: project.settings,
-            onOpenClip: (clip) {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) =>
-                     EditorScreen(
-  projectName: project.name,
-  clipId: clip.id,
-  clipName: clip.name,
-  projectType: CreateProjectType.animeMovie,
-  aspectRatio: _aspectRatioValue(
-    project.settings.aspectRatio,
-  ),
-  resolution: project.settings.resolution,
-  fps: project.settings.fps,
-),
-                ),
-              );
-            },
-          ),
-        ),
-      );
-
-      if (updatedMovie == null || !mounted) {
-        return;
-      }
-
-      final updatedProject = project.copyWith(animeMovie: updatedMovie);
-
-      projectController.updateProject(updatedProject);
-
+    if (selectedProject == null) {
       return;
+    }
+
+    switch (selectedProject.projectType) {
+      // ========================================================
+      // ANIME SERIES
+      // ========================================================
+
+      case ProjectType.animeSeries:
+        if (selectedProject.animeSeries == null) {
+          return;
+        }
+
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const SeasonsScreen(),
+          ),
+        );
+
+        break;
+
+      // ========================================================
+      // ANIME MOVIE
+      // ========================================================
+
+      case ProjectType.animeMovie:
+        if (selectedProject.animeMovie == null) {
+          return;
+        }
+
+        await Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => const MovieClipsScreen(),
+          ),
+        );
+
+        break;
     }
   }
 
@@ -224,26 +213,36 @@ class _HomeUIState extends State<HomeUI> {
 
   void _downloadProject(ProjectModel project) {
     // Download workflow will be connected later.
-    debugPrint('Download project: ${project.name}');
+    debugPrint(
+      'Download project: ${project.name}',
+    );
   }
 
-  @override
-  void dispose() {
-    projectController.removeListener(_onProjectsChanged);
-    projectController.dispose();
-    super.dispose();
-  }
+  // ============================================================
+  // BUILD
+  // ============================================================
 
   @override
   Widget build(BuildContext context) {
     AppMedia.init(context);
 
+    // IMPORTANT:
+    // ProjectScope.of() makes this widget rebuild whenever
+    // ProjectController calls notifyListeners().
+    //
+    // Therefore project name/settings/project lists are always
+    // obtained from the current central controller state.
+    final controller = ProjectScope.of(context);
+
+    final projects = _projectsForSelectedTab(controller);
+
     return Scaffold(
       backgroundColor: Colors.white,
 
-      // ============================================================
-      // TOP APP BAR — REMAINS THE SAME
-      // ============================================================
+      // ==========================================================
+      // TOP APP BAR
+      // ==========================================================
+
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
@@ -254,17 +253,23 @@ class _HomeUIState extends State<HomeUI> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const DrawerUI()),
+              MaterialPageRoute(
+                builder: (_) => const DrawerUI(),
+              ),
             );
           },
           icon: const Text(
             '☰',
-            style: TextStyle(fontSize: 28, color: Colors.black, height: 1),
+            style: TextStyle(
+              fontSize: 28,
+              color: Colors.black,
+              height: 1,
+            ),
           ),
         ),
 
         title: const Text(
-          "AnimeClip",
+          'AnimeClip',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w800,
@@ -279,24 +284,34 @@ class _HomeUIState extends State<HomeUI> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) =>
-                      SearchUI(projectController: projectController),
+                  builder: (_) => SearchUI(
+                    projectController: controller,
+                  ),
                 ),
               );
             },
-            icon: const Text('🔍', style: TextStyle(fontSize: 30)),
+            icon: const Text(
+              '🔍',
+              style: TextStyle(
+                fontSize: 30,
+              ),
+            ),
           ),
         ],
 
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(height: 1, color: const Color(0xffECECEC)),
+          child: Container(
+            height: 1,
+            color: const Color(0xffECECEC),
+          ),
         ),
       ),
 
-      // ============================================================
+      // ==========================================================
       // MIDDLE CONTENT
-      // ============================================================
+      // ==========================================================
+
       body: SafeArea(
         child: Padding(
           padding: AppMedia.symmetric(horizontal: 16),
@@ -305,18 +320,16 @@ class _HomeUIState extends State<HomeUI> {
             children: [
               const SizedBox(height: 24),
 
-              // Changes when bottom navigation is selected.
-              _SelectedCategorySection(selectedTab: _selectedTab),
+              _SelectedCategorySection(
+                selectedTab: _selectedTab,
+              ),
 
               const SizedBox(height: 20),
 
-              // ======================================================
-              // PROJECT GRID
-              // ======================================================
               Expanded(
                 child: _ProjectContent(
                   selectedTab: _selectedTab,
-                  projects: _projectsForSelectedTab(),
+                  projects: projects,
                   emojiBuilder: _emojiForProject,
                   onEdit: _editProject,
                   onDelete: _deleteProject,
@@ -328,9 +341,10 @@ class _HomeUIState extends State<HomeUI> {
         ),
       ),
 
-      // ============================================================
-      // BOTTOM NAVIGATION — REMAINS ON SAME SCREEN
-      // ============================================================
+      // ==========================================================
+      // BOTTOM NAVIGATION
+      // ==========================================================
+
       bottomNavigationBar: HomeBottomBar(
         selectedTab: _selectedTab,
         onTabSelected: (index) {
@@ -338,7 +352,6 @@ class _HomeUIState extends State<HomeUI> {
             _selectedTab = index;
           });
         },
-        onProjectCreated: _onProjectCreated,
       ),
     );
   }
@@ -369,9 +382,9 @@ class _ProjectContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Widget> cards = [];
 
-    // ============================================================
+    // ==========================================================
     // EXISTING DEMO CARDS
-    // ============================================================
+    // ==========================================================
 
     if (selectedTab == 0 || selectedTab == 1) {
       cards.add(
@@ -391,9 +404,9 @@ class _ProjectContent extends StatelessWidget {
       );
     }
 
-    // ============================================================
+    // ==========================================================
     // CREATED PROJECTS
-    // ============================================================
+    // ==========================================================
 
     for (final project in projects) {
       cards.add(
@@ -407,17 +420,24 @@ class _ProjectContent extends StatelessWidget {
       );
     }
 
-    // ============================================================
-    // CONTENT
-    // ============================================================
+    // ==========================================================
+    // EMPTY
+    // ==========================================================
 
     if (cards.isEmpty) {
       return const _EmptyProjectState();
     }
 
+    // ==========================================================
+    // GRID
+    // ==========================================================
+
     return GridView.builder(
-      padding: const EdgeInsets.only(bottom: 20),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+      padding: const EdgeInsets.only(
+        bottom: 20,
+      ),
+      gridDelegate:
+          const SliverGridDelegateWithMaxCrossAxisExtent(
         maxCrossAxisExtent: 180,
         mainAxisExtent: 185,
         crossAxisSpacing: 16,
@@ -440,15 +460,20 @@ class _EmptyProjectState extends StatelessWidget {
   const _EmptyProjectState();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text('📁', style: TextStyle(fontSize: 48)),
-
+          const Text(
+            '📁',
+            style: TextStyle(
+              fontSize: 48,
+            ),
+          ),
           const SizedBox(height: 12),
-
           const Text(
             'No projects yet',
             style: TextStyle(
@@ -457,12 +482,13 @@ class _EmptyProjectState extends StatelessWidget {
               color: Colors.black,
             ),
           ),
-
           const SizedBox(height: 5),
-
           const Text(
             'Create a project to get started.',
-            style: TextStyle(fontSize: 13, color: Color(0xff777777)),
+            style: TextStyle(
+              fontSize: 13,
+              color: Color(0xff777777),
+            ),
           ),
         ],
       ),
@@ -477,23 +503,34 @@ class _EmptyProjectState extends StatelessWidget {
 class _SelectedCategorySection extends StatelessWidget {
   final int selectedTab;
 
-  const _SelectedCategorySection({required this.selectedTab});
+  const _SelectedCategorySection({
+    required this.selectedTab,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    final data = _CategoryData.fromIndex(selectedTab);
+  Widget build(
+    BuildContext context,
+  ) {
+    final data = _CategoryData.fromIndex(
+      selectedTab,
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 2,
+          ),
           child: Row(
             children: [
-              Text(data.icon, style: const TextStyle(fontSize: 22)),
-
+              Text(
+                data.icon,
+                style: const TextStyle(
+                  fontSize: 22,
+                ),
+              ),
               const SizedBox(width: 8),
-
               Text(
                 data.title,
                 style: const TextStyle(
@@ -505,11 +542,11 @@ class _SelectedCategorySection extends StatelessWidget {
             ],
           ),
         ),
-
         const SizedBox(height: 6),
-
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 2,
+          ),
           child: Text(
             data.description,
             style: const TextStyle(
@@ -519,10 +556,12 @@ class _SelectedCategorySection extends StatelessWidget {
             ),
           ),
         ),
-
         const SizedBox(height: 12),
-
-        const Divider(height: 1, thickness: 1, color: Color(0xffEAEAEA)),
+        const Divider(
+          height: 1,
+          thickness: 1,
+          color: Color(0xffEAEAEA),
+        ),
       ],
     );
   }
@@ -545,12 +584,15 @@ class _CategoryData {
     required this.color,
   });
 
-  static _CategoryData fromIndex(int index) {
+  static _CategoryData fromIndex(
+    int index,
+  ) {
     switch (index) {
       case 0:
         return const _CategoryData(
           title: 'Series',
-          description: 'Create and organize episodic anime projects.',
+          description:
+              'Create and organize episodic anime projects.',
           icon: '📺',
           color: Color(0xff7C3AED),
         );
@@ -558,7 +600,8 @@ class _CategoryData {
       case 1:
         return const _CategoryData(
           title: 'Movies',
-          description: 'Create and manage long-form animated movies.',
+          description:
+              'Create and manage long-form animated movies.',
           icon: '🎬',
           color: Color(0xffE11D48),
         );
@@ -566,7 +609,8 @@ class _CategoryData {
       case 2:
         return const _CategoryData(
           title: 'Manga',
-          description: 'Create and organize manga series and pages.',
+          description:
+              'Create and organize manga series and pages.',
           icon: '📚',
           color: Color(0xff0EA5E9),
         );
@@ -574,7 +618,8 @@ class _CategoryData {
       case 3:
         return const _CategoryData(
           title: 'Book',
-          description: 'Create and manage standalone manga books.',
+          description:
+              'Create and manage standalone manga books.',
           icon: '📖',
           color: Color(0xff16A34A),
         );
@@ -582,7 +627,8 @@ class _CategoryData {
       default:
         return const _CategoryData(
           title: 'Movies',
-          description: 'Create and manage long-form animated movies.',
+          description:
+              'Create and manage long-form animated movies.',
           icon: '🎬',
           color: Color(0xffE11D48),
         );
@@ -595,10 +641,14 @@ class _CategoryData {
 // ================================================================
 
 class CreateBottomItem extends StatelessWidget {
-  const CreateBottomItem({super.key});
+  const CreateBottomItem({
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Container(
       width: 58,
       height: 58,
@@ -606,7 +656,11 @@ class CreateBottomItem extends StatelessWidget {
         color: Color(0xFFE91E63),
         shape: BoxShape.circle,
       ),
-      child: const Icon(Icons.add, color: Colors.white, size: 34),
+      child: const Icon(
+        Icons.add,
+        color: Colors.white,
+        size: 34,
+      ),
     );
   }
 }
@@ -618,22 +672,27 @@ class CreateBottomItem extends StatelessWidget {
 class HomeBottomBar extends StatelessWidget {
   final int selectedTab;
   final ValueChanged<int> onTabSelected;
-  final ValueChanged<ProjectModel> onProjectCreated;
 
   const HomeBottomBar({
     super.key,
     required this.selectedTab,
     required this.onTabSelected,
-    required this.onProjectCreated,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Container(
       height: 82,
       decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xffEAEAEA), width: 1)),
+        border: Border(
+          top: BorderSide(
+            color: Color(0xffEAEAEA),
+            width: 1,
+          ),
+        ),
       ),
       child: SafeArea(
         top: false,
@@ -642,45 +701,39 @@ class HomeBottomBar extends StatelessWidget {
             Expanded(
               child: _BottomItem(
                 icon: '📺',
-                title: "Series",
+                title: 'Series',
                 color: const Color(0xff7C3AED),
                 selected: selectedTab == 0,
                 onTap: () => onTabSelected(0),
               ),
             ),
-
             Expanded(
               child: _BottomItem(
                 icon: '🎬',
-                title: "Movies",
+                title: 'Movies',
                 color: const Color(0xffE11D48),
                 selected: selectedTab == 1,
                 onTap: () => onTabSelected(1),
               ),
             ),
-
-            // Center create button uses the same width as every
-            // other navigation slot, so there is no large gap.
             Expanded(
               child: Center(
-                child: CreateProjectButton(onProjectCreated: onProjectCreated),
+                child: const CreateProjectButton(),
               ),
             ),
-
             Expanded(
               child: _BottomItem(
                 icon: '📚',
-                title: "Manga",
+                title: 'Manga',
                 color: const Color(0xff0EA5E9),
                 selected: selectedTab == 2,
                 onTap: () => onTabSelected(2),
               ),
             ),
-
             Expanded(
               child: _BottomItem(
                 icon: '📖',
-                title: "Book",
+                title: 'Book',
                 color: const Color(0xff16A34A),
                 selected: selectedTab == 3,
                 onTap: () => onTabSelected(3),
@@ -708,7 +761,9 @@ class ProjectCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return SizedBox(
       width: 160,
       child: Column(
@@ -720,7 +775,9 @@ class ProjectCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xffEAEAEA)),
+              border: Border.all(
+                color: const Color(0xffEAEAEA),
+              ),
               boxShadow: const [
                 BoxShadow(
                   color: Color(0x10000000),
@@ -749,9 +806,7 @@ class ProjectCard extends StatelessWidget {
               ),
             ),
           ),
-
           const SizedBox(height: 10),
-
           Center(
             child: Text(
               projectName,
@@ -789,43 +844,59 @@ class _BottomItem extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 6,
+            vertical: 5,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Selected indicator
               AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
+                duration: const Duration(
+                  milliseconds: 180,
+                ),
                 curve: Curves.easeOut,
                 width: selected ? 38 : 0,
                 height: 3,
-                margin: const EdgeInsets.only(bottom: 4),
+                margin: const EdgeInsets.only(
+                  bottom: 4,
+                ),
                 decoration: BoxDecoration(
                   color: color,
                   borderRadius: BorderRadius.circular(99),
                 ),
               ),
-
               AnimatedScale(
                 scale: selected ? 1.08 : 1.0,
-                duration: const Duration(milliseconds: 180),
-                child: Text(icon, style: const TextStyle(fontSize: 23)),
+                duration: const Duration(
+                  milliseconds: 180,
+                ),
+                child: Text(
+                  icon,
+                  style: const TextStyle(
+                    fontSize: 23,
+                  ),
+                ),
               ),
-
               const SizedBox(height: 3),
-
               Text(
                 title,
                 style: TextStyle(
                   fontSize: 10,
-                  color: selected ? color : const Color(0xff555555),
-                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                  color: selected
+                      ? color
+                      : const Color(0xff555555),
+                  fontWeight: selected
+                      ? FontWeight.w700
+                      : FontWeight.w600,
                 ),
               ),
             ],
@@ -841,17 +912,23 @@ class _BottomItem extends StatelessWidget {
 // ================================================================
 
 class RecentSection extends StatelessWidget {
-  const RecentSection({super.key});
+  const RecentSection({
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 2),
+          padding: EdgeInsets.symmetric(
+            horizontal: 2,
+          ),
           child: Text(
-            "Recent",
+            'Recent',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -859,10 +936,12 @@ class RecentSection extends StatelessWidget {
             ),
           ),
         ),
-
         const SizedBox(height: 12),
-
-        const Divider(height: 1, thickness: 1, color: Color(0xffEAEAEA)),
+        const Divider(
+          height: 1,
+          thickness: 1,
+          color: Color(0xffEAEAEA),
+        ),
       ],
     );
   }

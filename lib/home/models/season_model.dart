@@ -27,7 +27,10 @@ class SeasonModel {
       caseSensitive: false,
     );
 
-    final customName = trimmed.replaceFirst(prefix, '').trim();
+    final customName = trimmed.replaceFirst(
+      prefix,
+      '',
+    ).trim();
 
     return customName.isEmpty
         ? 'Season $number'

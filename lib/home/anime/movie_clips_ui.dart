@@ -1,24 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../models/anime_movie_model.dart';
 import '../models/clip_model.dart';
-import '../models/project_settings_model.dart';
+import '../project_controller.dart';
+import '../project_scope.dart';
+
+import '../../editor/editor_ui.dart';
 
 import 'movie_clips_controller.dart';
 
 class MovieClipsScreen extends StatefulWidget {
   const MovieClipsScreen({
     super.key,
-    required this.movie,
-    required this.settings,
     this.controller,
-    this.onOpenClip,
   });
 
-  final AnimeMovieModel movie;
-  final ProjectSettingsModel settings;
   final MovieClipsController? controller;
-  final ValueChanged<ClipModel>? onOpenClip;
 
   @override
   State<MovieClipsScreen> createState() =>
@@ -27,21 +23,40 @@ class MovieClipsScreen extends StatefulWidget {
 
 class _MovieClipsScreenState
     extends State<MovieClipsScreen> {
-  late final MovieClipsController _controller;
-  late final bool _ownsController;
+  late MovieClipsController _controller;
+  bool _controllerInitialized = false;
+  bool _ownsController = false;
+
+  // ============================================================
+  // PROJECT CONTROLLER
+  // ============================================================
+
+  ProjectController get projectController =>
+      ProjectScope.of(context);
+
+  // ============================================================
+  // CONTROLLER INITIALIZATION
+  // ============================================================
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    _ownsController = widget.controller == null;
+    if (_controllerInitialized) {
+      return;
+    }
 
-    _controller =
-        widget.controller ??
-        MovieClipsController(
-          movie: widget.movie,
-          fps: widget.settings.fps.round(),
-        );
+    _controllerInitialized = true;
+
+    if (widget.controller != null) {
+      _controller = widget.controller!;
+      _ownsController = false;
+    } else {
+      _controller = MovieClipsController(
+        projectController: projectController,
+      );
+      _ownsController = true;
+    }
   }
 
   @override
@@ -53,7 +68,19 @@ class _MovieClipsScreenState
     super.dispose();
   }
 
+
+
+  // ============================================================
+  // CREATE CLIP
+  // ============================================================
+
   Future<void> _createClip() async {
+    final movie = projectController.currentAnimeMovie;
+
+    if (movie == null) {
+      return;
+    }
+
     final nameController = TextEditingController();
 
     final name = await showDialog<String>(
@@ -106,9 +133,16 @@ class _MovieClipsScreenState
     );
   }
 
-  Future<void> _renameClip(ClipModel clip) async {
-    final controller =
-        TextEditingController(text: clip.name);
+  // ============================================================
+  // RENAME CLIP
+  // ============================================================
+
+  Future<void> _renameClip(
+    ClipModel clip,
+  ) async {
+    final controller = TextEditingController(
+      text: clip.name,
+    );
 
     final shouldSave = await showDialog<bool>(
       context: context,
@@ -160,7 +194,13 @@ class _MovieClipsScreenState
     );
   }
 
-  Future<void> _deleteClip(ClipModel clip) async {
+  // ============================================================
+  // DELETE CLIP
+  // ============================================================
+
+  Future<void> _deleteClip(
+    ClipModel clip,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -199,14 +239,25 @@ class _MovieClipsScreenState
       return;
     }
 
-    await _controller.deleteClip(clip.id);
+    await _controller.deleteClip(
+      clip.id,
+    );
   }
 
-  void _showClipMenu(ClipModel clip) {
+  // ============================================================
+  // CLIP MENU
+  // ============================================================
+
+  void _showClipMenu(
+    ClipModel clip,
+  ) {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
       builder: (sheetContext) {
+        final errorColor =
+            Theme.of(context).colorScheme.error;
+
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -222,18 +273,16 @@ class _MovieClipsScreenState
                 },
               ),
               ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.delete_outline,
+                  color: errorColor,
                 ),
-                title: const Text('Delete'),
-                textColor:
-                    Theme.of(context)
-                        .colorScheme
-                        .error,
-                iconColor:
-                    Theme.of(context)
-                        .colorScheme
-                        .error,
+                title: Text(
+                  'Delete',
+                  style: TextStyle(
+                    color: errorColor,
+                  ),
+                ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _deleteClip(clip);
@@ -247,57 +296,120 @@ class _MovieClipsScreenState
     );
   }
 
+  // ============================================================
+  // OPEN CLIP / EDITOR
+  // ============================================================
+
+  Future<void> _openClip(
+  ClipModel clip,
+) async {
+  final controller = projectController;
+
+  final currentProject = controller.currentProject;
+
+  if (currentProject == null ||
+      currentProject.animeMovie == null) {
+    return;
+  }
+
+  // Re-read the latest clip from ProjectController.
+  final currentClip =
+      controller.findCurrentClipById(clip.id);
+
+  if (currentClip == null) {
+    return;
+  }
+
+  // Make this clip the active clip in the central controller.
+  final selected = controller.selectClip(
+    currentClip.id,
+  );
+
+  if (!selected) {
+    return;
+  }
+
+  await Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => EditorScreen(
+        clipId: currentClip.id,
+      ),
+    ),
+  );
+}
+
+  // ============================================================
+  // BUILD
+  // ============================================================
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
+    // Reactive connection to the central ProjectController.
+    final controller = ProjectScope.of(context);
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
+
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
+
         leading: IconButton(
           tooltip: 'Back',
           onPressed: () {
-  Navigator.of(context).pop(
-    _controller.movie,
-  );
-},
-          icon: const Icon(Icons.arrow_back),
+            Navigator.of(context).pop();
+          },
+          icon: const Icon(
+            Icons.arrow_back,
+          ),
         ),
+
         actions: [
           IconButton(
             tooltip: 'More options',
             onPressed: _showScreenMenu,
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(
+              Icons.more_vert,
+            ),
           ),
         ],
+
         bottom: PreferredSize(
           preferredSize:
               const Size.fromHeight(1),
           child: Divider(
             height: 1,
-            color: theme.colorScheme.outlineVariant,
+            color:
+                theme.colorScheme.outlineVariant,
           ),
         ),
+
         centerTitle: true,
+
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
               'Clips',
-              style: theme.textTheme.titleLarge
-                  ?.copyWith(
-                fontWeight: FontWeight.w700,
+              style:
+                  theme.textTheme.titleLarge
+                      ?.copyWith(
+                fontWeight:
+                    FontWeight.w700,
               ),
             ),
             Text(
-              widget.movie.name,
+              controller.currentAnimeMovie?.name ??
+                  'Anime Movie',
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelMedium
-                  ?.copyWith(
+              overflow:
+                  TextOverflow.ellipsis,
+              style:
+                  theme.textTheme.labelMedium
+                      ?.copyWith(
                 color: theme
                     .colorScheme
                     .onSurfaceVariant,
@@ -306,10 +418,23 @@ class _MovieClipsScreenState
           ],
         ),
       ),
+
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, _) {
-          final clips = _controller.clips;
+          final movie =
+              controller.currentAnimeMovie;
+
+          if (movie == null) {
+            return const Center(
+              child: Text(
+                'Anime movie not found',
+              ),
+            );
+          }
+
+          final clips =
+              controller.currentClips;
 
           return Stack(
             children: [
@@ -380,8 +505,8 @@ class _MovieClipsScreenState
                                 ),
                               ),
                               child: Text(
-                                '${_controller.clipCount} '
-                                '${_controller.clipCount == 1 ? 'clip' : 'clips'}',
+                                '${clips.length} '
+                                '${clips.length == 1 ? 'clip' : 'clips'}',
                                 style: theme
                                     .textTheme
                                     .labelSmall
@@ -391,7 +516,8 @@ class _MovieClipsScreenState
                                       .onSurfaceVariant,
                                   fontWeight:
                                       FontWeight.w600,
-                                  letterSpacing: 1.1,
+                                  letterSpacing:
+                                      1.1,
                                 ),
                               ),
                             ),
@@ -399,19 +525,18 @@ class _MovieClipsScreenState
                         ),
                       ),
                     ),
+
                     SliverReorderableList(
-                      itemCount:
-                          clips.length,
+                      itemCount: clips.length,
+
                       onReorderItem:
                           (oldIndex, newIndex) {
-                        _controller
-                            .reorderClip(
-                          oldIndex:
-                              oldIndex,
-                          newIndex:
-                              newIndex,
+                        _controller.reorderClip(
+                          oldIndex: oldIndex,
+                          newIndex: newIndex,
                         );
                       },
+
                       itemBuilder:
                           (context, index) {
                         final clip =
@@ -427,6 +552,7 @@ class _MovieClipsScreenState
                         );
                       },
                     ),
+
                     SliverToBoxAdapter(
                       child: Padding(
                         padding:
@@ -456,6 +582,7 @@ class _MovieClipsScreenState
                     ),
                   ],
                 ),
+
               _buildBottomAction(theme),
             ],
           );
@@ -463,6 +590,10 @@ class _MovieClipsScreenState
       ),
     );
   }
+
+  // ============================================================
+  // CLIP ROW
+  // ============================================================
 
   Widget _buildClipRow(
     ThemeData theme,
@@ -473,12 +604,15 @@ class _MovieClipsScreenState
     return ReorderableDelayedDragStartListener(
       key: key,
       index: index,
+
       child: Material(
         color: theme.colorScheme.surface,
+
         child: InkWell(
           onTap: () {
-            widget.onOpenClip?.call(clip);
+            _openClip(clip);
           },
+
           child: Container(
             margin:
                 const EdgeInsets.symmetric(
@@ -497,6 +631,7 @@ class _MovieClipsScreenState
                 ),
               ),
             ),
+
             child: Row(
               children: [
                 Container(
@@ -509,7 +644,9 @@ class _MovieClipsScreenState
                     size: 18,
                   ),
                 ),
+
                 const SizedBox(width: 8),
+
                 Container(
                   width: 48,
                   height: 48,
@@ -530,11 +667,14 @@ class _MovieClipsScreenState
                         .onSurfaceVariant,
                   ),
                 ),
+
                 const SizedBox(width: 16),
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                        CrossAxisAlignment
+                            .start,
                     children: [
                       Text(
                         clip.name,
@@ -566,6 +706,7 @@ class _MovieClipsScreenState
                     ],
                   ),
                 ),
+
                 IconButton(
                   tooltip: 'Rename',
                   onPressed: () {
@@ -575,6 +716,7 @@ class _MovieClipsScreenState
                     Icons.edit_outlined,
                   ),
                 ),
+
                 IconButton(
                   tooltip: 'More options',
                   onPressed: () {
@@ -592,6 +734,10 @@ class _MovieClipsScreenState
     );
   }
 
+  // ============================================================
+  // EMPTY STATE
+  // ============================================================
+
   Widget _buildEmptyState(
     ThemeData theme,
   ) {
@@ -605,22 +751,28 @@ class _MovieClipsScreenState
       ),
       children: [
         const SizedBox(height: 36),
+
         Icon(
           Icons.movie_outlined,
           size: 52,
           color:
               theme.colorScheme.onSurfaceVariant,
         ),
+
         const SizedBox(height: 16),
+
         Text(
           'No clips yet',
           textAlign: TextAlign.center,
           style: theme.textTheme.titleMedium
               ?.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight:
+                FontWeight.w600,
           ),
         ),
+
         const SizedBox(height: 6),
+
         Text(
           'Create the first clip for this movie.',
           textAlign: TextAlign.center,
@@ -635,6 +787,10 @@ class _MovieClipsScreenState
     );
   }
 
+  // ============================================================
+  // BOTTOM ACTION
+  // ============================================================
+
   Widget _buildBottomAction(
     ThemeData theme,
   ) {
@@ -642,6 +798,7 @@ class _MovieClipsScreenState
       left: 0,
       right: 0,
       bottom: 0,
+
       child: Container(
         padding:
             const EdgeInsets.fromLTRB(
@@ -650,6 +807,7 @@ class _MovieClipsScreenState
           16,
           16,
         ),
+
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -662,8 +820,10 @@ class _MovieClipsScreenState
             ],
           ),
         ),
+
         child: SafeArea(
           top: false,
+
           child: Center(
             child: FilledButton.icon(
               onPressed:
@@ -692,6 +852,10 @@ class _MovieClipsScreenState
       ),
     );
   }
+
+  // ============================================================
+  // SCREEN MENU
+  // ============================================================
 
   void _showScreenMenu() {
     showModalBottomSheet<void>(

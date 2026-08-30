@@ -1,37 +1,65 @@
+
 import 'package:flutter/foundation.dart';
 
+import '../project_controller.dart';
 import '../models/episode_model.dart';
-import '../models/season_model.dart';
 
 class EpisodesController extends ChangeNotifier {
   EpisodesController({
-    required this._season,
-  });
+    required this.projectController,
+  }) {
+    projectController.addListener(_onProjectChanged);
+  }
 
-  SeasonModel _season;
+  // ============================================================
+  // SINGLE SOURCE OF TRUTH
+  // ============================================================
+
+  final ProjectController projectController;
+
+  // ============================================================
+  // TEMPORARY UI STATE
+  // ============================================================
 
   bool _isBusy = false;
 
-  SeasonModel get season => _season;
-
-  List<EpisodeModel> get episodes =>
-      List.unmodifiable(_season.episodes);
-
   bool get isBusy => _isBusy;
 
+  // ============================================================
+  // CURRENT EPISODES
+  // ============================================================
+  //
+  // The episode data always comes from ProjectController.
+  // No separate episode list is stored here.
+  // ============================================================
+
+  List<EpisodeModel> get episodes =>
+      projectController.currentEpisodes;
+
+  EpisodeModel? get currentEpisode =>
+      projectController.currentEpisode;
+
+  int get episodeCount => episodes.length;
+
   int get nextEpisodeNumber {
-    if (_season.episodes.isEmpty) {
+    if (episodes.isEmpty) {
       return 1;
     }
 
-    return _season.episodes
-            .map((episode) => episode.episodeNumber)
-            .reduce((a, b) => a > b ? a : b) +
+    return episodes
+            .map(
+              (episode) => episode.episodeNumber,
+            )
+            .reduce(
+              (a, b) => a > b ? a : b,
+            ) +
         1;
   }
 
-  EpisodeModel? findEpisode(String id) {
-    for (final episode in _season.episodes) {
+  EpisodeModel? findEpisode(
+    String id,
+  ) {
+    for (final episode in episodes) {
       if (episode.id == id) {
         return episode;
       }
@@ -40,105 +68,69 @@ class EpisodesController extends ChangeNotifier {
     return null;
   }
 
-  Future<EpisodeModel> createEpisode({
+  // ============================================================
+  // CREATE EPISODE
+  // ============================================================
+
+  Future<EpisodeModel?> createEpisode({
     String? name,
   }) async {
     _setBusy(true);
 
     try {
-      final number = nextEpisodeNumber;
-      final cleaned = name?.trim() ?? '';
-
-      final episode = EpisodeModel(
-        id: _createId(number),
-        name: cleaned.isEmpty
-            ? 'Episode $number'
-            : cleaned,
-        episodeNumber: number,
-        clips: const [],
+      return projectController.createEpisode(
+        name: name,
       );
-
-      _season = _season.copyWith(
-        episodes: [
-          ..._season.episodes,
-          episode,
-        ],
-      );
-
-      notifyListeners();
-
-      return episode;
     } finally {
       _setBusy(false);
     }
   }
+
+  // ============================================================
+  // RENAME EPISODE
+  // ============================================================
 
   Future<bool> renameEpisode({
     required String episodeId,
     required String newName,
   }) async {
-    final episode = findEpisode(episodeId);
-
-    if (episode == null) {
-      return false;
-    }
-
-    final cleaned = newName.trim();
-
-    final updatedEpisode = episode.copyWith(
-      name: cleaned.isEmpty
-          ? 'Episode ${episode.episodeNumber}'
-          : cleaned,
-    );
-
-    final updatedEpisodes =
-        _season.episodes.map((item) {
-      if (item.id == episodeId) {
-        return updatedEpisode;
-      }
-
-      return item;
-    }).toList();
-
-    _season = _season.copyWith(
-      episodes: updatedEpisodes,
-    );
-
-    notifyListeners();
-
-    return true;
-  }
-
-  Future<bool> deleteEpisode(String episodeId) async {
     _setBusy(true);
 
     try {
-      final exists = _season.episodes.any(
-        (episode) => episode.id == episodeId,
+      return projectController.renameEpisode(
+        episodeId: episodeId,
+        newName: newName,
       );
-
-      if (!exists) {
-        return false;
-      }
-
-      final updatedEpisodes =
-          _season.episodes
-              .where((episode) => episode.id != episodeId)
-              .toList();
-
-      _season = _season.copyWith(
-        episodes: updatedEpisodes,
-      );
-
-      notifyListeners();
-
-      return true;
     } finally {
       _setBusy(false);
     }
   }
 
-  String getClipLabel(EpisodeModel episode) {
+  // ============================================================
+  // DELETE EPISODE
+  // ============================================================
+
+  Future<bool> deleteEpisode(
+    String episodeId,
+  ) async {
+    _setBusy(true);
+
+    try {
+      return projectController.deleteEpisode(
+        episodeId,
+      );
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  // ============================================================
+  // CLIP LABEL
+  // ============================================================
+
+  String getClipLabel(
+    EpisodeModel episode,
+  ) {
     if (episode.clipCount == 1) {
       return '1 Clip';
     }
@@ -146,10 +138,9 @@ class EpisodesController extends ChangeNotifier {
     return '${episode.clipCount} Clips';
   }
 
-  String _createId(int number) {
-    return 'episode_${number}_'
-        '${DateTime.now().microsecondsSinceEpoch}';
-  }
+  // ============================================================
+  // BUSY STATE
+  // ============================================================
 
   void _setBusy(bool value) {
     if (_isBusy == value) {
@@ -160,25 +151,30 @@ class EpisodesController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateEpisode(EpisodeModel updatedEpisode) {
-  final index = _season.episodes.indexWhere(
-    (episode) => episode.id == updatedEpisode.id,
-  );
+  // ============================================================
+  // PROJECT CHANGES
+  // ============================================================
+  //
+  // ProjectController remains the source of truth.
+  // This forwarding notification keeps any existing UI that
+  // listens to EpisodesController synchronized.
+  // ============================================================
 
-  if (index == -1) {
-    return;
+  void _onProjectChanged() {
+    notifyListeners();
   }
 
-  final updatedEpisodes = List<EpisodeModel>.from(
-    _season.episodes,
-  );
+  // ============================================================
+  // DISPOSE
+  // ============================================================
 
-  updatedEpisodes[index] = updatedEpisode;
+  @override
+  void dispose() {
+    projectController.removeListener(
+      _onProjectChanged,
+    );
 
-  _season = _season.copyWith(
-    episodes: updatedEpisodes,
-  );
-
-  notifyListeners();
+    super.dispose();
+  }
 }
-}
+

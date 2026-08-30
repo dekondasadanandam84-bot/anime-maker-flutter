@@ -1,235 +1,151 @@
+
 import 'package:flutter/foundation.dart';
 
+import '../project_controller.dart';
 import '../models/clip_model.dart';
-import '../models/episode_model.dart';
 
 class ClipsController extends ChangeNotifier {
   ClipsController({
-    required this._episode,
-    required this.fps,
-  });
+    required this.projectController,
+  }) {
+    projectController.addListener(_onProjectChanged);
+  }
 
-  EpisodeModel _episode;
-  final int fps;
+  // ============================================================
+  // SINGLE SOURCE OF TRUTH
+  // ============================================================
+
+  final ProjectController projectController;
+
+  // ============================================================
+  // TEMPORARY UI STATE
+  // ============================================================
 
   bool _isBusy = false;
 
-  EpisodeModel get episode => _episode;
-
-  List<ClipModel> get clips =>
-      List.unmodifiable(_episode.clips);
-
   bool get isBusy => _isBusy;
 
-  int get clipCount => _episode.clips.length;
+  // ============================================================
+  // CURRENT CLIPS
+  // ============================================================
+  //
+  // Clip data is always read from ProjectController.
+  // No separate clip list is stored here.
+  // ============================================================
+
+  List<ClipModel> get clips =>
+      projectController.currentClips;
+
+  int get clipCount => clips.length;
 
   int get nextClipNumber {
-    if (_episode.clips.isEmpty) {
+    if (clips.isEmpty) {
       return 1;
     }
 
-    return _episode.clips
+    return clips
             .map((clip) => clip.number)
-            .reduce((a, b) => a > b ? a : b) +
+            .reduce(
+              (a, b) => a > b ? a : b,
+            ) +
         1;
   }
 
-  ClipModel? findClip(String id) {
-    for (final clip in _episode.clips) {
-      if (clip.id == id) {
-        return clip;
-      }
-    }
-
-    return null;
+  ClipModel? findClip(
+    String id,
+  ) {
+    return projectController.findCurrentClipById(
+      id,
+    );
   }
 
-  Future<ClipModel> createClip({
+  // ============================================================
+  // CREATE CLIP
+  // ============================================================
+
+  Future<ClipModel?> createClip({
     String? name,
   }) async {
     _setBusy(true);
 
     try {
-      final number = nextClipNumber;
-
-      // Every new clip starts at the maximum allowed duration.
-      const int durationSeconds = 60;
-
-      // Frame count is determined by the project's FPS.
-      final int frameCount = durationSeconds * fps;
-
-      final trimmedName = name?.trim() ?? '';
-
-      final clip = ClipModel(
-        id: _createId(number),
-        number: number,
-        name: trimmedName.isEmpty
-            ? 'Clip $number'
-            : trimmedName,
-        durationSeconds: durationSeconds,
-        frameCount: frameCount,
+      return projectController.createCurrentClip(
+        name: name,
       );
-
-      _episode = _episode.copyWith(
-        clips: [
-          ..._episode.clips,
-          clip,
-        ],
-      );
-
-      notifyListeners();
-
-      return clip;
     } finally {
       _setBusy(false);
     }
   }
+
+  // ============================================================
+  // RENAME CLIP
+  // ============================================================
 
   Future<bool> renameClip({
     required String clipId,
     required String newName,
   }) async {
-    final clip = findClip(clipId);
-
-    if (clip == null) {
-      return false;
-    }
-
-    final trimmed = newName.trim();
-
-    final updatedClip = clip.copyWith(
-      name: trimmed.isEmpty
-          ? 'Clip ${clip.number}'
-          : trimmed,
-    );
-
-    final updatedClips = _episode.clips.map((item) {
-      if (item.id == clipId) {
-        return updatedClip;
-      }
-
-      return item;
-    }).toList();
-
-    _episode = _episode.copyWith(
-      clips: updatedClips,
-    );
-
-    notifyListeners();
-
-    return true;
-  }
-
-  Future<bool> deleteClip(String clipId) async {
     _setBusy(true);
 
     try {
-      final exists = _episode.clips.any(
-        (clip) => clip.id == clipId,
+      return projectController.renameClip(
+        clipId: clipId,
+        newName: newName,
       );
-
-      if (!exists) {
-        return false;
-      }
-
-      final updatedClips = _episode.clips
-          .where((clip) => clip.id != clipId)
-          .toList();
-
-      _episode = _episode.copyWith(
-        clips: updatedClips,
-      );
-
-      notifyListeners();
-
-      return true;
     } finally {
       _setBusy(false);
     }
   }
 
+  // ============================================================
+  // DELETE CLIP
+  // ============================================================
+
+  Future<bool> deleteClip(
+    String clipId,
+  ) async {
+    _setBusy(true);
+
+    try {
+      return projectController.deleteClip(
+        clipId,
+      );
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  // ============================================================
+  // REORDER CLIPS
+  // ============================================================
+
   void reorderClip({
     required int oldIndex,
     required int newIndex,
   }) {
-    if (oldIndex < 0 ||
-        oldIndex >= _episode.clips.length) {
-      return;
-    }
-
-    if (newIndex < 0 ||
-        newIndex > _episode.clips.length) {
-      return;
-    }
-
-    if (oldIndex == newIndex ||
-        oldIndex + 1 == newIndex) {
-      return;
-    }
-
-    if (newIndex > oldIndex) {
-      newIndex -= 1;
-    }
-
-    final updatedClips =
-        List<ClipModel>.from(_episode.clips);
-
-    final clip = updatedClips.removeAt(oldIndex);
-    updatedClips.insert(newIndex, clip);
-
-    final renumbered = <ClipModel>[];
-
-    for (int i = 0; i < updatedClips.length; i++) {
-      renumbered.add(
-        updatedClips[i].copyWith(
-          number: i + 1,
-        ),
-      );
-    }
-
-    _episode = _episode.copyWith(
-      clips: renumbered,
+    projectController.reorderCurrentClips(
+      oldIndex: oldIndex,
+      newIndex: newIndex,
     );
-
-    notifyListeners();
   }
+
+  // ============================================================
+  // UPDATE CLIP TIMING
+  // ============================================================
 
   void updateClipTiming({
     required String clipId,
     required int durationSeconds,
   }) {
-    final clip = findClip(clipId);
-
-    if (clip == null) {
-      return;
-    }
-
-    // Clips can be adjusted later, but never below 1 second
-    // or above the 60-second maximum.
-    final safeDuration = durationSeconds.clamp(1, 60);
-
-    final updatedClip = clip.copyWith(
-      durationSeconds: safeDuration,
-      frameCount: safeDuration * fps,
+    projectController.updateClipTiming(
+      clipId: clipId,
+      durationSeconds: durationSeconds,
     );
-
-    _episode = _episode.copyWith(
-      clips: _episode.clips.map((item) {
-        if (item.id == clipId) {
-          return updatedClip;
-        }
-
-        return item;
-      }).toList(),
-    );
-
-    notifyListeners();
   }
 
-  String _createId(int number) {
-    return 'clip_${number}_'
-        '${DateTime.now().microsecondsSinceEpoch}';
-  }
+  // ============================================================
+  // TEMPORARY BUSY STATE
+  // ============================================================
 
   void _setBusy(bool value) {
     if (_isBusy == value) {
@@ -239,4 +155,31 @@ class ClipsController extends ChangeNotifier {
     _isBusy = value;
     notifyListeners();
   }
+
+  // ============================================================
+  // PROJECT CHANGES
+  // ============================================================
+  //
+  // ProjectController owns the data.
+  // This forwarding notification keeps any existing UI that
+  // listens to ClipsController synchronized with project changes.
+  // ============================================================
+
+  void _onProjectChanged() {
+    notifyListeners();
+  }
+
+  // ============================================================
+  // DISPOSE
+  // ============================================================
+
+  @override
+  void dispose() {
+    projectController.removeListener(
+      _onProjectChanged,
+    );
+
+    super.dispose();
+  }
 }
+

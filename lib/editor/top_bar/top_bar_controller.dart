@@ -1,13 +1,12 @@
+
 import 'package:flutter/foundation.dart';
 
 class TopBarController extends ChangeNotifier {
-  TopBarController({
-    required this.clipId,
-    required this.clipName,
-  });
+  TopBarController();
 
-  final String clipId;
-  final String clipName;
+  // ============================================================
+  // TEMPORARY UI STATE
+  // ============================================================
 
   bool _isAudioEnabled = true;
   bool _canUndo = false;
@@ -15,15 +14,12 @@ class TopBarController extends ChangeNotifier {
   bool _panelsHidden = false;
 
   bool get isAudioEnabled => _isAudioEnabled;
+
   bool get canUndo => _canUndo;
+
   bool get canRedo => _canRedo;
 
   bool get panelsHidden => _panelsHidden;
-
-  void hidePanels() {
-  _panelsHidden = !_panelsHidden;
-  notifyListeners();
-}
 
   // ============================================================
   // AUDIO
@@ -55,7 +51,9 @@ class TopBarController extends ChangeNotifier {
   // ============================================================
 
   void undo() {
-    if (!_canUndo) return;
+    if (!_canUndo) {
+      return;
+    }
 
     // Actual undo logic later.
 
@@ -63,7 +61,9 @@ class TopBarController extends ChangeNotifier {
   }
 
   void redo() {
-    if (!_canRedo) return;
+    if (!_canRedo) {
+      return;
+    }
 
     // Actual redo logic later.
 
@@ -71,14 +71,18 @@ class TopBarController extends ChangeNotifier {
   }
 
   void setUndoAvailable(bool value) {
-    if (_canUndo == value) return;
+    if (_canUndo == value) {
+      return;
+    }
 
     _canUndo = value;
     notifyListeners();
   }
 
   void setRedoAvailable(bool value) {
-    if (_canRedo == value) return;
+    if (_canRedo == value) {
+      return;
+    }
 
     _canRedo = value;
     notifyListeners();
@@ -104,7 +108,10 @@ class TopBarController extends ChangeNotifier {
   // HIDE / SHOW CONTROLS
   // ============================================================
 
-  
+  void hidePanels() {
+    _panelsHidden = !_panelsHidden;
+    notifyListeners();
+  }
 
   // ============================================================
   // RESET
@@ -119,3 +126,4 @@ class TopBarController extends ChangeNotifier {
     notifyListeners();
   }
 }
+

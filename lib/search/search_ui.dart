@@ -1,11 +1,7 @@
-
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/editor/editor_ui.dart';
 import 'package:flutter_application_1/home/anime/movie_clips_ui.dart';
 import 'package:flutter_application_1/home/anime/seasons_ui.dart';
-import 'package:flutter_application_1/home/create_project_screen.dart';
 import 'package:flutter_application_1/home/models/project_model.dart';
-import 'package:flutter_application_1/home/models/project_settings_model.dart';
 import 'package:flutter_application_1/home/project_controller.dart';
 import 'package:flutter_application_1/tutorials/tutorials_controller.dart';
 import 'search_controller.dart';
@@ -14,10 +10,7 @@ import 'package:flutter_application_1/templates/templates_controller.dart';
 class SearchUI extends StatefulWidget {
   final ProjectController projectController;
 
-  const SearchUI({
-    super.key,
-    required this.projectController,
-  });
+  const SearchUI({super.key, required this.projectController});
 
   @override
   State<SearchUI> createState() => _SearchUIState();
@@ -27,17 +20,17 @@ class _SearchUIState extends State<SearchUI> {
   late final AnimeClipSearchController controller;
 
   @override
-void initState() {
-  super.initState();
+  void initState() {
+    super.initState();
 
-  controller = AnimeClipSearchController(
-    projectController: widget.projectController,
-  );
+    controller = AnimeClipSearchController(
+      projectController: widget.projectController,
+    );
 
-  controller.init();
+    controller.init();
 
-  controller.addListener(_onSearchChanged);
-}
+    controller.addListener(_onSearchChanged);
+  }
 
   void _onSearchChanged() {
     if (mounted) {
@@ -62,13 +55,9 @@ void initState() {
             // =====================================================
             // SEARCH HEADER
             // =====================================================
-
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               color: Colors.white,
               child: Row(
                 children: [
@@ -77,9 +66,7 @@ void initState() {
                       height: 46,
                       decoration: BoxDecoration(
                         color: const Color(0xFFF3F3F4),
-                        border: Border.all(
-                          color: const Color(0xFFCFC4C5),
-                        ),
+                        border: Border.all(color: const Color(0xFFCFC4C5)),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -96,8 +83,7 @@ void initState() {
 
                           Expanded(
                             child: TextField(
-                              controller:
-                                  controller.searchController,
+                              controller: controller.searchController,
                               autofocus: true,
                               decoration: const InputDecoration(
                                 border: InputBorder.none,
@@ -118,8 +104,7 @@ void initState() {
                             GestureDetector(
                               onTap: controller.clearSearch,
                               child: const Padding(
-                                padding:
-                                    EdgeInsets.only(right: 12),
+                                padding: EdgeInsets.only(right: 12),
                                 child: Icon(
                                   Icons.close,
                                   size: 19,
@@ -154,22 +139,14 @@ void initState() {
             // =====================================================
             // DIVIDER
             // =====================================================
-
-            const Divider(
-              height: 1,
-              thickness: 1,
-              color: Color(0xFFEAEAEA),
-            ),
+            const Divider(height: 1, thickness: 1, color: Color(0xFFEAEAEA)),
 
             // =====================================================
             // CONTENT
             // =====================================================
-
             Expanded(
               child: controller.hasQuery
-                  ? _SearchResults(
-                      controller: controller,
-                    )
+                  ? _SearchResults(controller: controller)
                   : const _SearchEmptyState(),
             ),
           ],
@@ -207,10 +184,7 @@ class _SearchEmptyState extends StatelessWidget {
             Text(
               "Find projects, tutorials, templates and more.",
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ],
         ),
@@ -226,111 +200,97 @@ class _SearchEmptyState extends StatelessWidget {
 class _SearchResults extends StatelessWidget {
   final AnimeClipSearchController controller;
 
-  const _SearchResults({
-    required this.controller,
-  });
+  const _SearchResults({required this.controller});
 
-    @override
-Widget build(BuildContext context) {
-  final projects = controller.projects;
-  final templates = controller.templates;
-  final tutorials = controller.tutorials;
+  @override
+  Widget build(BuildContext context) {
+    final projects = controller.projects;
+    final templates = controller.templates;
+    final tutorials = controller.tutorials;
 
-    if (projects.isEmpty &&
-    templates.isEmpty &&
-    tutorials.isEmpty) {
-  return const Center(
-    child: Text(
-      "No results found",
-      style: TextStyle(
-        fontSize: 16,
-        color: Colors.grey,
-      ),
-    ),
-  );
-}
+    if (projects.isEmpty && templates.isEmpty && tutorials.isEmpty) {
+      return const Center(
+        child: Text(
+          "No results found",
+          style: TextStyle(fontSize: 16, color: Colors.grey),
+        ),
+      );
+    }
 
     return ListView(
-  padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
-  children: [
+      padding: const EdgeInsets.fromLTRB(16, 20, 16, 40),
+      children: [
+        // ===========================================================
+        // PROJECTS
+        // ===========================================================
+        if (projects.isNotEmpty) ...[
+          const Text(
+            "Projects",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
 
-    // ===========================================================
-    // PROJECTS
-    // ===========================================================
+          const SizedBox(height: 12),
 
-    if (projects.isNotEmpty) ...[
-      const Text(
-        "Projects",
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: Colors.black,
-        ),
-      ),
+          ...projects.map(
+            (project) => _ProjectSearchResultCard(
+              project: project,
+              projectController: controller.projectController,
+            ),
+          ),
 
-      const SizedBox(height: 12),
+          const SizedBox(height: 28),
+        ],
 
-      ...projects.map(
-        (project) => _ProjectSearchResultCard(
-          project: project,
-        ),
-      ),
+        // ===========================================================
+        // TEMPLATES
+        // ===========================================================
+        if (templates.isNotEmpty) ...[
+          const Text(
+            "Templates",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
 
-      const SizedBox(height: 28),
-    ],
+          const SizedBox(height: 12),
 
-    // ===========================================================
-    // TEMPLATES
-    // ===========================================================
+          ...templates.map(
+            (template) =>
+                _TemplateResultCard(template: template, controller: controller),
+          ),
+        ],
 
-    if (templates.isNotEmpty) ...[
-      const Text(
-        "Templates",
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: Colors.black,
-        ),
-      ),
+        if (templates.isNotEmpty && tutorials.isNotEmpty)
+          const SizedBox(height: 28),
 
-      const SizedBox(height: 12),
+        // ===========================================================
+        // TUTORIALS
+        // ===========================================================
+        if (tutorials.isNotEmpty) ...[
+          const Text(
+            "Tutorials",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: Colors.black,
+            ),
+          ),
 
-      ...templates.map(
-        (template) => _TemplateResultCard(
-          template: template,
-          controller: controller,
-        ),
-      ),
-    ],
+          const SizedBox(height: 12),
 
-    if (templates.isNotEmpty && tutorials.isNotEmpty)
-      const SizedBox(height: 28),
-
-    // ===========================================================
-    // TUTORIALS
-    // ===========================================================
-
-    if (tutorials.isNotEmpty) ...[
-      const Text(
-        "Tutorials",
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
-          color: Colors.black,
-        ),
-      ),
-
-      const SizedBox(height: 12),
-
-      ...tutorials.map(
-        (tutorial) => _TutorialResultCard(
-          tutorial: tutorial,
-          controller: controller,
-        ),
-      ),
-    ],
-  ],
-);
+          ...tutorials.map(
+            (tutorial) =>
+                _TutorialResultCard(tutorial: tutorial, controller: controller),
+          ),
+        ],
+      ],
+    );
   }
 }
 
@@ -342,10 +302,7 @@ class _TemplateResultCard extends StatelessWidget {
   final TemplateModel template;
   final AnimeClipSearchController controller;
 
-  const _TemplateResultCard({
-    required this.template,
-    required this.controller,
-  });
+  const _TemplateResultCard({required this.template, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -354,9 +311,7 @@ class _TemplateResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFFEAEAEA),
-        ),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -444,10 +399,7 @@ class _TutorialResultCard extends StatelessWidget {
   final TutorialItem tutorial;
   final AnimeClipSearchController controller;
 
-  const _TutorialResultCard({
-    required this.tutorial,
-    required this.controller,
-  });
+  const _TutorialResultCard({required this.tutorial, required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -456,9 +408,7 @@ class _TutorialResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFFEAEAEA),
-        ),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -479,11 +429,7 @@ class _TutorialResultCard extends StatelessWidget {
                     color: const Color(0xFFF3F3F4),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Icon(
-                    tutorial.icon,
-                    size: 28,
-                    color: Colors.black,
-                  ),
+                  child: Icon(tutorial.icon, size: 28, color: Colors.black),
                 ),
 
                 const SizedBox(width: 12),
@@ -530,10 +476,7 @@ class _TutorialResultCard extends StatelessWidget {
 
                 const SizedBox(width: 8),
 
-                const Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey,
-                ),
+                const Icon(Icons.chevron_right, color: Colors.grey),
               ],
             ),
           ),
@@ -545,9 +488,11 @@ class _TutorialResultCard extends StatelessWidget {
 
 class _ProjectSearchResultCard extends StatelessWidget {
   final ProjectModel project;
+  final ProjectController projectController;
 
   const _ProjectSearchResultCard({
     required this.project,
+    required this.projectController,
   });
 
   String _projectEmoji() {
@@ -559,21 +504,8 @@ class _ProjectSearchResultCard extends StatelessWidget {
         return '🎬';
     }
   }
-  double _aspectRatioValue(ProjectAspectRatio ratio) {
-  switch (ratio) {
-    case ProjectAspectRatio.ratio16x9:
-      return 16 / 9;
 
-    case ProjectAspectRatio.ratio9x16:
-      return 9 / 16;
 
-    case ProjectAspectRatio.ratio1x1:
-      return 1;
-
-    case ProjectAspectRatio.ratio4x1:
-      return 4;
-  }
-}
   String _projectTypeName() {
     switch (project.projectType) {
       case ProjectType.animeSeries:
@@ -585,61 +517,44 @@ class _ProjectSearchResultCard extends StatelessWidget {
   }
 
   void _openProject(BuildContext context) {
-    // ===========================================================
-    // ANIME SERIES
-    // ===========================================================
+  final selected = projectController.selectProject(
+    project.id,
+  );
 
-    if (project.projectType == ProjectType.animeSeries &&
-        project.animeSeries != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => SeasonsScreen(
-            projectName: project.animeMovie!.name,
-            series: project.animeSeries!,
-            settings: project.settings,
-          ),
-        ),
-      );
-
-      return;
-    }
-
-    // ===========================================================
-    // ANIME MOVIE
-    // ===========================================================
-
-    if (project.projectType == ProjectType.animeMovie &&
-        project.animeMovie != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => MovieClipsScreen(
-            movie: project.animeMovie!,
-            settings: project.settings,
-            onOpenClip: (clip) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => EditorScreen(
-                    projectName: project.animeMovie!.name,
-  clipId: clip.id,
-  clipName: clip.name,
-  projectType: CreateProjectType.animeMovie,
-  aspectRatio: _aspectRatioValue(
-    project.settings.aspectRatio,
-  ),
-  resolution: project.settings.resolution,
-  fps: project.settings.fps,
-),
-                ),
-              );
-            },
-          ),
-        ),
-      );
-    }
+  if (!selected) {
+    return;
   }
+
+  // ===========================================================
+  // ANIME SERIES
+  // ===========================================================
+
+  if (project.projectType == ProjectType.animeSeries &&
+      project.animeSeries != null) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const SeasonsScreen(),
+      ),
+    );
+
+    return;
+  }
+
+  // ===========================================================
+  // ANIME MOVIE
+  // ===========================================================
+
+  if (project.projectType == ProjectType.animeMovie &&
+      project.animeMovie != null) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const MovieClipsScreen(),
+      ),
+    );
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -648,9 +563,7 @@ class _ProjectSearchResultCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: const Color(0xFFEAEAEA),
-        ),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -663,7 +576,6 @@ class _ProjectSearchResultCard extends StatelessWidget {
             child: Row(
               children: [
                 // PROJECT ICON
-
                 Container(
                   width: 56,
                   height: 56,
@@ -682,7 +594,6 @@ class _ProjectSearchResultCard extends StatelessWidget {
                 const SizedBox(width: 12),
 
                 // PROJECT DETAILS
-
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -721,10 +632,7 @@ class _ProjectSearchResultCard extends StatelessWidget {
                   ),
                 ),
 
-                const Icon(
-                  Icons.chevron_right,
-                  color: Colors.grey,
-                ),
+                const Icon(Icons.chevron_right, color: Colors.grey),
               ],
             ),
           ),

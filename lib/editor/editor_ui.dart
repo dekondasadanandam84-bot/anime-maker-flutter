@@ -1,5 +1,9 @@
+
 import 'package:flutter/material.dart';
-import 'package:flutter_application_1/home/models/project_settings_model.dart';
+
+import 'package:flutter_application_1/home/create_project_screen.dart';
+import 'package:flutter_application_1/home/project_controller.dart';
+import 'package:flutter_application_1/home/project_scope.dart';
 
 import 'editor_controller.dart';
 import 'left_panel/left_panel_ui.dart';
@@ -7,101 +11,62 @@ import 'right_panel/right_panel_ui.dart';
 import 'top_bar/top_bar_ui.dart';
 import 'bottom_bar/bottom_bar_ui.dart';
 import 'middle/middle_ui.dart';
-import 'package:flutter_application_1/home/create_project_screen.dart';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({
     super.key,
     required this.clipId,
-    required this.projectName,
-    required this.clipName,
-    required this.projectType,
-    required this.aspectRatio,
-    required this.resolution,
-    required this.fps,
   });
 
+  // ============================================================
+  // EDITOR CONTEXT
+  // ============================================================
+  //
+  // The clip ID identifies what this editor is editing.
+  //
+  // Project name, project settings, FPS, resolution, aspect ratio
+  // and the actual clip data all come from ProjectController.
+  // ============================================================
+
   final String clipId;
-  final String clipName;
-  final CreateProjectType projectType;
-  final double aspectRatio;
-  final String resolution;
-  final double fps;
-  final String projectName;
 
   @override
-  State<EditorScreen> createState() => _EditorScreenState();
+  State<EditorScreen> createState() =>
+      _EditorScreenState();
 }
 
 class _EditorScreenState extends State<EditorScreen> {
   late final EditorController _controller;
 
-  String _projectName = '';
-  double _aspectRatio = 16 / 9;
-  String _resolution = '1920 × 1080';
-  double _fps = 12;
+  bool _controllerInitialized = false;
 
   // ============================================================
-  // ASPECT RATIO HELPERS
+  // PROJECT CONTROLLER
   // ============================================================
 
-  double _aspectRatioFromEnum(ProjectAspectRatio ratio) {
-    switch (ratio) {
-      case ProjectAspectRatio.ratio16x9:
-        return 16 / 9;
-
-      case ProjectAspectRatio.ratio9x16:
-        return 9 / 16;
-
-      case ProjectAspectRatio.ratio1x1:
-        return 1;
-
-      case ProjectAspectRatio.ratio4x1:
-        return 4;
-    }
-  }
-
-
-  String _aspectRatioText(double value) {
-    if ((value - 16 / 9).abs() < 0.001) {
-      return '16:9';
-    }
-
-    if ((value - 9 / 16).abs() < 0.001) {
-      return '9:16';
-    }
-
-    if ((value - 1).abs() < 0.001) {
-      return '1:1';
-    }
-
-    if ((value - 4).abs() < 0.001) {
-      return '4:1';
-    }
-
-    return '16:9';
-  }
+  ProjectController get projectController =>
+      ProjectScope.of(context);
 
   // ============================================================
-  // INIT
+  // CONTROLLER INITIALIZATION
   // ============================================================
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    _projectName = widget.projectName;
-    _aspectRatio = widget.aspectRatio;
-    _resolution = widget.resolution;
-    _fps = widget.fps;
+    if (_controllerInitialized) {
+      return;
+    }
+
+    final controller = ProjectScope.of(context);
 
     _controller = EditorController(
+      projectController: controller,
       clipId: widget.clipId,
-      clipName: widget.clipName,
-      aspectRatio: widget.aspectRatio,
-      resolution: widget.resolution,
-      fps: widget.fps,
     );
+
+    _controllerInitialized = true;
   }
 
   // ============================================================
@@ -110,7 +75,10 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (_controllerInitialized) {
+      _controller.dispose();
+    }
+
     super.dispose();
   }
 
@@ -120,13 +88,16 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Establish the dependency on ProjectController.
+    final controller = ProjectScope.of(context);
+
     return OrientationBuilder(
       builder: (context, orientation) {
         if (orientation == Orientation.portrait) {
           return _buildOrientationScreen();
         }
 
-        return _buildEditor();
+        return _buildEditor(controller);
       },
     );
   }
@@ -141,18 +112,19 @@ class _EditorScreenState extends State<EditorScreen> {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32,
+            ),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
               children: [
                 const Icon(
                   Icons.screen_rotation_alt_rounded,
                   size: 88,
                   color: Colors.black,
                 ),
-
                 const SizedBox(height: 28),
-
                 const Text(
                   'Rotate Your Device',
                   textAlign: TextAlign.center,
@@ -162,9 +134,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     color: Colors.black,
                   ),
                 ),
-
                 const SizedBox(height: 12),
-
                 const Text(
                   'Turn your device sideways to use the editor in landscape mode.',
                   textAlign: TextAlign.center,
@@ -186,138 +156,106 @@ class _EditorScreenState extends State<EditorScreen> {
   // LANDSCAPE EDITOR
   // ============================================================
 
-  Widget _buildEditor() {
+  Widget _buildEditor(
+    ProjectController projectController,
+  ) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
         children: [
-          // =========================================================
+          // =======================================================
           // TOP BAR
-          // =========================================================
+          // =======================================================
 
           AnimatedBuilder(
-            animation: _controller.topBarController,
+            animation: Listenable.merge([
+              _controller,
+              _controller.topBarController,
+            ]),
             builder: (context, child) {
-              final topBar = _controller.topBarController;
+              final topBar =
+                  _controller.topBarController;
 
               if (topBar.panelsHidden) {
                 return const SizedBox.shrink();
               }
 
-              return EditorTopBar(
-                projectName: _projectName,
+              
 
-                // -------------------------------------------------
+              return EditorTopBar(
+                
+
+                // ------------------------------------------------
                 // BACK
-                // -------------------------------------------------
+                // ------------------------------------------------
 
                 onBack: () {
                   Navigator.of(context).pop();
                 },
 
-                // -------------------------------------------------
+                // ------------------------------------------------
                 // TOP BAR ACTIONS
-                // -------------------------------------------------
+                // ------------------------------------------------
 
-                onDiamond: _controller.onDiamondPressed,
+                onDiamond:
+                    _controller.onDiamondPressed,
 
-                onAudio: _controller.onAudioPressed,
+                onAudio:
+                    _controller.onAudioPressed,
 
-                onCopy: _controller.onCopyPressed,
+                onCopy:
+                    _controller.onCopyPressed,
 
-                onPaste: _controller.onPastePressed,
+                onPaste:
+                    _controller.onPastePressed,
 
-                onDuplicate: _controller.onDuplicatePressed,
+                onDuplicate:
+                    _controller.onDuplicatePressed,
 
-                onUndo: _controller.onUndoPressed,
+                onUndo:
+                    _controller.onUndoPressed,
 
-                onRedo: _controller.onRedoPressed,
+                onRedo:
+                    _controller.onRedoPressed,
 
-                onMore: _controller.onMorePressed,
+                onMore:
+                    _controller.onMorePressed,
 
-                // -------------------------------------------------
+                // ------------------------------------------------
                 // PROJECT SETTINGS
-                // -------------------------------------------------
+                // ------------------------------------------------
 
                 onProjectSettings: () {
-                  Navigator.of(context).push(
+                  projectController
+                      .beginEditCurrentProject();
+
+                  Navigator.of(context)
+                      .push(
                     MaterialPageRoute(
-                      builder: (_) => CreateProjectScreen(
-                        projectType: widget.projectType,
-
-                        onProjectCreated: (updatedProject) {
-                          final newAspectRatio =
-                              _aspectRatioFromEnum(
-                            updatedProject.settings.aspectRatio,
-                          );
-
-                          final newResolution =
-                              updatedProject.settings.resolution;
-
-                          final newFps =
-                              updatedProject.settings.fps;
-
-                          setState(() {
-                            _projectName =
-                                updatedProject.name;
-
-                            _aspectRatio =
-                                newAspectRatio;
-
-                            _resolution =
-                                newResolution;
-
-                            _fps = newFps;
-                          });
-
-                          _controller.updateProjectSettings(
-                            aspectRatio: newAspectRatio,
-                            resolution: newResolution,
-                            fps: newFps,
-                          );
-                        },
-
-                        // IMPORTANT:
-                        // Use CURRENT editor values,
-                        // not widget's original values.
-
-                        initialName: _projectName,
-
-                        initialAspectRatio:
-                            _aspectRatioText(_aspectRatio),
-
-                        initialResolution:
-                            _resolution,
-
-                        initialFps:
-                            _fps,
-
-                        initialQuality: 'High',
-
-                        editMode: true,
-                      ),
+                      builder: (_) =>
+                          const CreateProjectScreen(),
                     ),
                   );
                 },
 
-                // -------------------------------------------------
+                // ------------------------------------------------
                 // FRAMES VIEWER
-                // -------------------------------------------------
+                // ------------------------------------------------
 
                 onFramesViewer: () {
                   // Open Frames Viewer later.
                 },
 
-                // -------------------------------------------------
+                // ------------------------------------------------
                 // FIT
-                // -------------------------------------------------
+                // ------------------------------------------------
 
                 onFitToScreen:
                     _controller.onFitToScreen,
 
-                // -------------------------------------------------
+                // ------------------------------------------------
                 // HIDE PANELS
-                // -------------------------------------------------
+                // ------------------------------------------------
 
                 onHidePanels:
                     _controller.onHidePanels,
@@ -325,13 +263,14 @@ class _EditorScreenState extends State<EditorScreen> {
             },
           ),
 
-          // =========================================================
+          // =======================================================
           // EDITOR AREA
-          // =========================================================
+          // =======================================================
 
           Expanded(
             child: AnimatedBuilder(
               animation: Listenable.merge([
+                _controller,
                 _controller.topBarController,
                 _controller.leftPanelController,
                 _controller.bottomBarController,
@@ -344,7 +283,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     _controller.topBarController;
 
                 final controlsHidden =
-                    topBar.panelsHidden == true;
+                    topBar.panelsHidden;
 
                 return Stack(
                   children: [
@@ -371,7 +310,8 @@ class _EditorScreenState extends State<EditorScreen> {
                         child: Center(
                           child: LeftPanelUI(
                             controller: leftPanel,
-                            compact: controlsHidden,
+                            compact:
+                                controlsHidden,
                           ),
                         ),
                       ),
@@ -415,9 +355,12 @@ class _EditorScreenState extends State<EditorScreen> {
                                       const BoxDecoration(
                                     color: Colors.white,
                                     border: Border(
-                                      bottom: BorderSide(
+                                      bottom:
+                                          BorderSide(
                                         color:
-                                            Color(0xFFEAEAEA),
+                                            Color(
+                                          0xFFEAEAEA,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -431,17 +374,19 @@ class _EditorScreenState extends State<EditorScreen> {
                                         icon: const Icon(
                                           Icons
                                               .arrow_back_rounded,
-                                          color: Colors.black,
+                                          color:
+                                              Colors.black,
                                         ),
                                       ),
-
                                       const Expanded(
                                         child: Center(
-                                          child: Text(
+                                          child:
+                                              Text(
                                             'Paint',
                                             style:
                                                 TextStyle(
-                                              fontSize: 18,
+                                              fontSize:
+                                                  18,
                                               fontWeight:
                                                   FontWeight
                                                       .w700,
@@ -451,22 +396,21 @@ class _EditorScreenState extends State<EditorScreen> {
                                           ),
                                         ),
                                       ),
-
                                       const SizedBox(
                                         width: 48,
                                       ),
                                     ],
                                   ),
                                 ),
-
                                 const Expanded(
                                   child: Center(
                                     child: Text(
                                       'Paint',
-                                      style: TextStyle(
+                                      style:
+                                          TextStyle(
                                         fontSize: 18,
-                                        color:
-                                            Colors.black54,
+                                        color: Colors
+                                            .black54,
                                       ),
                                     ),
                                   ),
@@ -487,9 +431,8 @@ class _EditorScreenState extends State<EditorScreen> {
                         right: 0,
                         bottom: 0,
                         child: BottomBarUI(
-                          controller:
-                              _controller
-                                  .bottomBarController,
+                          controller: _controller
+                              .bottomBarController,
 
                           onPreviousFrame:
                               _controller
@@ -535,7 +478,8 @@ class _EditorScreenState extends State<EditorScreen> {
                         left: 0,
                         right: 0,
                         child: Center(
-                          child: _ShowControlsButton(
+                          child:
+                              _ShowControlsButton(
                             onTap:
                                 _controller
                                     .onHidePanels,
@@ -568,31 +512,41 @@ class _ShowControlsButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius:
+          BorderRadius.circular(10),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius:
+            BorderRadius.circular(10),
         child: Container(
-          padding: const EdgeInsets.symmetric(
+          padding:
+              const EdgeInsets.symmetric(
             horizontal: 10,
             vertical: 6,
           ),
-          decoration: BoxDecoration(
+          decoration:
+              BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: const Color(0xFFEAEAEA),
+            borderRadius:
+                BorderRadius.circular(10),
+            border:
+                Border.all(
+              color:
+                  const Color(0xFFEAEAEA),
             ),
             boxShadow: const [
               BoxShadow(
-                color: Color(0x18000000),
+                color:
+                    Color(0x18000000),
                 blurRadius: 8,
-                offset: Offset(0, 3),
+                offset:
+                    Offset(0, 3),
               ),
             ],
           ),
           child: const Column(
-            mainAxisSize: MainAxisSize.min,
+            mainAxisSize:
+                MainAxisSize.min,
             children: [
               Icon(
                 Icons.fit_screen_rounded,
@@ -604,7 +558,8 @@ class _ShowControlsButton extends StatelessWidget {
                 'Show',
                 style: TextStyle(
                   fontSize: 8,
-                  fontWeight: FontWeight.w600,
+                  fontWeight:
+                      FontWeight.w600,
                   color: Colors.black54,
                 ),
               ),
@@ -615,3 +570,4 @@ class _ShowControlsButton extends StatelessWidget {
     );
   }
 }
+

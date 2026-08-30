@@ -1,7 +1,7 @@
-home/create_project_screen.dart
-
-home/anime/seasons_ui.dart
-home/anime/seasons_controller.dart
-
-home/anime/movie_clips_ui.dart
-home/anime/movie_clips_controller.dart
+home/models/project_model.dart
+home/models/project_settings_model.dart
+home/models/anime_series_model.dart
+home/models/anime_movie_model.dart
+home/models/season_model.dart
+home/models/episode_model.dart
+home/models/clip_model.dart

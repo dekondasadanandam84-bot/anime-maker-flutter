@@ -1,37 +1,39 @@
 import 'package:flutter/foundation.dart';
 
-import '../models/anime_series_model.dart';
+import '../project_controller.dart';
 import '../models/season_model.dart';
 
 class SeasonsController extends ChangeNotifier {
   SeasonsController({
-    required this._series,
-  });
+    required this.projectController,
+  }) {
+    projectController.addListener(_onProjectChanged);
+  }
 
-  AnimeSeriesModel _series;
+  final ProjectController projectController;
 
   bool _isBusy = false;
 
-  AnimeSeriesModel get series => _series;
-
-  List<SeasonModel> get seasons =>
-      List.unmodifiable(_series.seasons);
-
   bool get isBusy => _isBusy;
 
+  List<SeasonModel> get seasons =>
+      projectController.currentSeasons;
+
+  int get seasonCount => seasons.length;
+
   int get nextSeasonNumber {
-    if (_series.seasons.isEmpty) {
+    if (seasons.isEmpty) {
       return 1;
     }
 
-    return _series.seasons
+    return seasons
             .map((season) => season.number)
             .reduce((a, b) => a > b ? a : b) +
         1;
   }
 
   SeasonModel? findSeason(String id) {
-    for (final season in _series.seasons) {
+    for (final season in seasons) {
       if (season.id == id) {
         return season;
       }
@@ -40,134 +42,60 @@ class SeasonsController extends ChangeNotifier {
     return null;
   }
 
-  Future<SeasonModel> createSeason({
-  String? name,
-}) async {
-  _setBusy(true);
-
-  try {
-    final number = nextSeasonNumber;
-
-    final input = name?.trim() ?? '';
-    final cleaned = _stripSeasonPrefix(input);
-
-    final season = SeasonModel(
-      id: _createId(number),
-      number: number,
-      name: cleaned.isEmpty
-          ? 'Season $number'
-          : cleaned,
-      episodes: const [],
-    );
-
-    _series = _series.copyWith(
-      seasons: [
-        ..._series.seasons,
-        season,
-      ],
-    );
-
-    notifyListeners();
-
-    return season;
-  } finally {
-    _setBusy(false);
-  }
-}
-
-  Future<bool> renameSeason({
-    required String seasonId,
-    required String newName,
+  Future<SeasonModel?> createSeason({
+    String? name,
   }) async {
-    final season = findSeason(seasonId);
-
-    if (season == null) {
-      return false;
-    }
-
-    final cleaned = _stripSeasonPrefix(
-      newName.trim(),
-    );
-
-    final updatedSeason = season.copyWith(
-      name: cleaned.isEmpty
-          ? 'Season ${season.number}'
-          : cleaned,
-    );
-
-    final updatedSeasons = _series.seasons.map((item) {
-      if (item.id == seasonId) {
-        return updatedSeason;
-      }
-
-      return item;
-    }).toList();
-
-    _series = _series.copyWith(
-      seasons: updatedSeasons,
-    );
-
-    notifyListeners();
-
-    return true;
-  }
-
-  Future<bool> deleteSeason(String seasonId) async {
     _setBusy(true);
 
     try {
-      final exists = _series.seasons.any(
-        (season) => season.id == seasonId,
+      final season = projectController.createSeason(
+        name: name,
       );
 
-      if (!exists) {
-        return false;
-      }
-
-      final updatedSeasons = _series.seasons
-          .where((season) => season.id != seasonId)
-          .toList();
-
-      _series = _series.copyWith(
-        seasons: updatedSeasons,
-      );
-
-      notifyListeners();
-
-      return true;
+      return season;
     } finally {
       _setBusy(false);
     }
   }
 
-  
+  Future<bool> renameSeason({
+    required String seasonId,
+    required String newName,
+  }) async {
+    _setBusy(true);
 
-  String getEpisodeLabel(SeasonModel season) {
+    try {
+      return projectController.renameSeason(
+        seasonId: seasonId,
+        newName: newName,
+      );
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  Future<bool> deleteSeason(
+    String seasonId,
+  ) async {
+    _setBusy(true);
+
+    try {
+      return projectController.deleteSeason(
+        seasonId,
+      );
+    } finally {
+      _setBusy(false);
+    }
+  }
+
+  String getEpisodeLabel(
+    SeasonModel season,
+  ) {
     if (season.episodeCount == 1) {
       return '1 Episode';
     }
 
     return '${season.episodeCount} Episodes';
-  }
-
-  String _stripSeasonPrefix(String value) {
-    if (value.isEmpty) {
-      return '';
-    }
-
-    return value
-        .replaceFirst(
-          RegExp(
-            r'^season\s+\d+\s*:?\s*',
-            caseSensitive: false,
-          ),
-          '',
-        )
-        .trim();
-  }
-
-  String _createId(int number) {
-    return 'season_${number}_${DateTime.now().microsecondsSinceEpoch}';
   }
 
   void _setBusy(bool value) {
@@ -179,25 +107,13 @@ class SeasonsController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void updateSeason(SeasonModel updatedSeason) {
-  final index = _series.seasons.indexWhere(
-    (season) => season.id == updatedSeason.id,
-  );
-
-  if (index == -1) {
-    return;
+  void _onProjectChanged() {
+    notifyListeners();
   }
 
-  final updatedSeasons = List<SeasonModel>.from(
-    _series.seasons,
-  );
-
-  updatedSeasons[index] = updatedSeason;
-
-  _series = _series.copyWith(
-    seasons: updatedSeasons,
-  );
-
-  notifyListeners();
-}
+  @override
+  void dispose() {
+    projectController.removeListener(_onProjectChanged);
+    super.dispose();
+  }
 }
