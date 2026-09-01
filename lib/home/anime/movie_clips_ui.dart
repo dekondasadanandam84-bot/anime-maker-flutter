@@ -75,124 +75,53 @@ class _MovieClipsScreenState
   // ============================================================
 
   Future<void> _createClip() async {
-    final movie = projectController.currentAnimeMovie;
+  final movie = projectController.currentAnimeMovie;
 
-    if (movie == null) {
-      return;
-    }
-
-    final nameController = TextEditingController();
-
-    final name = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Create Clip'),
-          content: TextField(
-            controller: nameController,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(
-              labelText: 'Clip Name',
-              hintText: 'Enter clip name',
-            ),
-            onSubmitted: (_) {
-              Navigator.of(dialogContext).pop(
-                nameController.text.trim(),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(
-                  nameController.text.trim(),
-                );
-              },
-              child: const Text('Create Clip'),
-            ),
-          ],
-        );
-      },
-    );
-
-    nameController.dispose();
-
-    if (name == null || !mounted) {
-      return;
-    }
-
-    await _controller.createClip(
-      name: name,
-    );
+  if (movie == null || !mounted) {
+    return;
   }
 
-  // ============================================================
-  // RENAME CLIP
-  // ============================================================
+  final name = await showDialog<String>(
+    context: context,
+    builder: (_) => const _ClipNameDialog(
+      title: 'Create Clip',
+      labelText: 'Clip Name',
+      hintText: 'Enter clip name',
+      actionText: 'Create Clip',
+    ),
+  );
 
-  Future<void> _renameClip(
-    ClipModel clip,
-  ) async {
-    final controller = TextEditingController(
-      text: clip.name,
-    );
-
-    final shouldSave = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(
-            'Rename Clip ${clip.number}',
-          ),
-          content: TextField(
-            controller: controller,
-            autofocus: true,
-            textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(
-              labelText: 'Clip Name',
-            ),
-            onSubmitted: (_) {
-              Navigator.of(dialogContext).pop(true);
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(false);
-              },
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop(true);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-
-    final name = controller.text.trim();
-
-    controller.dispose();
-
-    if (shouldSave != true || !mounted) {
-      return;
-    }
-
-    await _controller.renameClip(
-      clipId: clip.id,
-      newName: name,
-    );
+  if (name == null || !mounted) {
+    return;
   }
+
+  await _controller.createClip(
+    name: name,
+  );
+}
+
+Future<void> _renameClip(
+  ClipModel clip,
+) async {
+  final name = await showDialog<String>(
+    context: context,
+    builder: (_) => _ClipNameDialog(
+      title: 'Rename Clip ${clip.number}',
+      labelText: 'Clip Name',
+      initialText: clip.name,
+      actionText: 'Save',
+    ),
+  );
+
+  if (name == null || !mounted) {
+    return;
+  }
+
+  await _controller.renameClip(
+    clipId: clip.id,
+    newName: name,
+  );
+}
 
   // ============================================================
   // DELETE CLIP
@@ -888,6 +817,83 @@ class _MovieClipsScreenState
           ),
         );
       },
+    );
+  }
+}
+
+class _ClipNameDialog extends StatefulWidget {
+  const _ClipNameDialog({
+    required this.title,
+    required this.labelText,
+    required this.actionText,
+    this.hintText,
+    this.initialText = '',
+  });
+
+  final String title;
+  final String labelText;
+  final String actionText;
+  final String? hintText;
+  final String initialText;
+
+  @override
+  State<_ClipNameDialog> createState() =>
+      _ClipNameDialogState();
+}
+
+class _ClipNameDialogState
+    extends State<_ClipNameDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = TextEditingController(
+      text: widget.initialText,
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    Navigator.of(context).pop(
+      _controller.text.trim(),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: TextField(
+        controller: _controller,
+        autofocus: true,
+        textInputAction: TextInputAction.done,
+        decoration: InputDecoration(
+          labelText: widget.labelText,
+          hintText: widget.hintText,
+        ),
+        onSubmitted: (_) {
+          _submit();
+        },
+      ),
+      actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(widget.actionText),
+        ),
+      ],
     );
   }
 }

@@ -1,0 +1,3052 @@
+﻿
+==================== .\lib\editor\bottom_bar\bottom_bar_controller.dart ====================
+
+import 'package:flutter/foundation.dart';
+
+class BottomBarController extends ChangeNotifier {
+  // ============================================================
+  // PLAYBACK
+  // ============================================================
+
+  bool _isPlaying = false;
+
+  bool get isPlaying => _isPlaying;
+
+  void togglePlayback() {
+    _isPlaying = !_isPlaying;
+    notifyListeners();
+  }
+
+  void stopPlayback() {
+    if (!_isPlaying) return;
+
+    _isPlaying = false;
+    notifyListeners();
+  }
+
+  // ============================================================
+  // FRAMES
+  // ============================================================
+
+  final List<int> _frames = [1];
+
+  int _selectedFrame = 1;
+
+  List<int> get frames => List.unmodifiable(_frames);
+
+  int get selectedFrame => _selectedFrame;
+
+  
+
+  // ============================================================
+  // ADD MULTIPLE FRAMES
+  // ============================================================
+
+  void addFrames(int count) {
+    if (count <= 0) return;
+
+    final int startFrame = _frames.length + 1;
+
+    for (int i = 0; i < count; i++) {
+      _frames.add(startFrame + i);
+    }
+
+    // Select the last frame that was added.
+    _selectedFrame = _frames.last;
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // SELECT FRAME
+  // ============================================================
+
+  void selectFrame(int frame) {
+    if (!_frames.contains(frame)) return;
+
+    _selectedFrame = frame;
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // PREVIOUS FRAME
+  // ============================================================
+
+  void previousFrame() {
+    final int currentIndex = _frames.indexOf(_selectedFrame);
+
+    if (currentIndex <= 0) return;
+
+    _selectedFrame = _frames[currentIndex - 1];
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // NEXT FRAME
+  // ============================================================
+
+  void nextFrame() {
+    final int currentIndex = _frames.indexOf(_selectedFrame);
+
+    if (currentIndex < 0 ||
+        currentIndex >= _frames.length - 1) {
+      return;
+    }
+
+    _selectedFrame = _frames[currentIndex + 1];
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // RESET
+  // ============================================================
+
+  void reset() {
+    _isPlaying = false;
+
+    _frames
+      ..clear()
+      ..add(1);
+
+    _selectedFrame = 1;
+
+    notifyListeners();
+  }
+}
+
+==================== .\lib\editor\bottom_bar\bottom_bar_ui.dart ====================
+
+import 'package:flutter/material.dart';
+import 'package:flutter_application_1/editor/bottom_bar/bottom_bar_controller.dart';
+
+class BottomBarUI extends StatelessWidget {
+  const BottomBarUI({
+    super.key,
+    required this.controller,
+    required this.onPreviousFrame,
+    required this.onPlayPause,
+    required this.onNextFrame,
+    required this.onAddFrames,
+    required this.onFrameSelected,
+    required this.onCopy,
+    required this.onPaste,
+    required this.controlsHidden,
+  });
+
+  final BottomBarController controller;
+  final VoidCallback onPreviousFrame;
+  final VoidCallback onPlayPause;
+  final VoidCallback onNextFrame;
+  final ValueChanged<int> onAddFrames;
+  final ValueChanged<int> onFrameSelected;
+  final VoidCallback onCopy;
+  final VoidCallback onPaste;
+  final bool controlsHidden;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 90,
+      child: Stack(
+        children: [
+          // =========================================================
+          // COPY / PASTE
+          // =========================================================
+          Positioned(
+            left: 12,
+            bottom: 10,
+            child: _CopyPasteGroup(onCopy: onCopy, onPaste: onPaste),
+          ),
+
+          // =========================================================
+          // FRAME GROUP
+          // =========================================================
+          Positioned(
+            left: controlsHidden ? 0 : 180,
+            right: controlsHidden ? 0 : 150,
+            bottom: 10,
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: SizedBox(
+                width: controlsHidden
+                    ? MediaQuery.sizeOf(context).width * 0.45
+                    : null,
+                height: 64,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  itemCount: controller.frames.length + 1,
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(width: 6);
+                  },
+                  itemBuilder: (context, index) {
+                    // ---------------------------------------------------------
+                    // ADD FRAME BUTTON
+                    // ---------------------------------------------------------
+                    if (index == controller.frames.length) {
+                      return _AddFrameCard(
+                        onTap: () {
+                          _showAddFramesSheet(context);
+                        },
+                      );
+                    }
+
+                    // ---------------------------------------------------------
+                    // INDIVIDUAL FRAME
+                    // ---------------------------------------------------------
+                    final frame = controller.frames[index];
+
+                    return _FrameCard(
+                      frameNumber: frame,
+                      selected: controller.selectedFrame == frame,
+                      onTap: () {
+                        onFrameSelected(frame);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+
+          // =========================================================
+          // PLAYBACK
+          // =========================================================
+          Positioned(
+            left: controlsHidden ? null : 16,
+            right: controlsHidden ? 72 : null,
+            bottom: 10,
+            child: _PlaybackGroup(
+              isPlaying: controller.isPlaying,
+              onPreviousFrame: onPreviousFrame,
+              onPlayPause: onPlayPause,
+              onNextFrame: onNextFrame,
+            ),
+          ),
+
+          // =========================================================
+          // LAYERS
+          // =========================================================
+          Positioned(right: 16, bottom: 10, child: _LayersButton(onTap: () {})),
+        ],
+      ),
+    );
+  }
+
+  // ===================================================================
+  // ADD FRAMES BOTTOM SHEET
+  // ===================================================================
+
+  void _showAddFramesSheet(BuildContext context) {
+    showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return const _AddFramesSheet();
+      },
+    ).then((count) {
+      if (count == null) return;
+
+      onAddFrames(count);
+    });
+  }
+}
+// =====================================================================
+// COPY / PASTE GROUP
+// =====================================================================
+
+class _CopyPasteGroup extends StatelessWidget {
+  const _CopyPasteGroup({required this.onCopy, required this.onPaste});
+
+  final VoidCallback onCopy;
+  final VoidCallback onPaste;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 42,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x14000000),
+            blurRadius: 8,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _CopyPasteButton(
+            icon: Icons.content_copy_outlined,
+            label: 'Copy',
+            onTap: onCopy,
+          ),
+          _CopyPasteButton(
+            icon: Icons.content_paste_outlined,
+            label: 'Paste',
+            onTap: onPaste,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CopyPasteButton extends StatelessWidget {
+  const _CopyPasteButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(9),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(9),
+        child: SizedBox(
+          width: 48,
+          height: 36,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 15, color: Colors.black87),
+              const SizedBox(height: 1),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 8,
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+// =====================================================================
+// ADD FRAMES SHEET
+// =====================================================================
+
+class _AddFramesSheet extends StatelessWidget {
+  const _AddFramesSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        constraints: const BoxConstraints(maxHeight: 520),
+        padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // ---------------------------------------------------------
+              // HANDLE
+              // ---------------------------------------------------------
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD8D8D8),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // ---------------------------------------------------------
+              // TITLE
+              // ---------------------------------------------------------
+              const Text(
+                'Add Frames',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // ---------------------------------------------------------
+              // 1 - 30 GRID
+              // ---------------------------------------------------------
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: 30,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 6,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 1.25,
+                ),
+                itemBuilder: (context, index) {
+                  final int count = index + 1;
+
+                  return Material(
+                    color: const Color(0xFFF5F7FA),
+                    borderRadius: BorderRadius.circular(10),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).pop(count);
+                      },
+                      borderRadius: BorderRadius.circular(10),
+                      child: Center(
+                        child: Text(
+                          '$count',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// PLAYBACK GROUP
+// =====================================================================
+
+class _PlaybackGroup extends StatelessWidget {
+  const _PlaybackGroup({
+    required this.isPlaying,
+    required this.onPreviousFrame,
+    required this.onPlayPause,
+    required this.onNextFrame,
+  });
+
+  final bool isPlaying;
+  final VoidCallback onPreviousFrame;
+  final VoidCallback onPlayPause;
+  final VoidCallback onNextFrame;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 54,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFFEAEAEA)),
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x18000000),
+            blurRadius: 12,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _PlaybackButton(
+            icon: Icons.skip_previous_rounded,
+            onTap: onPreviousFrame,
+          ),
+          _PlaybackButton(
+            icon: isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+            onTap: onPlayPause,
+          ),
+          _PlaybackButton(icon: Icons.skip_next_rounded, onTap: onNextFrame),
+        ],
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// PLAYBACK BUTTON
+// =====================================================================
+
+class _PlaybackButton extends StatelessWidget {
+  const _PlaybackButton({required this.icon, required this.onTap});
+
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: SizedBox(
+          width: 38,
+          height: 46,
+          child: Icon(icon, size: 20, color: Colors.black87),
+        ),
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// CLIP / FRAME CARD
+// =====================================================================
+
+class _FrameCard extends StatelessWidget {
+  const _FrameCard({
+    required this.frameNumber,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final int frameNumber;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          width: 72,
+          height: 64,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: selected ? Colors.blue : const Color(0xFFE0E0E0),
+              width: selected ? 1.8 : 1,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 7,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Frame thumbnail area
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.all(3),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: Container(color: const Color(0xFFF9F9F9)),
+                  ),
+                ),
+              ),
+
+              // Frame number
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  constraints: const BoxConstraints(minWidth: 20),
+                  height: 20,
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: Text(
+                    '$frameNumber',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// ADD FRAME CARD
+// =====================================================================
+
+class _AddFrameCard extends StatelessWidget {
+  const _AddFrameCard({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(13),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(13),
+        child: Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x14000000),
+                blurRadius: 8,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.add_rounded, size: 32, color: Colors.blue),
+        ),
+      ),
+    );
+  }
+}
+
+// =====================================================================
+// LAYERS BUTTON
+// =====================================================================
+
+class _LayersButton extends StatelessWidget {
+  const _LayersButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          width: 54,
+          height: 54,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFFEAEAEA)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x18000000),
+                blurRadius: 12,
+                offset: Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.layers_outlined,
+            size: 22,
+            color: Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+==================== .\lib\editor\editor_controller.dart ====================
+
+import 'package:flutter/foundation.dart';
+
+import '../home/project_controller.dart';
+import '../home/models/project_settings_model.dart';
+
+import 'left_panel/left_panel_controller.dart';
+import 'top_bar/top_bar_controller.dart';
+import 'bottom_bar/bottom_bar_controller.dart';
+import 'middle/middle_controller.dart';
+
+class EditorController extends ChangeNotifier {
+  EditorController({
+    required this.projectController,
+    required this.clipId,
+  })  : topBarController = TopBarController(),
+        leftPanelController = LeftPanelController(),
+        bottomBarController = BottomBarController(),
+        middleController = MiddleController(
+          aspectRatio: _aspectRatioValue(
+            projectController.currentAspectRatio ??
+                ProjectAspectRatio.ratio16x9,
+          ),
+          resolution:
+              projectController.currentResolution ??
+                  '1920 Ã— 1080',
+        ) {
+    projectController.addListener(
+      _onProjectControllerChanged,
+    );
+  }
+
+  // ============================================================
+  // PROJECT CONTEXT
+  // ============================================================
+  //
+  // ProjectController is the single source of truth.
+  // This controller does not store project settings locally.
+  // ============================================================
+
+  final ProjectController projectController;
+
+  final String clipId;
+
+  // ============================================================
+  // CURRENT PROJECT DATA
+  // ============================================================
+  //
+  // These are derived values only.
+  // Nothing is duplicated or stored here.
+  // ============================================================
+
+  ProjectSettingsModel? get settings =>
+      projectController.currentSettings;
+
+  double get aspectRatio {
+    final ratio =
+        projectController.currentAspectRatio;
+
+    if (ratio == null) {
+      return 16 / 9;
+    }
+
+    return _aspectRatioValue(ratio);
+  }
+
+  String get resolution =>
+      projectController.currentResolution ??
+      '1920 Ã— 1080';
+
+  double get fps =>
+      projectController.currentFps ?? 12;
+
+  String? get projectName =>
+      projectController.currentProjectName;
+
+  // ============================================================
+  // CURRENT CLIP
+  // ============================================================
+
+  String? get currentClipName =>
+      projectController
+          .findCurrentClipById(clipId)
+          ?.name;
+
+  // ============================================================
+  // EDITOR CONTROLLERS
+  // ============================================================
+
+  final TopBarController topBarController;
+  final LeftPanelController leftPanelController;
+  final BottomBarController bottomBarController;
+  final MiddleController middleController;
+
+  // ============================================================
+  // SAVING
+  // ============================================================
+
+  bool _isSaving = false;
+
+  bool get isSaving => _isSaving;
+
+  // ============================================================
+  // TOP BAR UPDATE RECEIVERS
+  // ============================================================
+
+  void onDiamondPressed() {
+    topBarController.diamondAction();
+  }
+
+  void onAudioPressed() {
+    topBarController.toggleAudio();
+  }
+
+  void onCopyPressed() {
+    topBarController.copy();
+  }
+
+  void onPastePressed() {
+    topBarController.paste();
+  }
+
+  void onDuplicatePressed() {
+    topBarController.duplicate();
+  }
+
+  void onUndoPressed() {
+    topBarController.undo();
+  }
+
+  void onRedoPressed() {
+    topBarController.redo();
+  }
+
+  void onMorePressed() {
+    topBarController.moreAction();
+  }
+
+  void onFitToScreen() {
+    topBarController.fitToScreen();
+  }
+
+  void onHidePanels() {
+    topBarController.hidePanels();
+  }
+
+  // ============================================================
+  // LEFT PANEL UPDATE RECEIVERS
+  // ============================================================
+
+  void onLeftToolSelected(int toolId) {
+    leftPanelController.selectTool(toolId);
+  }
+
+  void onLeftMorePressed() {
+    leftPanelController.toggleMoreTools();
+  }
+
+  // ============================================================
+  // BOTTOM BAR UPDATE RECEIVERS
+  // ============================================================
+
+  void onPlayPausePressed() {
+    bottomBarController.togglePlayback();
+  }
+
+  void onPreviousFramePressed() {
+    bottomBarController.previousFrame();
+  }
+
+  void onNextFramePressed() {
+    bottomBarController.nextFrame();
+  }
+
+  void onAddFramesPressed(int count) {
+    bottomBarController.addFrames(count);
+  }
+
+  void onFrameSelected(int frame) {
+    bottomBarController.selectFrame(frame);
+  }
+
+  // ============================================================
+  // PROJECT SETTINGS UPDATE
+  // ============================================================
+  //
+  // IMPORTANT:
+  // Settings are written directly into ProjectController.
+  //
+  // There is NO:
+  // _aspectRatio = ...
+  // _resolution = ...
+  // _fps = ...
+  //
+  // ProjectController updates the project and notifies every
+  // screen that depends on it.
+  // ============================================================
+
+  void updateProjectSettings({
+    required double aspectRatio,
+    required String resolution,
+    required double fps,
+  }) {
+    projectController.updateCurrentProjectSettings(
+      aspectRatio: _projectAspectRatio(aspectRatio),
+      resolution: resolution,
+      fps: fps,
+    );
+  }
+
+  // ============================================================
+  // PROJECT CONTROLLER CHANGES
+  // ============================================================
+  //
+  // Whenever ANY screen changes the project's settings,
+  // ProjectController notifies us.
+  //
+  // The Editor then updates its canvas from the NEW central
+  // values instead of keeping an old snapshot.
+  // ============================================================
+
+  void _onProjectControllerChanged() {
+    middleController.updateCanvasSettings(
+      aspectRatio: aspectRatio,
+      resolution: resolution,
+    );
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // SAVE
+  // ============================================================
+
+  Future<void> save() async {
+    if (_isSaving) {
+      return;
+    }
+
+    _isSaving = true;
+    notifyListeners();
+
+    try {
+      await Future<void>.delayed(
+        const Duration(milliseconds: 500),
+      );
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  // ============================================================
+  // ASPECT RATIO HELPERS
+  // ============================================================
+
+  static double _aspectRatioValue(
+    ProjectAspectRatio ratio,
+  ) {
+    switch (ratio) {
+      case ProjectAspectRatio.ratio16x9:
+        return 16 / 9;
+
+      case ProjectAspectRatio.ratio9x16:
+        return 9 / 16;
+
+      case ProjectAspectRatio.ratio1x1:
+        return 1;
+
+      case ProjectAspectRatio.ratio4x1:
+        return 4;
+    }
+  }
+
+  static ProjectAspectRatio _projectAspectRatio(
+    double value,
+  ) {
+    if ((value - (16 / 9)).abs() < 0.001) {
+      return ProjectAspectRatio.ratio16x9;
+    }
+
+    if ((value - (9 / 16)).abs() < 0.001) {
+      return ProjectAspectRatio.ratio9x16;
+    }
+
+    if ((value - 1).abs() < 0.001) {
+      return ProjectAspectRatio.ratio1x1;
+    }
+
+    if ((value - 4).abs() < 0.001) {
+      return ProjectAspectRatio.ratio4x1;
+    }
+
+    return ProjectAspectRatio.ratio16x9;
+  }
+
+  // ============================================================
+  // DISPOSE
+  // ============================================================
+
+  @override
+  void dispose() {
+    projectController.removeListener(
+      _onProjectControllerChanged,
+    );
+
+    leftPanelController.dispose();
+    topBarController.dispose();
+    bottomBarController.dispose();
+    middleController.dispose();
+
+    super.dispose();
+  }
+}
+
+==================== .\lib\editor\editor_ui.dart ====================
+
+
+import 'package:flutter/material.dart';
+
+import 'package:flutter_application_1/home/create_project_screen.dart';
+import 'package:flutter_application_1/home/project_controller.dart';
+import 'package:flutter_application_1/home/project_scope.dart';
+
+import 'editor_controller.dart';
+import 'left_panel/left_panel_ui.dart';
+import 'right_panel/right_panel_ui.dart';
+import 'top_bar/top_bar_ui.dart';
+import 'bottom_bar/bottom_bar_ui.dart';
+import 'middle/middle_ui.dart';
+
+class EditorScreen extends StatefulWidget {
+  const EditorScreen({
+    super.key,
+    required this.clipId,
+  });
+
+  // ============================================================
+  // EDITOR CONTEXT
+  // ============================================================
+  //
+  // The clip ID identifies what this editor is editing.
+  //
+  // Project name, project settings, FPS, resolution, aspect ratio
+  // and the actual clip data all come from ProjectController.
+  // ============================================================
+
+  final String clipId;
+
+  @override
+  State<EditorScreen> createState() =>
+      _EditorScreenState();
+}
+
+class _EditorScreenState extends State<EditorScreen> {
+  late final EditorController _controller;
+
+  bool _controllerInitialized = false;
+
+  // ============================================================
+  // PROJECT CONTROLLER
+  // ============================================================
+
+  ProjectController get projectController =>
+      ProjectScope.of(context);
+
+  // ============================================================
+  // CONTROLLER INITIALIZATION
+  // ============================================================
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (_controllerInitialized) {
+      return;
+    }
+
+    final controller = ProjectScope.of(context);
+
+    _controller = EditorController(
+      projectController: controller,
+      clipId: widget.clipId,
+    );
+
+    _controllerInitialized = true;
+  }
+
+  // ============================================================
+  // DISPOSE
+  // ============================================================
+
+  @override
+  void dispose() {
+    if (_controllerInitialized) {
+      _controller.dispose();
+    }
+
+    super.dispose();
+  }
+
+  // ============================================================
+  // BUILD
+  // ============================================================
+
+  @override
+  Widget build(BuildContext context) {
+    // Establish the dependency on ProjectController.
+    final controller = ProjectScope.of(context);
+
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        if (orientation == Orientation.portrait) {
+          return _buildOrientationScreen();
+        }
+
+        return _buildEditor(controller);
+      },
+    );
+  }
+
+  // ============================================================
+  // PORTRAIT ORIENTATION SCREEN
+  // ============================================================
+
+  Widget _buildOrientationScreen() {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 32,
+            ),
+            child: Column(
+              mainAxisAlignment:
+                  MainAxisAlignment.center,
+              children: [
+                const Icon(
+                  Icons.screen_rotation_alt_rounded,
+                  size: 88,
+                  color: Colors.black,
+                ),
+                const SizedBox(height: 28),
+                const Text(
+                  'Rotate Your Device',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Turn your device sideways to use the editor in landscape mode.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 1.5,
+                    color: Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // LANDSCAPE EDITOR
+  // ============================================================
+
+  Widget _buildEditor(
+    ProjectController projectController,
+  ) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Column(
+        children: [
+          // =======================================================
+          // TOP BAR
+          // =======================================================
+
+          AnimatedBuilder(
+            animation: Listenable.merge([
+              _controller,
+              _controller.topBarController,
+            ]),
+            builder: (context, child) {
+              final topBar =
+                  _controller.topBarController;
+
+              if (topBar.panelsHidden) {
+                return const SizedBox.shrink();
+              }
+
+              
+
+              return EditorTopBar(
+                
+
+                // ------------------------------------------------
+                // BACK
+                // ------------------------------------------------
+
+                onBack: () {
+                  Navigator.of(context).pop();
+                },
+
+                // ------------------------------------------------
+                // TOP BAR ACTIONS
+                // ------------------------------------------------
+
+                onDiamond:
+                    _controller.onDiamondPressed,
+
+                onAudio:
+                    _controller.onAudioPressed,
+
+                onCopy:
+                    _controller.onCopyPressed,
+
+                onPaste:
+                    _controller.onPastePressed,
+
+                onDuplicate:
+                    _controller.onDuplicatePressed,
+
+                onUndo:
+                    _controller.onUndoPressed,
+
+                onRedo:
+                    _controller.onRedoPressed,
+
+                onMore:
+                    _controller.onMorePressed,
+
+                // ------------------------------------------------
+                // PROJECT SETTINGS
+                // ------------------------------------------------
+
+                onProjectSettings: () {
+                  projectController
+                      .beginEditCurrentProject();
+
+                  Navigator.of(context)
+                      .push(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          const CreateProjectScreen(),
+                    ),
+                  );
+                },
+
+                // ------------------------------------------------
+                // FRAMES VIEWER
+                // ------------------------------------------------
+
+                onFramesViewer: () {
+                  // Open Frames Viewer later.
+                },
+
+                // ------------------------------------------------
+                // FIT
+                // ------------------------------------------------
+
+                onFitToScreen:
+                    _controller.onFitToScreen,
+
+                // ------------------------------------------------
+                // HIDE PANELS
+                // ------------------------------------------------
+
+                onHidePanels:
+                    _controller.onHidePanels,
+              );
+            },
+          ),
+
+          // =======================================================
+          // EDITOR AREA
+          // =======================================================
+
+          Expanded(
+            child: AnimatedBuilder(
+              animation: Listenable.merge([
+                _controller,
+                _controller.topBarController,
+                _controller.leftPanelController,
+                _controller.bottomBarController,
+              ]),
+              builder: (context, child) {
+                final leftPanel =
+                    _controller.leftPanelController;
+
+                final topBar =
+                    _controller.topBarController;
+
+                final controlsHidden =
+                    topBar.panelsHidden;
+
+                return Stack(
+                  children: [
+                    // =================================================
+                    // CANVAS
+                    // =================================================
+
+                    Positioned.fill(
+                      child: MiddleUI(
+                        controller:
+                            _controller.middleController,
+                      ),
+                    ),
+
+                    // =================================================
+                    // LEFT FLOATING TOOLBAR
+                    // =================================================
+
+                    if (!leftPanel.paintSheetOpen)
+                      Positioned(
+                        left: 16,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: LeftPanelUI(
+                            controller: leftPanel,
+                            compact:
+                                controlsHidden,
+                          ),
+                        ),
+                      ),
+
+                    // =================================================
+                    // RIGHT FLOATING TOOL PANEL
+                    // =================================================
+
+                    if (leftPanel.rightPanelOpen)
+                      Positioned(
+                        right: 16,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: RightPanelUI(
+                            tool:
+                                leftPanel.selectedTool,
+                          ),
+                        ),
+                      ),
+
+                    // =================================================
+                    // FULL-SCREEN PAINT SHEET
+                    // =================================================
+
+                    if (leftPanel.paintSheetOpen)
+                      Positioned.fill(
+                        child: Material(
+                          color: Colors.white,
+                          child: SafeArea(
+                            child: Column(
+                              children: [
+                                Container(
+                                  height: 64,
+                                  padding:
+                                      const EdgeInsets
+                                          .symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  decoration:
+                                      const BoxDecoration(
+                                    color: Colors.white,
+                                    border: Border(
+                                      bottom:
+                                          BorderSide(
+                                        color:
+                                            Color(
+                                          0xFFEAEAEA,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      IconButton(
+                                        onPressed: () {
+                                          leftPanel
+                                              .closePaintSheet();
+                                        },
+                                        icon: const Icon(
+                                          Icons
+                                              .arrow_back_rounded,
+                                          color:
+                                              Colors.black,
+                                        ),
+                                      ),
+                                      const Expanded(
+                                        child: Center(
+                                          child:
+                                              Text(
+                                            'Paint',
+                                            style:
+                                                TextStyle(
+                                              fontSize:
+                                                  18,
+                                              fontWeight:
+                                                  FontWeight
+                                                      .w700,
+                                              color:
+                                                  Colors.black,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 48,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      'Paint',
+                                      style:
+                                          TextStyle(
+                                        fontSize: 18,
+                                        color: Colors
+                                            .black54,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+
+                    // =================================================
+                    // BOTTOM BAR
+                    // =================================================
+
+                    if (!leftPanel.paintSheetOpen)
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: BottomBarUI(
+                          controller: _controller
+                              .bottomBarController,
+
+                          onPreviousFrame:
+                              _controller
+                                  .onPreviousFramePressed,
+
+                          onPlayPause:
+                              _controller
+                                  .onPlayPausePressed,
+
+                          onNextFrame:
+                              _controller
+                                  .onNextFramePressed,
+
+                          onAddFrames:
+                              _controller
+                                  .onAddFramesPressed,
+
+                          onFrameSelected:
+                              _controller
+                                  .onFrameSelected,
+
+                          onCopy:
+                              _controller
+                                  .onCopyPressed,
+
+                          onPaste:
+                              _controller
+                                  .onPastePressed,
+
+                          controlsHidden:
+                              controlsHidden,
+                        ),
+                      ),
+
+                    // =================================================
+                    // SHOW CONTROLS BUTTON
+                    // =================================================
+
+                    if (controlsHidden &&
+                        !leftPanel.paintSheetOpen)
+                      Positioned(
+                        top: 4,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child:
+                              _ShowControlsButton(
+                            onTap:
+                                _controller
+                                    .onHidePanels,
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ================================================================
+// SHOW CONTROLS BUTTON
+// ================================================================
+
+class _ShowControlsButton extends StatelessWidget {
+  const _ShowControlsButton({
+    required this.onTap,
+  });
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      borderRadius:
+          BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius:
+            BorderRadius.circular(10),
+        child: Container(
+          padding:
+              const EdgeInsets.symmetric(
+            horizontal: 10,
+            vertical: 6,
+          ),
+          decoration:
+              BoxDecoration(
+            color: Colors.white,
+            borderRadius:
+                BorderRadius.circular(10),
+            border:
+                Border.all(
+              color:
+                  const Color(0xFFEAEAEA),
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color:
+                    Color(0x18000000),
+                blurRadius: 8,
+                offset:
+                    Offset(0, 3),
+              ),
+            ],
+          ),
+          child: const Column(
+            mainAxisSize:
+                MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.fit_screen_rounded,
+                size: 17,
+                color: Colors.black87,
+              ),
+              SizedBox(height: 1),
+              Text(
+                'Show',
+                style: TextStyle(
+                  fontSize: 8,
+                  fontWeight:
+                      FontWeight.w600,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+==================== .\lib\home\models\clip_model.dart ====================
+
+class ClipModel {
+  const ClipModel({
+    required this.id,
+    required this.name,
+    required this.number,
+    this.durationSeconds = 60,
+    this.frameCount = 720,
+  });
+
+  final String id;
+  final String name;
+  final int number;
+  final int durationSeconds;
+  final int frameCount;
+
+  String get durationLabel {
+    final minutes = durationSeconds ~/ 60;
+    final seconds = durationSeconds % 60;
+
+    return '${minutes.toString().padLeft(2, '0')}:'
+        '${seconds.toString().padLeft(2, '0')}';
+  }
+
+  String get frameLabel => '$frameCount Frames';
+
+  String get metadataLabel =>
+      '$durationLabel â€¢ $frameLabel';
+
+  ClipModel copyWith({
+    String? id,
+    String? name,
+    int? number,
+    int? durationSeconds,
+    int? frameCount,
+  }) {
+    return ClipModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      number: number ?? this.number,
+      durationSeconds:
+          durationSeconds ?? this.durationSeconds,
+      frameCount: frameCount ?? this.frameCount,
+    );
+  }
+}
+
+==================== .\lib\home\project_controller.dart ====================
+
+import 'package:flutter/foundation.dart';
+
+import 'models/project_model.dart';
+import 'models/project_settings_model.dart';
+import 'models/anime_series_model.dart';
+import 'models/anime_movie_model.dart';
+import 'models/season_model.dart';
+import 'models/episode_model.dart';
+import 'models/clip_model.dart';
+
+enum ProjectFlowType {
+  animeSeries,
+  animeMovie,
+  mangaSeries,
+  mangaBook,
+  editCurrentProject,
+}
+
+class ProjectController extends ChangeNotifier {
+  ProjectController({
+    List<ProjectModel> initialProjects = const [],
+  }) : _projects = List<ProjectModel>.from(initialProjects);
+
+  // ============================================================
+  // PROJECT STORAGE
+  // ============================================================
+
+  final List<ProjectModel> _projects;
+
+  // ============================================================
+  // CURRENT PROJECT CONTEXT
+  // ============================================================
+
+  String? _currentProjectId;
+  String? _currentSeasonId;
+  String? _currentEpisodeId;
+  String? _currentClipId;
+
+  // ============================================================
+  // PROJECT FLOW
+  // ============================================================
+
+  ProjectFlowType? _projectFlowType;
+
+  ProjectFlowType? get projectFlowType => _projectFlowType;
+
+  bool get isCreatingProject =>
+      _projectFlowType == ProjectFlowType.animeSeries ||
+      _projectFlowType == ProjectFlowType.animeMovie ||
+      _projectFlowType == ProjectFlowType.mangaSeries ||
+      _projectFlowType == ProjectFlowType.mangaBook;
+
+  bool get isEditingProject =>
+      _projectFlowType == ProjectFlowType.editCurrentProject;
+
+  // ============================================================
+  // ALL PROJECTS
+  // ============================================================
+
+  List<ProjectModel> get projects => List.unmodifiable(_projects);
+
+  int get projectCount => _projects.length;
+
+  List<ProjectModel> get animeSeriesProjects {
+    return List.unmodifiable(
+      _projects.where(
+        (project) => project.projectType == ProjectType.animeSeries,
+      ),
+    );
+  }
+
+  List<ProjectModel> get animeMovieProjects {
+    return List.unmodifiable(
+      _projects.where(
+        (project) => project.projectType == ProjectType.animeMovie,
+      ),
+    );
+  }
+
+  // ============================================================
+  // FIND PROJECT
+  // ============================================================
+
+  ProjectModel? findProject(String projectId) {
+    for (final project in _projects) {
+      if (project.id == projectId) {
+        return project;
+      }
+    }
+
+    return null;
+  }
+
+  // Compatibility method for existing screens.
+  ProjectModel? getProjectById(String projectId) {
+    return findProject(projectId);
+  }
+
+  // ============================================================
+  // CURRENT PROJECT
+  // ============================================================
+
+  String? get currentProjectId => _currentProjectId;
+
+  ProjectModel? get currentProject {
+    final id = _currentProjectId;
+
+    if (id == null) {
+      return null;
+    }
+
+    return findProject(id);
+  }
+
+  String? get currentProjectName {
+    return currentProject?.name;
+  }
+
+  ProjectType? get currentProjectType {
+    return currentProject?.projectType;
+  }
+
+  ProjectSettingsModel? get currentSettings {
+    return currentProject?.settings;
+  }
+
+  ProjectAspectRatio? get currentAspectRatio {
+    return currentProject?.settings.aspectRatio;
+  }
+
+  String? get currentResolution {
+    return currentProject?.settings.resolution;
+  }
+
+  double? get currentFps {
+    return currentProject?.settings.fps;
+  }
+
+  String? get currentQuality {
+    return currentProject?.settings.quality;
+  }
+
+  AnimeSeriesModel? get currentAnimeSeries {
+    return currentProject?.animeSeries;
+  }
+
+  AnimeMovieModel? get currentAnimeMovie {
+    return currentProject?.animeMovie;
+  }
+
+  bool get isCurrentAnimeSeries {
+    return currentProjectType == ProjectType.animeSeries;
+  }
+
+  bool get isCurrentAnimeMovie {
+    return currentProjectType == ProjectType.animeMovie;
+  }
+
+  // ============================================================
+  // CURRENT SEASON
+  // ============================================================
+
+  String? get currentSeasonId => _currentSeasonId;
+
+  SeasonModel? get currentSeason {
+    final series = currentAnimeSeries;
+    final id = _currentSeasonId;
+
+    if (series == null || id == null) {
+      return null;
+    }
+
+    for (final season in series.seasons) {
+      if (season.id == id) {
+        return season;
+      }
+    }
+
+    return null;
+  }
+
+  List<SeasonModel> get currentSeasons {
+    final series = currentAnimeSeries;
+
+    if (series == null) {
+      return const [];
+    }
+
+    return List.unmodifiable(series.seasons);
+  }
+
+  // ============================================================
+  // CURRENT EPISODE
+  // ============================================================
+
+  String? get currentEpisodeId => _currentEpisodeId;
+
+  EpisodeModel? get currentEpisode {
+    final season = currentSeason;
+    final id = _currentEpisodeId;
+
+    if (season == null || id == null) {
+      return null;
+    }
+
+    for (final episode in season.episodes) {
+      if (episode.id == id) {
+        return episode;
+      }
+    }
+
+    return null;
+  }
+
+  List<EpisodeModel> get currentEpisodes {
+    final season = currentSeason;
+
+    if (season == null) {
+      return const [];
+    }
+
+    return List.unmodifiable(season.episodes);
+  }
+
+  // ============================================================
+  // CURRENT CLIP
+  // ============================================================
+
+  String? get currentClipId => _currentClipId;
+
+  ClipModel? get currentClip {
+    final id = _currentClipId;
+
+    if (id == null) {
+      return null;
+    }
+
+    final episode = currentEpisode;
+
+    if (episode != null) {
+      for (final clip in episode.clips) {
+        if (clip.id == id) {
+          return clip;
+        }
+      }
+    }
+
+    final movie = currentAnimeMovie;
+
+    if (movie != null) {
+      for (final clip in movie.clips) {
+        if (clip.id == id) {
+          return clip;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  List<ClipModel> get currentClips {
+    final episode = currentEpisode;
+
+    if (episode != null) {
+      return List.unmodifiable(episode.clips);
+    }
+
+    final movie = currentAnimeMovie;
+
+    if (movie != null) {
+      return List.unmodifiable(movie.clips);
+    }
+
+    return const [];
+  }
+
+  // ============================================================
+  // PROJECT FLOW CONTROL
+  // ============================================================
+
+  void beginCreateProject(ProjectFlowType type) {
+    _projectFlowType = type;
+
+    _currentProjectId = null;
+    _currentSeasonId = null;
+    _currentEpisodeId = null;
+    _currentClipId = null;
+
+    notifyListeners();
+  }
+
+  void beginEditCurrentProject() {
+    if (currentProject == null) {
+      return;
+    }
+
+    _projectFlowType = ProjectFlowType.editCurrentProject;
+
+    notifyListeners();
+  }
+
+  void clearProjectFlow() {
+    _projectFlowType = null;
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // SELECT PROJECT
+  // ============================================================
+
+  bool selectProject(String projectId) {
+    if (findProject(projectId) == null) {
+      return false;
+    }
+
+    _currentProjectId = projectId;
+    _currentSeasonId = null;
+    _currentEpisodeId = null;
+    _currentClipId = null;
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // SELECT SEASON
+  // ============================================================
+
+  bool selectSeason(String seasonId) {
+    final series = currentAnimeSeries;
+
+    if (series == null) {
+      return false;
+    }
+
+    final exists = series.seasons.any(
+      (season) => season.id == seasonId,
+    );
+
+    if (!exists) {
+      return false;
+    }
+
+    _currentSeasonId = seasonId;
+    _currentEpisodeId = null;
+    _currentClipId = null;
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // SELECT EPISODE
+  // ============================================================
+
+  bool selectEpisode(String episodeId) {
+    final season = currentSeason;
+
+    if (season == null) {
+      return false;
+    }
+
+    final exists = season.episodes.any(
+      (episode) => episode.id == episodeId,
+    );
+
+    if (!exists) {
+      return false;
+    }
+
+    _currentEpisodeId = episodeId;
+    _currentClipId = null;
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // SELECT CLIP
+  // ============================================================
+
+  bool selectClip(String clipId) {
+    final episode = currentEpisode;
+
+    if (episode != null) {
+      final exists = episode.clips.any(
+        (clip) => clip.id == clipId,
+      );
+
+      if (exists) {
+        _currentClipId = clipId;
+
+        notifyListeners();
+
+        return true;
+      }
+    }
+
+    final movie = currentAnimeMovie;
+
+    if (movie != null) {
+      final exists = movie.clips.any(
+        (clip) => clip.id == clipId,
+      );
+
+      if (exists) {
+        _currentClipId = clipId;
+
+        notifyListeners();
+
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // ============================================================
+  // CLEAR CURRENT CONTEXT
+  // ============================================================
+
+  void clearCurrentContext() {
+    _currentProjectId = null;
+    _currentSeasonId = null;
+    _currentEpisodeId = null;
+    _currentClipId = null;
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // CREATE PROJECT
+  // ============================================================
+
+  ProjectModel createProject({
+    required ProjectType projectType,
+    required String name,
+    required ProjectSettingsModel settings,
+  }) {
+    final timestamp = DateTime.now().microsecondsSinceEpoch;
+
+    final projectId = 'project_$timestamp';
+
+    late ProjectModel project;
+
+    switch (projectType) {
+      case ProjectType.animeSeries:
+        final series = AnimeSeriesModel(
+          id: 'series_$timestamp',
+          name: name,
+          seasons: const [],
+        );
+
+        project = ProjectModel(
+          id: projectId,
+          name: name,
+          projectType: ProjectType.animeSeries,
+          settings: settings,
+          animeSeries: series,
+        );
+
+      case ProjectType.animeMovie:
+        final movie = AnimeMovieModel(
+          id: 'movie_$timestamp',
+          name: name,
+          clips: const [],
+        );
+
+        project = ProjectModel(
+          id: projectId,
+          name: name,
+          projectType: ProjectType.animeMovie,
+          settings: settings,
+          animeMovie: movie,
+        );
+    }
+
+    _projects.add(project);
+
+    _currentProjectId = project.id;
+    _currentSeasonId = null;
+    _currentEpisodeId = null;
+    _currentClipId = null;
+
+    notifyListeners();
+
+    return project;
+  }
+
+  // ============================================================
+  // DELETE PROJECT
+  // ============================================================
+
+  bool deleteProject(String projectId) {
+    final index = _projects.indexWhere(
+      (project) => project.id == projectId,
+    );
+
+    if (index == -1) {
+      return false;
+    }
+
+    _projects.removeAt(index);
+
+    if (_currentProjectId == projectId) {
+      _currentProjectId = null;
+      _currentSeasonId = null;
+      _currentEpisodeId = null;
+      _currentClipId = null;
+    }
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // UPDATE CURRENT PROJECT
+  // ============================================================
+
+  bool updateCurrentProject({
+  String? name,
+  ProjectSettingsModel? settings,
+}) {
+  final project = currentProject;
+
+  if (project == null) {
+    return false;
+  }
+
+  final updatedName = name ?? project.name;
+
+  AnimeSeriesModel? updatedSeries = project.animeSeries;
+  AnimeMovieModel? updatedMovie = project.animeMovie;
+
+  if (name != null && updatedSeries != null) {
+    updatedSeries = updatedSeries.copyWith(
+      name: updatedName,
+    );
+  }
+
+  if (name != null && updatedMovie != null) {
+    updatedMovie = updatedMovie.copyWith(
+      name: updatedName,
+    );
+  }
+
+  final updatedProject = project.copyWith(
+    name: updatedName,
+    settings: settings ?? project.settings,
+    animeSeries: updatedSeries,
+    animeMovie: updatedMovie,
+  );
+
+  return updateProject(updatedProject);
+}
+
+  // ============================================================
+  // UPDATE PROJECT NAME
+  // ============================================================
+
+  bool updateCurrentProjectName(String name) {
+    final cleanedName = name.trim();
+
+    if (cleanedName.isEmpty) {
+      return false;
+    }
+
+    return updateCurrentProject(
+      name: cleanedName,
+    );
+  }
+
+  // ============================================================
+  // UPDATE PROJECT SETTINGS
+  // ============================================================
+
+  bool updateCurrentProjectSettings({
+    ProjectAspectRatio? aspectRatio,
+    String? resolution,
+    double? fps,
+    String? quality,
+  }) {
+    final settings = currentSettings;
+
+    if (settings == null) {
+      return false;
+    }
+
+    final updatedSettings = settings.copyWith(
+      aspectRatio: aspectRatio ?? settings.aspectRatio,
+      resolution: resolution ?? settings.resolution,
+      fps: fps ?? settings.fps,
+      quality: quality ?? settings.quality,
+    );
+
+    return updateCurrentProject(
+      settings: updatedSettings,
+    );
+  }
+
+  // ============================================================
+  // UPDATE PROJECT
+  // ============================================================
+
+  bool updateProject(ProjectModel updatedProject) {
+    final index = _projects.indexWhere(
+      (project) => project.id == updatedProject.id,
+    );
+
+    if (index == -1) {
+      return false;
+    }
+
+    _projects[index] = updatedProject;
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // CREATE SEASON
+  // ============================================================
+
+  SeasonModel? createSeason({
+    String? name,
+  }) {
+    final project = currentProject;
+    final series = currentAnimeSeries;
+
+    if (project == null || series == null) {
+      return null;
+    }
+
+    final number = series.seasons.isEmpty
+        ? 1
+        : series.seasons
+                .map((season) => season.number)
+                .reduce(
+                  (a, b) => a > b ? a : b,
+                ) +
+            1;
+
+    final cleaned = _stripSeasonPrefix(
+      name?.trim() ?? '',
+    );
+
+    final season = SeasonModel(
+      id: 'season_${number}_${DateTime.now().microsecondsSinceEpoch}',
+      number: number,
+      name: cleaned.isEmpty
+          ? 'Season $number'
+          : cleaned,
+      episodes: const [],
+    );
+
+    _replaceCurrentProject(
+      project.copyWith(
+        animeSeries: series.copyWith(
+          seasons: [
+            ...series.seasons,
+            season,
+          ],
+        ),
+      ),
+    );
+
+    _currentSeasonId = season.id;
+    _currentEpisodeId = null;
+    _currentClipId = null;
+
+    notifyListeners();
+
+    return season;
+  }
+
+  // ============================================================
+  // RENAME SEASON
+  // ============================================================
+
+  bool renameSeason({
+    required String seasonId,
+    required String newName,
+  }) {
+    final project = currentProject;
+    final series = currentAnimeSeries;
+
+    if (project == null || series == null) {
+      return false;
+    }
+
+    SeasonModel? existing;
+
+    for (final season in series.seasons) {
+      if (season.id == seasonId) {
+        existing = season;
+        break;
+      }
+    }
+
+    if (existing == null) {
+      return false;
+    }
+
+    final cleaned = _stripSeasonPrefix(
+      newName.trim(),
+    );
+
+    final updatedSeason = existing.copyWith(
+      name: cleaned.isEmpty
+          ? 'Season ${existing.number}'
+          : cleaned,
+    );
+
+    final updatedSeasons = series.seasons.map(
+      (season) {
+        if (season.id == seasonId) {
+          return updatedSeason;
+        }
+
+        return season;
+      },
+    ).toList();
+
+    _replaceCurrentProject(
+      project.copyWith(
+        animeSeries: series.copyWith(
+          seasons: updatedSeasons,
+        ),
+      ),
+    );
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // DELETE SEASON
+  // ============================================================
+
+  bool deleteSeason(String seasonId) {
+    final project = currentProject;
+    final series = currentAnimeSeries;
+
+    if (project == null || series == null) {
+      return false;
+    }
+
+    final exists = series.seasons.any(
+      (season) => season.id == seasonId,
+    );
+
+    if (!exists) {
+      return false;
+    }
+
+    final updatedSeasons = series.seasons
+        .where(
+          (season) => season.id != seasonId,
+        )
+        .toList();
+
+    _replaceCurrentProject(
+      project.copyWith(
+        animeSeries: series.copyWith(
+          seasons: updatedSeasons,
+        ),
+      ),
+    );
+
+    if (_currentSeasonId == seasonId) {
+      _currentSeasonId = null;
+      _currentEpisodeId = null;
+      _currentClipId = null;
+    }
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // CREATE EPISODE
+  // ============================================================
+
+  EpisodeModel? createEpisode({
+    String? name,
+  }) {
+    final project = currentProject;
+    final season = currentSeason;
+
+    if (project == null || season == null) {
+      return null;
+    }
+
+    final number = season.episodes.isEmpty
+        ? 1
+        : season.episodes
+                .map(
+                  (episode) => episode.episodeNumber,
+                )
+                .reduce(
+                  (a, b) => a > b ? a : b,
+                ) +
+            1;
+
+    final cleaned = name?.trim() ?? '';
+
+    final episode = EpisodeModel(
+      id:
+          'episode_${number}_${DateTime.now().microsecondsSinceEpoch}',
+      name: cleaned.isEmpty
+          ? 'Episode $number'
+          : cleaned,
+      episodeNumber: number,
+      clips: const [],
+    );
+
+    _replaceCurrentSeasonDirect(
+      project: project,
+      season: season.copyWith(
+        episodes: [
+          ...season.episodes,
+          episode,
+        ],
+      ),
+    );
+
+    _currentEpisodeId = episode.id;
+    _currentClipId = null;
+
+    notifyListeners();
+
+    return episode;
+  }
+
+  // ============================================================
+  // RENAME EPISODE
+  // ============================================================
+
+  bool renameEpisode({
+    required String episodeId,
+    required String newName,
+  }) {
+    final project = currentProject;
+    final season = currentSeason;
+
+    if (project == null || season == null) {
+      return false;
+    }
+
+    EpisodeModel? existing;
+
+    for (final episode in season.episodes) {
+      if (episode.id == episodeId) {
+        existing = episode;
+        break;
+      }
+    }
+
+    if (existing == null) {
+      return false;
+    }
+
+    final cleaned = newName.trim();
+
+    final updatedEpisode = existing.copyWith(
+      name: cleaned.isEmpty
+          ? 'Episode ${existing.episodeNumber}'
+          : cleaned,
+    );
+
+    final updatedEpisodes = season.episodes.map(
+      (episode) {
+        if (episode.id == episodeId) {
+          return updatedEpisode;
+        }
+
+        return episode;
+      },
+    ).toList();
+
+    _replaceCurrentSeasonDirect(
+      project: project,
+      season: season.copyWith(
+        episodes: updatedEpisodes,
+      ),
+    );
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // DELETE EPISODE
+  // ============================================================
+
+  bool deleteEpisode(String episodeId) {
+    final project = currentProject;
+    final season = currentSeason;
+
+    if (project == null || season == null) {
+      return false;
+    }
+
+    final exists = season.episodes.any(
+      (episode) => episode.id == episodeId,
+    );
+
+    if (!exists) {
+      return false;
+    }
+
+    final updatedEpisodes = season.episodes
+        .where(
+          (episode) => episode.id != episodeId,
+        )
+        .toList();
+
+    _replaceCurrentSeasonDirect(
+      project: project,
+      season: season.copyWith(
+        episodes: updatedEpisodes,
+      ),
+    );
+
+    if (_currentEpisodeId == episodeId) {
+      _currentEpisodeId = null;
+      _currentClipId = null;
+    }
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // CREATE CURRENT CLIP
+  // ============================================================
+
+  ClipModel? createCurrentClip({
+    String? name,
+  }) {
+    final project = currentProject;
+
+    if (project == null) {
+      return null;
+    }
+
+    final episode = currentEpisode;
+
+    if (episode != null) {
+      final number = _nextClipNumber(
+        episode.clips,
+      );
+
+      final cleaned = name?.trim() ?? '';
+
+      const durationSeconds = 60;
+
+      final frameCount =
+          durationSeconds *
+          project.settings.fps.round();
+
+      final clip = ClipModel(
+        id:
+            'clip_${number}_${DateTime.now().microsecondsSinceEpoch}',
+        number: number,
+        name: cleaned.isEmpty
+            ? 'Clip $number'
+            : cleaned,
+        durationSeconds: durationSeconds,
+        frameCount: frameCount,
+      );
+
+      _replaceCurrentEpisode(
+        project: project,
+        updatedEpisode: episode.copyWith(
+          clips: [
+            ...episode.clips,
+            clip,
+          ],
+        ),
+      );
+
+      _currentClipId = clip.id;
+
+      notifyListeners();
+
+      return clip;
+    }
+
+    final movie = currentAnimeMovie;
+
+    if (movie != null) {
+      final number = _nextClipNumber(
+        movie.clips,
+      );
+
+      final cleaned = name?.trim() ?? '';
+
+      const durationSeconds = 60;
+
+      final frameCount =
+          durationSeconds *
+          project.settings.fps.round();
+
+      final clip = ClipModel(
+        id:
+            'movie_clip_${number}_${DateTime.now().microsecondsSinceEpoch}',
+        number: number,
+        name: cleaned.isEmpty
+            ? 'Clip $number'
+            : cleaned,
+        durationSeconds: durationSeconds,
+        frameCount: frameCount,
+      );
+
+      _replaceCurrentProject(
+        project.copyWith(
+          animeMovie: movie.copyWith(
+            clips: [
+              ...movie.clips,
+              clip,
+            ],
+          ),
+        ),
+      );
+
+      _currentClipId = clip.id;
+
+      notifyListeners();
+
+      return clip;
+    }
+
+    return null;
+  }
+
+  // ============================================================
+  // FIND CURRENT CLIP
+  // ============================================================
+
+  ClipModel? findCurrentClipById(
+    String clipId,
+  ) {
+    for (final clip in currentClips) {
+      if (clip.id == clipId) {
+        return clip;
+      }
+    }
+
+    return null;
+  }
+
+  // ============================================================
+  // RENAME CLIP
+  // ============================================================
+
+  bool renameClip({
+    required String clipId,
+    required String newName,
+  }) {
+    final clips = currentClips;
+
+    ClipModel? existing;
+
+    for (final clip in clips) {
+      if (clip.id == clipId) {
+        existing = clip;
+        break;
+      }
+    }
+
+    if (existing == null) {
+      return false;
+    }
+
+    final cleaned = newName.trim();
+
+    final updatedClip = existing.copyWith(
+      name: cleaned.isEmpty
+          ? 'Clip ${existing.number}'
+          : cleaned,
+    );
+
+    final updatedClips = clips.map(
+      (clip) {
+        if (clip.id == clipId) {
+          return updatedClip;
+        }
+
+        return clip;
+      },
+    ).toList();
+
+    _replaceCurrentClips(updatedClips);
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // DELETE CLIP
+  // ============================================================
+
+  bool deleteClip(String clipId) {
+    final clips = currentClips;
+
+    final exists = clips.any(
+      (clip) => clip.id == clipId,
+    );
+
+    if (!exists) {
+      return false;
+    }
+
+    final updatedClips = clips
+        .where(
+          (clip) => clip.id != clipId,
+        )
+        .toList();
+
+    _replaceCurrentClips(updatedClips);
+
+    if (_currentClipId == clipId) {
+      _currentClipId = null;
+    }
+
+    notifyListeners();
+
+    return true;
+  }
+
+  // ============================================================
+  // REORDER CLIPS
+  // ============================================================
+
+  void reorderCurrentClips({
+    required int oldIndex,
+    required int newIndex,
+  }) {
+    final clips = currentClips;
+
+    if (oldIndex < 0 ||
+        oldIndex >= clips.length) {
+      return;
+    }
+
+    if (newIndex < 0 ||
+        newIndex > clips.length) {
+      return;
+    }
+
+    if (oldIndex == newIndex ||
+        oldIndex + 1 == newIndex) {
+      return;
+    }
+
+    if (newIndex > oldIndex) {
+      newIndex -= 1;
+    }
+
+    final updatedClips =
+        List<ClipModel>.from(clips);
+
+    final clip =
+        updatedClips.removeAt(oldIndex);
+
+    updatedClips.insert(
+      newIndex,
+      clip,
+    );
+
+    final renumbered = <ClipModel>[];
+
+    for (int i = 0;
+        i < updatedClips.length;
+        i++) {
+      renumbered.add(
+        updatedClips[i].copyWith(
+          number: i + 1,
+        ),
+      );
+    }
+
+    _replaceCurrentClips(
+      renumbered,
+    );
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // UPDATE CLIP TIMING
+  // ============================================================
+
+  void updateClipTiming({
+    required String clipId,
+    required int durationSeconds,
+  }) {
+    final project = currentProject;
+
+    if (project == null) {
+      return;
+    }
+
+    final clip =
+        findCurrentClipById(clipId);
+
+    if (clip == null) {
+      return;
+    }
+
+    final safeDuration =
+        durationSeconds.clamp(1, 60);
+
+    final updatedClip = clip.copyWith(
+      durationSeconds: safeDuration,
+      frameCount:
+          safeDuration *
+          project.settings.fps.round(),
+    );
+
+    final updatedClips =
+        currentClips.map(
+      (item) {
+        if (item.id == clipId) {
+          return updatedClip;
+        }
+
+        return item;
+      },
+    ).toList();
+
+    _replaceCurrentClips(
+      updatedClips,
+    );
+
+    notifyListeners();
+  }
+
+  // ============================================================
+  // INTERNAL PROJECT REPLACEMENT
+  // ============================================================
+
+  void _replaceCurrentProject(
+    ProjectModel project,
+  ) {
+    final index = _projects.indexWhere(
+      (item) => item.id == project.id,
+    );
+
+    if (index == -1) {
+      return;
+    }
+
+    _projects[index] = project;
+  }
+
+  // ============================================================
+  // INTERNAL SEASON UPDATE
+  // ============================================================
+
+  void _replaceCurrentSeasonDirect({
+    required ProjectModel project,
+    required SeasonModel season,
+  }) {
+    final series = currentAnimeSeries;
+
+    if (series == null) {
+      return;
+    }
+
+    _replaceCurrentProject(
+      project.copyWith(
+        animeSeries: series.copyWith(
+          seasons: series.seasons.map(
+            (item) {
+              if (item.id == season.id) {
+                return season;
+              }
+
+              return item;
+            },
+          ).toList(),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // INTERNAL EPISODE UPDATE
+  // ============================================================
+
+  void _replaceCurrentEpisode({
+    required ProjectModel project,
+    required EpisodeModel updatedEpisode,
+  }) {
+    final series = currentAnimeSeries;
+    final season = currentSeason;
+
+    if (series == null ||
+        season == null) {
+      return;
+    }
+
+    final updatedSeason =
+        season.copyWith(
+      episodes: season.episodes.map(
+        (episode) {
+          if (episode.id ==
+              updatedEpisode.id) {
+            return updatedEpisode;
+          }
+
+          return episode;
+        },
+      ).toList(),
+    );
+
+    _replaceCurrentProject(
+      project.copyWith(
+        animeSeries: series.copyWith(
+          seasons: series.seasons.map(
+            (item) {
+              if (item.id == season.id) {
+                return updatedSeason;
+              }
+
+              return item;
+            },
+          ).toList(),
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // INTERNAL CLIP UPDATE
+  // ============================================================
+
+  void _replaceCurrentClips(
+    List<ClipModel> clips,
+  ) {
+    final project = currentProject;
+
+    if (project == null) {
+      return;
+    }
+
+    final episode = currentEpisode;
+
+    if (episode != null) {
+      _replaceCurrentEpisode(
+        project: project,
+        updatedEpisode: episode.copyWith(
+          clips: clips,
+        ),
+      );
+
+      return;
+    }
+
+    final movie = currentAnimeMovie;
+
+    if (movie != null) {
+      _replaceCurrentProject(
+        project.copyWith(
+          animeMovie: movie.copyWith(
+            clips: clips,
+          ),
+        ),
+      );
+    }
+  }
+
+  // ============================================================
+  // INTERNAL HELPERS
+  // ============================================================
+
+  int _nextClipNumber(
+    List<ClipModel> clips,
+  ) {
+    if (clips.isEmpty) {
+      return 1;
+    }
+
+    return clips
+            .map((clip) => clip.number)
+            .reduce(
+              (a, b) => a > b ? a : b,
+            ) +
+        1;
+  }
+
+  String _stripSeasonPrefix(
+    String value,
+  ) {
+    if (value.isEmpty) {
+      return '';
+    }
+
+    return value
+        .replaceFirst(
+          RegExp(
+            r'^season\s+\d+\s*:?\s*',
+            caseSensitive: false,
+          ),
+          '',
+        )
+        .trim();
+  }
+}

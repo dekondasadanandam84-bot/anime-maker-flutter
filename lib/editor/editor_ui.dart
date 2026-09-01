@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/home/create_project_screen.dart';
@@ -10,6 +9,7 @@ import 'left_panel/left_panel_ui.dart';
 import 'right_panel/right_panel_ui.dart';
 import 'top_bar/top_bar_ui.dart';
 import 'bottom_bar/bottom_bar_ui.dart';
+import 'bottom_bar/frames_viewer_ui.dart';
 import 'middle/middle_ui.dart';
 
 class EditorScreen extends StatefulWidget {
@@ -20,12 +20,6 @@ class EditorScreen extends StatefulWidget {
 
   // ============================================================
   // EDITOR CONTEXT
-  // ============================================================
-  //
-  // The clip ID identifies what this editor is editing.
-  //
-  // Project name, project settings, FPS, resolution, aspect ratio
-  // and the actual clip data all come from ProjectController.
   // ============================================================
 
   final String clipId;
@@ -59,7 +53,8 @@ class _EditorScreenState extends State<EditorScreen> {
       return;
     }
 
-    final controller = ProjectScope.of(context);
+    final controller =
+        ProjectScope.of(context);
 
     _controller = EditorController(
       projectController: controller,
@@ -88,8 +83,8 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Establish the dependency on ProjectController.
-    final controller = ProjectScope.of(context);
+    final controller =
+        ProjectScope.of(context);
 
     return OrientationBuilder(
       builder: (context, orientation) {
@@ -103,6 +98,53 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   // ============================================================
+  // OPEN FRAMES VIEWER
+  // ============================================================
+
+  void _openFramesViewer() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => FramesViewerUI(
+          bottomBarController:
+              _controller.bottomBarController,
+          controller:
+              _controller.framesViewerController,
+          onAddFrames: () {
+            _showAddFramesSheet(context);
+          },
+        ),
+      ),
+    );
+  }
+
+  // ============================================================
+  // ADD FRAMES SHEET
+  // ============================================================
+  //
+  // This is the same 1–30 selector.
+  // It operates on the SAME BottomBarController.
+  // ============================================================
+
+  void _showAddFramesSheet(
+    BuildContext context,
+  ) {
+    showModalBottomSheet<int>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return const _AddFramesSheet();
+      },
+    ).then((count) {
+      if (count == null) {
+        return;
+      }
+
+      _controller.bottomBarController
+          .addFrames(count);
+    });
+  }
+
+  // ============================================================
   // PORTRAIT ORIENTATION SCREEN
   // ============================================================
 
@@ -112,7 +154,8 @@ class _EditorScreenState extends State<EditorScreen> {
       body: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.symmetric(
+            padding:
+                const EdgeInsets.symmetric(
               horizontal: 32,
             ),
             child: Column(
@@ -180,11 +223,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 return const SizedBox.shrink();
               }
 
-              
-
               return EditorTopBar(
-                
-
                 // ------------------------------------------------
                 // BACK
                 // ------------------------------------------------
@@ -229,8 +268,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   projectController
                       .beginEditCurrentProject();
 
-                  Navigator.of(context)
-                      .push(
+                  Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) =>
                           const CreateProjectScreen(),
@@ -239,12 +277,11 @@ class _EditorScreenState extends State<EditorScreen> {
                 },
 
                 // ------------------------------------------------
-                // FRAMES VIEWER
+                // FULL-SCREEN FRAMES VIEWER
                 // ------------------------------------------------
 
-                onFramesViewer: () {
-                  // Open Frames Viewer later.
-                },
+                onFramesViewer:
+                    _openFramesViewer,
 
                 // ------------------------------------------------
                 // FIT
@@ -254,7 +291,7 @@ class _EditorScreenState extends State<EditorScreen> {
                     _controller.onFitToScreen,
 
                 // ------------------------------------------------
-                // HIDE PANELS
+                // HIDE CONTROLS
                 // ------------------------------------------------
 
                 onHidePanels:
@@ -274,6 +311,7 @@ class _EditorScreenState extends State<EditorScreen> {
                 _controller.topBarController,
                 _controller.leftPanelController,
                 _controller.bottomBarController,
+                _controller.framesViewerController,
               ]),
               builder: (context, child) {
                 final leftPanel =
@@ -347,8 +385,7 @@ class _EditorScreenState extends State<EditorScreen> {
                                 Container(
                                   height: 64,
                                   padding:
-                                      const EdgeInsets
-                                          .symmetric(
+                                      const EdgeInsets.symmetric(
                                     horizontal: 12,
                                   ),
                                   decoration:
@@ -422,7 +459,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       ),
 
                     // =================================================
-                    // BOTTOM BAR
+                    // FLOATING BOTTOM BAR
                     // =================================================
 
                     if (!leftPanel.paintSheetOpen)
@@ -431,8 +468,9 @@ class _EditorScreenState extends State<EditorScreen> {
                         right: 0,
                         bottom: 0,
                         child: BottomBarUI(
-                          controller: _controller
-                              .bottomBarController,
+                          controller:
+                              _controller
+                                  .bottomBarController,
 
                           onPreviousFrame:
                               _controller
@@ -445,22 +483,6 @@ class _EditorScreenState extends State<EditorScreen> {
                           onNextFrame:
                               _controller
                                   .onNextFramePressed,
-
-                          onAddFrames:
-                              _controller
-                                  .onAddFramesPressed,
-
-                          onFrameSelected:
-                              _controller
-                                  .onFrameSelected,
-
-                          onCopy:
-                              _controller
-                                  .onCopyPressed,
-
-                          onPaste:
-                              _controller
-                                  .onPastePressed,
 
                           controlsHidden:
                               controlsHidden,
@@ -498,10 +520,132 @@ class _EditorScreenState extends State<EditorScreen> {
 }
 
 // ================================================================
+// ADD FRAMES SHEET
+// ================================================================
+
+class _AddFramesSheet extends StatelessWidget {
+  const _AddFramesSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Container(
+        constraints:
+            const BoxConstraints(
+          maxHeight: 520,
+        ),
+        padding:
+            const EdgeInsets.fromLTRB(
+          20,
+          14,
+          20,
+          20,
+        ),
+        decoration:
+            const BoxDecoration(
+          color: Colors.white,
+          borderRadius:
+              BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 42,
+                height: 4,
+                decoration:
+                    BoxDecoration(
+                  color:
+                      const Color(0xFFD8D8D8),
+                  borderRadius:
+                      BorderRadius.circular(10),
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              const Text(
+                'Add Frames',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight:
+                      FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              GridView.builder(
+                shrinkWrap: true,
+                physics:
+                    const NeverScrollableScrollPhysics(),
+                itemCount: 30,
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 6,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 1.25,
+                ),
+                itemBuilder:
+                    (context, index) {
+                  final count =
+                      index + 1;
+
+                  return Material(
+                    color:
+                        const Color(
+                      0xFFF5F7FA,
+                    ),
+                    borderRadius:
+                        BorderRadius.circular(
+                      10,
+                    ),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(
+                          context,
+                        ).pop(count);
+                      },
+                      borderRadius:
+                          BorderRadius.circular(
+                        10,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$count',
+                          style:
+                              const TextStyle(
+                            fontSize: 14,
+                            fontWeight:
+                                FontWeight.w600,
+                            color:
+                                Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ================================================================
 // SHOW CONTROLS BUTTON
 // ================================================================
 
-class _ShowControlsButton extends StatelessWidget {
+class _ShowControlsButton
+    extends StatelessWidget {
   const _ShowControlsButton({
     required this.onTap,
   });
@@ -570,4 +714,3 @@ class _ShowControlsButton extends StatelessWidget {
     );
   }
 }
-

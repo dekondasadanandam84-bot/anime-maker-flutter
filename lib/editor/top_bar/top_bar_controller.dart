@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 
 class TopBarController extends ChangeNotifier {
@@ -13,6 +12,8 @@ class TopBarController extends ChangeNotifier {
   bool _canRedo = false;
   bool _panelsHidden = false;
 
+  bool _framesViewerRequested = false;
+
   bool get isAudioEnabled => _isAudioEnabled;
 
   bool get canUndo => _canUndo;
@@ -20,6 +21,9 @@ class TopBarController extends ChangeNotifier {
   bool get canRedo => _canRedo;
 
   bool get panelsHidden => _panelsHidden;
+
+  bool get framesViewerRequested =>
+      _framesViewerRequested;
 
   // ============================================================
   // AUDIO
@@ -105,6 +109,28 @@ class TopBarController extends ChangeNotifier {
   }
 
   // ============================================================
+  // FRAMES VIEWER
+  // ============================================================
+
+  void requestFramesViewer() {
+    if (_framesViewerRequested) {
+      return;
+    }
+
+    _framesViewerRequested = true;
+    notifyListeners();
+  }
+
+  void clearFramesViewerRequest() {
+    if (!_framesViewerRequested) {
+      return;
+    }
+
+    _framesViewerRequested = false;
+    notifyListeners();
+  }
+
+  // ============================================================
   // HIDE / SHOW CONTROLS
   // ============================================================
 
@@ -122,8 +148,8 @@ class TopBarController extends ChangeNotifier {
     _isAudioEnabled = true;
     _canUndo = false;
     _canRedo = false;
+    _framesViewerRequested = false;
 
     notifyListeners();
   }
 }
-

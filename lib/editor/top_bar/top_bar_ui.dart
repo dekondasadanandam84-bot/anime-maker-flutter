@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/home/project_controller.dart';
@@ -66,11 +65,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    // ProjectScope.of(context) makes this widget reactive to
-    // ProjectController.notifyListeners().
-    //
-    // Therefore the project name always comes from the current
-    // project instead of being passed as a stale constructor value.
     final controller = ProjectScope.of(context);
 
     final projectName =
@@ -100,7 +94,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Back
                 IconButton(
                   onPressed: widget.onBack,
                   tooltip: 'Back',
@@ -110,7 +103,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   ),
                 ),
 
-                // Current project name
                 ConstrainedBox(
                   constraints:
                       const BoxConstraints(
@@ -197,7 +189,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Hide
                 _topBarAction(
                   icon: Icons.fit_screen_outlined,
                   label: 'Hide',
@@ -206,7 +197,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Hide Controls',
                 ),
 
-                // Undo
                 _topBarAction(
                   icon: Icons.undo_rounded,
                   label: 'Undo',
@@ -214,7 +204,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Undo',
                 ),
 
-                // Redo
                 _topBarAction(
                   icon: Icons.redo_rounded,
                   label: 'Redo',
@@ -222,7 +211,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Redo',
                 ),
 
-                // Copy
                 _topBarAction(
                   icon:
                       Icons.content_copy_outlined,
@@ -231,7 +219,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Copy',
                 ),
 
-                // Paste
                 _topBarAction(
                   icon:
                       Icons.content_paste_outlined,
@@ -240,7 +227,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Paste',
                 ),
 
-                // Duplicate
                 _topBarAction(
                   icon: Icons
                       .control_point_duplicate_outlined,
@@ -250,7 +236,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Duplicate',
                 ),
 
-                // Audio
                 _topBarAction(
                   icon:
                       Icons.volume_up_outlined,
@@ -260,7 +245,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Audio',
                 ),
 
-                // Diamond
                 _topBarAction(
                   icon: Icons.diamond_outlined,
                   label: 'Diamond',
@@ -269,7 +253,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                   tooltip: 'Diamond',
                 ),
 
-                // More
                 _topBarAction(
                   icon:
                       Icons.more_vert_rounded,
@@ -448,7 +431,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               const EdgeInsets
                                   .all(20),
                           children: [
-                            // Project Settings
                             _toolAction(
                               icon: Icons
                                   .settings_outlined,
@@ -464,7 +446,14 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               },
                             ),
 
-                            // Frames Viewer
+                            // =================================================
+                            // FRAMES VIEWER
+                            // =================================================
+                            //
+                            // Navigation itself is handled by the
+                            // onFramesViewer callback from EditorUI.
+                            // =================================================
+
                             _toolAction(
                               icon: Icons
                                   .movie_outlined,
@@ -480,7 +469,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               },
                             ),
 
-                            // Add Image
                             _toolAction(
                               icon: Icons
                                   .image_outlined,
@@ -493,7 +481,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               },
                             ),
 
-                            // Add Video
                             _toolAction(
                               icon: Icons
                                   .video_library_outlined,
@@ -506,7 +493,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               },
                             ),
 
-                            // Onion Skin
                             _toolToggle(
                               icon: Icons
                                   .layers_outlined,
@@ -533,7 +519,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               },
                             ),
 
-                            // Grid
                             _toolToggle(
                               icon: Icons
                                   .grid_on_outlined,
@@ -892,4 +877,3 @@ class _FitScreenIconPainter
     return false;
   }
 }
-

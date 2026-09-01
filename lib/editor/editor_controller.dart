@@ -6,6 +6,7 @@ import '../home/models/project_settings_model.dart';
 import 'left_panel/left_panel_controller.dart';
 import 'top_bar/top_bar_controller.dart';
 import 'bottom_bar/bottom_bar_controller.dart';
+import 'bottom_bar/frames_viewer_controller.dart';
 import 'middle/middle_controller.dart';
 
 class EditorController extends ChangeNotifier {
@@ -14,7 +15,10 @@ class EditorController extends ChangeNotifier {
     required this.clipId,
   })  : topBarController = TopBarController(),
         leftPanelController = LeftPanelController(),
-        bottomBarController = BottomBarController(),
+        bottomBarController = BottomBarController(
+          projectController: projectController,
+          clipId: clipId,
+        ),
         middleController = MiddleController(
           aspectRatio: _aspectRatioValue(
             projectController.currentAspectRatio ??
@@ -24,6 +28,19 @@ class EditorController extends ChangeNotifier {
               projectController.currentResolution ??
                   '1920 × 1080',
         ) {
+    // ==========================================================
+    // FRAMES VIEWER
+    // ==========================================================
+    //
+    // Uses the SAME BottomBarController instance.
+    // Therefore the floating frame strip and full-screen
+    // Frames Viewer always share the same frame state.
+    // ==========================================================
+
+    framesViewerController = FramesViewerController(
+      bottomBarController: bottomBarController,
+    );
+
     projectController.addListener(
       _onProjectControllerChanged,
     );
@@ -32,10 +49,6 @@ class EditorController extends ChangeNotifier {
   // ============================================================
   // PROJECT CONTEXT
   // ============================================================
-  //
-  // ProjectController is the single source of truth.
-  // This controller does not store project settings locally.
-  // ============================================================
 
   final ProjectController projectController;
 
@@ -43,10 +56,6 @@ class EditorController extends ChangeNotifier {
 
   // ============================================================
   // CURRENT PROJECT DATA
-  // ============================================================
-  //
-  // These are derived values only.
-  // Nothing is duplicated or stored here.
   // ============================================================
 
   ProjectSettingsModel? get settings =>
@@ -87,8 +96,13 @@ class EditorController extends ChangeNotifier {
   // ============================================================
 
   final TopBarController topBarController;
+
   final LeftPanelController leftPanelController;
+
   final BottomBarController bottomBarController;
+
+  late final FramesViewerController framesViewerController;
+
   final MiddleController middleController;
 
   // ============================================================
@@ -171,28 +185,8 @@ class EditorController extends ChangeNotifier {
     bottomBarController.nextFrame();
   }
 
-  void onAddFramesPressed(int count) {
-    bottomBarController.addFrames(count);
-  }
-
-  void onFrameSelected(int frame) {
-    bottomBarController.selectFrame(frame);
-  }
-
   // ============================================================
   // PROJECT SETTINGS UPDATE
-  // ============================================================
-  //
-  // IMPORTANT:
-  // Settings are written directly into ProjectController.
-  //
-  // There is NO:
-  // _aspectRatio = ...
-  // _resolution = ...
-  // _fps = ...
-  //
-  // ProjectController updates the project and notifies every
-  // screen that depends on it.
   // ============================================================
 
   void updateProjectSettings({
@@ -201,7 +195,8 @@ class EditorController extends ChangeNotifier {
     required double fps,
   }) {
     projectController.updateCurrentProjectSettings(
-      aspectRatio: _projectAspectRatio(aspectRatio),
+      aspectRatio:
+          _projectAspectRatio(aspectRatio),
       resolution: resolution,
       fps: fps,
     );
@@ -209,13 +204,6 @@ class EditorController extends ChangeNotifier {
 
   // ============================================================
   // PROJECT CONTROLLER CHANGES
-  // ============================================================
-  //
-  // Whenever ANY screen changes the project's settings,
-  // ProjectController notifies us.
-  //
-  // The Editor then updates its canvas from the NEW central
-  // values instead of keeping an old snapshot.
   // ============================================================
 
   void _onProjectControllerChanged() {
@@ -302,6 +290,8 @@ class EditorController extends ChangeNotifier {
     projectController.removeListener(
       _onProjectControllerChanged,
     );
+
+    framesViewerController.dispose();
 
     leftPanelController.dispose();
     topBarController.dispose();

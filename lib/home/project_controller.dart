@@ -1249,6 +1249,52 @@ class ProjectController extends ChangeNotifier {
   }
 
   // ============================================================
+// UPDATE CLIP FRAME COUNT
+// ============================================================
+
+bool updateClipFrameCount({
+  required String clipId,
+  required int frameCount,
+}) {
+  final project = currentProject;
+
+  if (project == null) {
+    return false;
+  }
+
+  final clip =
+      findCurrentClipById(clipId);
+
+  if (clip == null) {
+    return false;
+  }
+
+  final safeFrameCount =
+      frameCount < 1 ? 1 : frameCount;
+
+  final updatedClip = clip.copyWith(
+    frameCount: safeFrameCount,
+  );
+
+  final updatedClips =
+      currentClips.map(
+    (item) {
+      if (item.id == clipId) {
+        return updatedClip;
+      }
+
+      return item;
+    },
+  ).toList();
+
+  _replaceCurrentClips(updatedClips);
+
+  notifyListeners();
+
+  return true;
+}
+
+  // ============================================================
   // INTERNAL PROJECT REPLACEMENT
   // ============================================================
 
