@@ -9,285 +9,268 @@ import 'package:flutter/material.dart';
 /// - Tablets
 /// - Desktop / resizable windows
 class EditorResponsive {
-const EditorResponsive._();
+  const EditorResponsive._();
 
-/// Returns responsive values based on the space actually
-/// available to the editor.
-static EditorResponsiveData of(BuildContext context) {
-final size = MediaQuery.sizeOf(context);
+  /// Returns responsive values based on the space actually
+  /// available to the editor.
+  static EditorResponsiveData of(BuildContext context) {
+    final size = MediaQuery.sizeOf(context);
 
-return forSize(
-  width: size.width,
-  height: size.height,
-);
+    return forSize(width: size.width, height: size.height);
+  }
 
+  static EditorResponsiveData forSize({
+    required double width,
+    required double height,
+  }) {
+    // ============================================================
+    // VERY SMALL LANDSCAPE PHONE
+    // ============================================================
 
-}
+    if (width < 700) {
+      return const EditorResponsiveData(
+        screenType: EditorScreenType.small,
 
-static EditorResponsiveData forSize({
-required double width,
-required double height,
-}) {
-// ============================================================
-// VERY SMALL LANDSCAPE PHONE
-// ============================================================
+        topBarHeight: 48,
+        bottomBarHeight: 74,
 
+        horizontalInset: 8,
+        panelGap: 6,
 
-if (width < 700) {
-  return const EditorResponsiveData(
-    screenType: EditorScreenType.small,
+        leftPanelWidth: 60,
+        rightPanelWidth: 190,
 
-    topBarHeight: 48,
-    bottomBarHeight: 74,
+        panelPadding: 6,
 
-    horizontalInset: 8,
-    panelGap: 6,
+        toolButtonHeight: 48,
+        toolIconSize: 19,
+        toolLabelSize: 7.5,
 
-    leftPanelWidth: 60,
-    rightPanelWidth: 190,
+        rightPanelTitleSize: 14,
+        rightPanelPadding: 10,
 
-    panelPadding: 6,
+        canvasPadding: 8,
 
-    toolButtonHeight: 48,
-    toolIconSize: 19,
-    toolLabelSize: 7.5,
+        topActionWidth: 38,
+        topActionIconSize: 18,
+        topActionLabelSize: 7,
+      );
+    }
 
-    rightPanelTitleSize: 14,
-    rightPanelPadding: 10,
+    // ============================================================
+    // COMPACT PHONE / SMALL TABLET
+    // ============================================================
 
-    canvasPadding: 8,
+    if (width < 1000) {
+      return const EditorResponsiveData(
+        screenType: EditorScreenType.compact,
 
-    topActionWidth: 38,
-    topActionIconSize: 18,
-    topActionLabelSize: 7,
-  );
-}
+        topBarHeight: 52,
+        bottomBarHeight: 80,
 
-// ============================================================
-// COMPACT PHONE / SMALL TABLET
-// ============================================================
+        horizontalInset: 10,
+        panelGap: 8,
 
-if (width < 1000) {
-  return const EditorResponsiveData(
-    screenType: EditorScreenType.compact,
+        leftPanelWidth: 66,
+        rightPanelWidth: 210,
 
-    topBarHeight: 52,
-    bottomBarHeight: 80,
+        panelPadding: 7,
 
-    horizontalInset: 10,
-    panelGap: 8,
+        toolButtonHeight: 52,
+        toolIconSize: 20,
+        toolLabelSize: 8,
 
-    leftPanelWidth: 66,
-    rightPanelWidth: 210,
+        rightPanelTitleSize: 15,
+        rightPanelPadding: 12,
 
-    panelPadding: 7,
+        canvasPadding: 12,
 
-    toolButtonHeight: 52,
-    toolIconSize: 20,
-    toolLabelSize: 8,
+        topActionWidth: 40,
+        topActionIconSize: 19,
+        topActionLabelSize: 8,
+      );
+    }
 
-    rightPanelTitleSize: 15,
-    rightPanelPadding: 12,
+    // ============================================================
+    // NORMAL TABLET / LARGE PHONE
+    // ============================================================
 
-    canvasPadding: 12,
+    if (width < 1400) {
+      return const EditorResponsiveData(
+        screenType: EditorScreenType.normal,
 
-    topActionWidth: 40,
-    topActionIconSize: 19,
-    topActionLabelSize: 8,
-  );
-}
+        topBarHeight: 56,
+        bottomBarHeight: 86,
 
-// ============================================================
-// NORMAL TABLET / LARGE PHONE
-// ============================================================
+        horizontalInset: 12,
+        panelGap: 10,
 
-if (width < 1400) {
-  return const EditorResponsiveData(
-    screenType: EditorScreenType.normal,
+        leftPanelWidth: 72,
+        rightPanelWidth: 230,
 
-    topBarHeight: 56,
-    bottomBarHeight: 86,
+        panelPadding: 8,
 
-    horizontalInset: 12,
-    panelGap: 10,
+        toolButtonHeight: 56,
+        toolIconSize: 21,
+        toolLabelSize: 9,
 
-    leftPanelWidth: 72,
-    rightPanelWidth: 230,
+        rightPanelTitleSize: 16,
+        rightPanelPadding: 14,
 
-    panelPadding: 8,
+        canvasPadding: 18,
 
-    toolButtonHeight: 56,
-    toolIconSize: 21,
-    toolLabelSize: 9,
+        topActionWidth: 42,
+        topActionIconSize: 20,
+        topActionLabelSize: 8.5,
+      );
+    }
 
-    rightPanelTitleSize: 16,
-    rightPanelPadding: 14,
+    // ============================================================
+    // LARGE TABLET / DESKTOP
+    // ============================================================
 
-    canvasPadding: 18,
+    return const EditorResponsiveData(
+      screenType: EditorScreenType.wide,
 
-    topActionWidth: 42,
-    topActionIconSize: 20,
-    topActionLabelSize: 8.5,
-  );
-}
+      topBarHeight: 58,
+      bottomBarHeight: 90,
 
-// ============================================================
-// LARGE TABLET / DESKTOP
-// ============================================================
+      horizontalInset: 16,
+      panelGap: 12,
 
-return const EditorResponsiveData(
-  screenType: EditorScreenType.wide,
+      leftPanelWidth: 76,
+      rightPanelWidth: 240,
 
-  topBarHeight: 58,
-  bottomBarHeight: 90,
+      panelPadding: 10,
 
-  horizontalInset: 16,
-  panelGap: 12,
+      toolButtonHeight: 58,
+      toolIconSize: 22,
+      toolLabelSize: 9,
 
-  leftPanelWidth: 76,
-  rightPanelWidth: 240,
+      rightPanelTitleSize: 17,
+      rightPanelPadding: 16,
 
-  panelPadding: 10,
+      canvasPadding: 24,
 
-  toolButtonHeight: 58,
-  toolIconSize: 22,
-  toolLabelSize: 9,
-
-  rightPanelTitleSize: 17,
-  rightPanelPadding: 16,
-
-  canvasPadding: 24,
-
-  topActionWidth: 44,
-  topActionIconSize: 20,
-  topActionLabelSize: 9,
-);
-}
+      topActionWidth: 44,
+      topActionIconSize: 20,
+      topActionLabelSize: 9,
+    );
+  }
 }
 
 // ================================================================
 // SCREEN TYPE
 // ================================================================
 
-enum EditorScreenType {
-small,
-compact,
-normal,
-wide,
-}
+enum EditorScreenType { small, compact, normal, wide }
 
 // ================================================================
 // RESPONSIVE DATA
 // ================================================================
 
 class EditorResponsiveData {
-const EditorResponsiveData({
-required this.screenType,
+  const EditorResponsiveData({
+    required this.screenType,
 
+    required this.topBarHeight,
+    required this.bottomBarHeight,
 
-required this.topBarHeight,
-required this.bottomBarHeight,
+    required this.horizontalInset,
+    required this.panelGap,
 
-required this.horizontalInset,
-required this.panelGap,
+    required this.leftPanelWidth,
+    required this.rightPanelWidth,
 
-required this.leftPanelWidth,
-required this.rightPanelWidth,
+    required this.panelPadding,
 
-required this.panelPadding,
+    required this.toolButtonHeight,
+    required this.toolIconSize,
+    required this.toolLabelSize,
 
-required this.toolButtonHeight,
-required this.toolIconSize,
-required this.toolLabelSize,
+    required this.rightPanelTitleSize,
+    required this.rightPanelPadding,
 
-required this.rightPanelTitleSize,
-required this.rightPanelPadding,
+    required this.canvasPadding,
 
-required this.canvasPadding,
+    required this.topActionWidth,
+    required this.topActionIconSize,
+    required this.topActionLabelSize,
+  });
 
-required this.topActionWidth,
-required this.topActionIconSize,
-required this.topActionLabelSize,
+  // ============================================================
+  // SCREEN
+  // ============================================================
 
+  final EditorScreenType screenType;
 
-});
+  // ============================================================
+  // MAIN BARS
+  // ============================================================
 
-// ============================================================
-// SCREEN
-// ============================================================
+  final double topBarHeight;
+  final double bottomBarHeight;
 
-final EditorScreenType screenType;
+  // ============================================================
+  // PANEL POSITIONING
+  // ============================================================
 
-// ============================================================
-// MAIN BARS
-// ============================================================
+  final double horizontalInset;
+  final double panelGap;
 
-final double topBarHeight;
-final double bottomBarHeight;
+  // ============================================================
+  // PANEL WIDTHS
+  // ============================================================
 
-// ============================================================
-// PANEL POSITIONING
-// ============================================================
+  final double leftPanelWidth;
+  final double rightPanelWidth;
 
-final double horizontalInset;
-final double panelGap;
+  // ============================================================
+  // GENERAL PANEL PADDING
+  // ============================================================
 
-// ============================================================
-// PANEL WIDTHS
-// ============================================================
+  final double panelPadding;
 
-final double leftPanelWidth;
-final double rightPanelWidth;
+  // ============================================================
+  // LEFT TOOLBAR
+  // ============================================================
 
-// ============================================================
-// GENERAL PANEL PADDING
-// ============================================================
+  final double toolButtonHeight;
+  final double toolIconSize;
+  final double toolLabelSize;
 
-final double panelPadding;
+  // ============================================================
+  // RIGHT PANEL
+  // ============================================================
 
-// ============================================================
-// LEFT TOOLBAR
-// ============================================================
+  final double rightPanelTitleSize;
+  final double rightPanelPadding;
 
-final double toolButtonHeight;
-final double toolIconSize;
-final double toolLabelSize;
+  // ============================================================
+  // CANVAS
+  // ============================================================
 
-// ============================================================
-// RIGHT PANEL
-// ============================================================
+  final double canvasPadding;
 
-final double rightPanelTitleSize;
-final double rightPanelPadding;
+  // ============================================================
+  // TOP BAR ACTIONS
+  // ============================================================
 
-// ============================================================
-// CANVAS
-// ============================================================
+  final double topActionWidth;
+  final double topActionIconSize;
+  final double topActionLabelSize;
 
-final double canvasPadding;
+  // ============================================================
+  // HELPERS
+  // ============================================================
 
-// ============================================================
-// TOP BAR ACTIONS
-// ============================================================
+  bool get isSmall => screenType == EditorScreenType.small;
 
-final double topActionWidth;
-final double topActionIconSize;
-final double topActionLabelSize;
+  bool get isCompact =>
+      screenType == EditorScreenType.small ||
+      screenType == EditorScreenType.compact;
 
-// ============================================================
-// HELPERS
-// ============================================================
+  bool get isNormal => screenType == EditorScreenType.normal;
 
-bool get isSmall =>
-screenType == EditorScreenType.small;
-
-bool get isCompact =>
-screenType == EditorScreenType.small ||
-screenType == EditorScreenType.compact;
-
-bool get isNormal =>
-screenType == EditorScreenType.normal;
-
-bool get isWide =>
-screenType == EditorScreenType.wide;
+  bool get isWide => screenType == EditorScreenType.wide;
 }
