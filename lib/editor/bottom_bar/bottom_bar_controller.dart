@@ -1,16 +1,10 @@
-
 import 'package:flutter/foundation.dart';
 
 import '../../home/project_controller.dart';
 
 class BottomBarController extends ChangeNotifier {
-  BottomBarController({
-    required this.projectController,
-    required this.clipId,
-  }) {
-    projectController.addListener(
-      _onProjectChanged,
-    );
+  BottomBarController({required this.projectController, required this.clipId}) {
+    projectController.addListener(_onProjectChanged);
   }
 
   // ============================================================
@@ -64,20 +58,15 @@ class BottomBarController extends ChangeNotifier {
   // GETTERS
   // ============================================================
 
-  List<int> get frames =>
-      List.unmodifiable(_frames);
+  List<int> get frames => List.unmodifiable(_frames);
 
-  int get selectedFrame =>
-      _selectedFrame;
+  int get selectedFrame => _selectedFrame;
 
-  int get frameCount =>
-      _frames.length;
+  int get frameCount => _frames.length;
 
-  bool get canPaste =>
-      _clipboardCount > 0;
+  bool get canPaste => _clipboardCount > 0;
 
-  int get clipboardCount =>
-      _clipboardCount;
+  int get clipboardCount => _clipboardCount;
 
   // ============================================================
   // ADD MULTIPLE FRAMES
@@ -88,18 +77,11 @@ class BottomBarController extends ChangeNotifier {
       return;
     }
 
-    final currentIndex =
-        _frames.indexOf(_selectedFrame);
+    final currentIndex = _frames.indexOf(_selectedFrame);
 
-    final insertionIndex =
-        currentIndex < 0
-            ? _frames.length
-            : currentIndex + 1;
+    final insertionIndex = currentIndex < 0 ? _frames.length : currentIndex + 1;
 
-    _insertFrames(
-      insertionIndex: insertionIndex,
-      count: count,
-    );
+    _insertFrames(insertionIndex: insertionIndex, count: count);
   }
 
   // ============================================================
@@ -107,17 +89,13 @@ class BottomBarController extends ChangeNotifier {
   // ============================================================
 
   void addFrameBefore() {
-    final currentIndex =
-        _frames.indexOf(_selectedFrame);
+    final currentIndex = _frames.indexOf(_selectedFrame);
 
     if (currentIndex < 0) {
       return;
     }
 
-    _insertFrames(
-      insertionIndex: currentIndex,
-      count: 1,
-    );
+    _insertFrames(insertionIndex: currentIndex, count: 1);
   }
 
   // ============================================================
@@ -125,46 +103,31 @@ class BottomBarController extends ChangeNotifier {
   // ============================================================
 
   void addFrameAfter() {
-    final currentIndex =
-        _frames.indexOf(_selectedFrame);
+    final currentIndex = _frames.indexOf(_selectedFrame);
 
     if (currentIndex < 0) {
       return;
     }
 
-    _insertFrames(
-      insertionIndex: currentIndex + 1,
-      count: 1,
-    );
+    _insertFrames(insertionIndex: currentIndex + 1, count: 1);
   }
 
   // ============================================================
   // INTERNAL INSERT
   // ============================================================
 
-  void _insertFrames({
-    required int insertionIndex,
-    required int count,
-  }) {
+  void _insertFrames({required int insertionIndex, required int count}) {
     if (count <= 0) {
       return;
     }
 
-    final safeIndex = insertionIndex.clamp(
-      0,
-      _frames.length,
-    );
+    final safeIndex = insertionIndex.clamp(0, _frames.length);
 
-    final newCount =
-        _frames.length + count;
+    final newCount = _frames.length + count;
 
-    _frames = List<int>.generate(
-      newCount,
-      (index) => index + 1,
-    );
+    _frames = List<int>.generate(newCount, (index) => index + 1);
 
-    _selectedFrame =
-        safeIndex + 1;
+    _selectedFrame = safeIndex + 1;
 
     _persistFrameCount();
 
@@ -190,19 +153,43 @@ class BottomBarController extends ChangeNotifier {
   }
 
   // ============================================================
+// HANDLE FRAME TAP
+// ============================================================
+//
+// Returns true when the already-selected frame is tapped again.
+// The UI uses that result to open the frame action menu.
+// ============================================================
+
+bool handleFrameTap(int frame) {
+  if (!_frames.contains(frame)) {
+    return false;
+  }
+
+  // Already selected → request action menu.
+  if (_selectedFrame == frame) {
+    return true;
+  }
+
+  // First tap → select the frame.
+  _selectedFrame = frame;
+
+  notifyListeners();
+
+  return false;
+}
+
+  // ============================================================
   // PREVIOUS FRAME
   // ============================================================
 
   void previousFrame() {
-    final currentIndex =
-        _frames.indexOf(_selectedFrame);
+    final currentIndex = _frames.indexOf(_selectedFrame);
 
     if (currentIndex <= 0) {
       return;
     }
 
-    _selectedFrame =
-        _frames[currentIndex - 1];
+    _selectedFrame = _frames[currentIndex - 1];
 
     notifyListeners();
   }
@@ -212,16 +199,13 @@ class BottomBarController extends ChangeNotifier {
   // ============================================================
 
   void nextFrame() {
-    final currentIndex =
-        _frames.indexOf(_selectedFrame);
+    final currentIndex = _frames.indexOf(_selectedFrame);
 
-    if (currentIndex < 0 ||
-        currentIndex >= _frames.length - 1) {
+    if (currentIndex < 0 || currentIndex >= _frames.length - 1) {
       return;
     }
 
-    _selectedFrame =
-        _frames[currentIndex + 1];
+    _selectedFrame = _frames[currentIndex + 1];
 
     notifyListeners();
   }
@@ -230,20 +214,14 @@ class BottomBarController extends ChangeNotifier {
   // COPY
   // ============================================================
 
-  void copyFrames(
-    Iterable<int> frameNumbers,
-  ) {
-    final validFrames = frameNumbers
-        .where(_frames.contains)
-        .toSet()
-        .toList();
+  void copyFrames(Iterable<int> frameNumbers) {
+    final validFrames = frameNumbers.where(_frames.contains).toSet().toList();
 
     if (validFrames.isEmpty) {
       return;
     }
 
-    _clipboardCount =
-        validFrames.length;
+    _clipboardCount = validFrames.length;
 
     notifyListeners();
   }
@@ -257,99 +235,107 @@ class BottomBarController extends ChangeNotifier {
       return;
     }
 
-    final currentIndex =
-        _frames.indexOf(_selectedFrame);
+    final currentIndex = _frames.indexOf(_selectedFrame);
 
     if (currentIndex < 0) {
       return;
     }
 
-    _insertFrames(
-      insertionIndex: currentIndex + 1,
-      count: _clipboardCount,
-    );
+    _insertFrames(insertionIndex: currentIndex + 1, count: _clipboardCount);
   }
 
   // ============================================================
   // DUPLICATE
   // ============================================================
 
-  void duplicateFrames(
-    Iterable<int> frameNumbers,
-  ) {
-    final validFrames = frameNumbers
-        .where(_frames.contains)
-        .toSet()
-        .toList()
+  void duplicateFrames(Iterable<int> frameNumbers) {
+    final validFrames = frameNumbers.where(_frames.contains).toSet().toList()
       ..sort();
 
     if (validFrames.isEmpty) {
       return;
     }
 
-    final lastFrame =
-        validFrames.last;
+    final lastFrame = validFrames.last;
 
-    final lastIndex =
-        _frames.indexOf(lastFrame);
+    final lastIndex = _frames.indexOf(lastFrame);
 
     if (lastIndex < 0) {
       return;
     }
 
-    _insertFrames(
-      insertionIndex: lastIndex + 1,
-      count: validFrames.length,
-    );
+    _insertFrames(insertionIndex: lastIndex + 1, count: validFrames.length);
   }
 
   // ============================================================
   // ERASE
   // ============================================================
+  //
+  // IMPORTANT:
+  // A clip must ALWAYS contain at least ONE frame.
+  //
+  // Users may erase:
+  //   • one frame
+  //   • multiple frames
+  //   • ALL selected frames
+  //
+  // But the final remaining frame can NEVER be deleted.
+  // ============================================================
 
-  void eraseFrames(
-    Iterable<int> frameNumbers,
-  ) {
-    final validFrames = frameNumbers
-        .where(_frames.contains)
-        .toSet()
-        .toList()
+  void eraseFrames(Iterable<int> frameNumbers) {
+    final validFrames = frameNumbers.where(_frames.contains).toSet().toList()
       ..sort();
 
     if (validFrames.isEmpty) {
       return;
     }
 
-    // Always keep at least one frame.
-    if (_frames.length == 1) {
+    // ------------------------------------------------------------
+    // HARD SAFETY RULE:
+    // Never allow the clip to reach zero frames.
+    // ------------------------------------------------------------
+
+    if (_frames.length <= 1) {
       return;
     }
 
-    final firstRemovedIndex =
-        _frames.indexOf(
-      validFrames.first,
-    );
+    final firstRemovedIndex = _frames.indexOf(validFrames.first);
 
-    _frames.removeWhere(
-      validFrames.contains,
-    );
+    // ------------------------------------------------------------
+    // Calculate what remains BEFORE rebuilding the numbering.
+    // ------------------------------------------------------------
 
-    _frames = List<int>.generate(
-      _frames.length,
-      (index) => index + 1,
-    );
+    final remainingFrames = _frames
+        .where((frame) => !validFrames.contains(frame))
+        .toList();
 
-    final targetIndex =
-        firstRemovedIndex.clamp(
-      0,
-      _frames.length - 1,
-    );
+    // ------------------------------------------------------------
+    // User tried to erase ALL frames.
+    //
+    // Keep exactly ONE default frame.
+    // ------------------------------------------------------------
 
-    _selectedFrame =
-        _frames[targetIndex];
+    if (remainingFrames.isEmpty) {
+      _frames = <int>[1];
+      _selectedFrame = 1;
+
+      _persistFrameCount();
+      notifyListeners();
+      return;
+    }
+
+    // ------------------------------------------------------------
+    // Normal erase.
+    // ------------------------------------------------------------
+
+    _frames = List<int>.generate(remainingFrames.length, (index) => index + 1);
+
+    // Keep selection near the erased area.
+    final targetIndex = firstRemovedIndex.clamp(0, _frames.length - 1);
+
+    _selectedFrame = _frames[targetIndex];
 
     _persistFrameCount();
-
     notifyListeners();
   }
 
@@ -395,11 +381,8 @@ class BottomBarController extends ChangeNotifier {
 
   @override
   void dispose() {
-    projectController.removeListener(
-      _onProjectChanged,
-    );
+    projectController.removeListener(_onProjectChanged);
 
     super.dispose();
   }
 }
-

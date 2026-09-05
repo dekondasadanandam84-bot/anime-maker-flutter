@@ -330,15 +330,7 @@ class _ClipsScreenState extends State<ClipsScreen> {
           ),
         ),
 
-        actions: [
-          IconButton(
-            tooltip: 'More options',
-            onPressed: _showScreenMenu,
-            icon: const Icon(
-              Icons.more_vert,
-            ),
-          ),
-        ],
+        
 
         bottom: PreferredSize(
           preferredSize:
@@ -790,38 +782,5 @@ class _ClipsScreenState extends State<ClipsScreen> {
   // SCREEN MENU
   // ============================================================
 
-  void _showScreenMenu() {
-    showModalBottomSheet<void>(
-      context: context,
-      showDragHandle: true,
-      builder: (sheetContext) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize:
-                MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(
-                  Icons.sort,
-                ),
-                title: const Text(
-                  'Reorder Clips',
-                ),
-                subtitle: const Text(
-                  'Drag and hold a clip to move it',
-                ),
-                onTap: () {
-                  Navigator.of(
-                    sheetContext,
-                  ).pop();
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
-  }
 }
 

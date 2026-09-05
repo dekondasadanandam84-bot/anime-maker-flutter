@@ -38,21 +38,31 @@ class FramesViewerController extends ChangeNotifier {
   }
 
   // ============================================================
-  // FRAME TAP
-  // ============================================================
+// FRAME TAP
+// ============================================================
+//
+// First tap:
+//   Select frame.
+//
+// Second tap on the same selected frame:
+//   Tell UI to show frame actions.
+//
+// Selection mode:
+//   Continue normal multi-selection behavior.
+// ============================================================
 
-  void onFrameTap(int frame) {
-    if (!bottomBarController.frames.contains(frame)) {
-      return;
-    }
-
-    if (_selectionMode) {
-      toggleFrameSelection(frame);
-      return;
-    }
-
-    bottomBarController.selectFrame(frame);
+bool onFrameTap(int frame) {
+  if (!bottomBarController.frames.contains(frame)) {
+    return false;
   }
+
+  if (_selectionMode) {
+    toggleFrameSelection(frame);
+    return false;
+  }
+
+  return bottomBarController.handleFrameTap(frame);
+}
 
   // ============================================================
   // LONG PRESS

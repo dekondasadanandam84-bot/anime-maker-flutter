@@ -5,6 +5,7 @@ import 'package:flutter_application_1/home/project_controller.dart';
 import 'package:flutter_application_1/home/project_scope.dart';
 
 import 'editor_controller.dart';
+import 'editor_responsive.dart';
 import 'left_panel/left_panel_ui.dart';
 import 'right_panel/right_panel_ui.dart';
 import 'top_bar/top_bar_ui.dart';
@@ -18,15 +19,10 @@ class EditorScreen extends StatefulWidget {
     required this.clipId,
   });
 
-  // ============================================================
-  // EDITOR CONTEXT
-  // ============================================================
-
   final String clipId;
 
   @override
-  State<EditorScreen> createState() =>
-      _EditorScreenState();
+  State<EditorScreen> createState() => _EditorScreenState();
 }
 
 class _EditorScreenState extends State<EditorScreen> {
@@ -34,16 +30,8 @@ class _EditorScreenState extends State<EditorScreen> {
 
   bool _controllerInitialized = false;
 
-  // ============================================================
-  // PROJECT CONTROLLER
-  // ============================================================
-
   ProjectController get projectController =>
       ProjectScope.of(context);
-
-  // ============================================================
-  // CONTROLLER INITIALIZATION
-  // ============================================================
 
   @override
   void didChangeDependencies() {
@@ -53,8 +41,7 @@ class _EditorScreenState extends State<EditorScreen> {
       return;
     }
 
-    final controller =
-        ProjectScope.of(context);
+    final controller = ProjectScope.of(context);
 
     _controller = EditorController(
       projectController: controller,
@@ -63,10 +50,6 @@ class _EditorScreenState extends State<EditorScreen> {
 
     _controllerInitialized = true;
   }
-
-  // ============================================================
-  // DISPOSE
-  // ============================================================
 
   @override
   void dispose() {
@@ -77,14 +60,9 @@ class _EditorScreenState extends State<EditorScreen> {
     super.dispose();
   }
 
-  // ============================================================
-  // BUILD
-  // ============================================================
-
   @override
   Widget build(BuildContext context) {
-    final controller =
-        ProjectScope.of(context);
+    final controller = ProjectScope.of(context);
 
     return OrientationBuilder(
       builder: (context, orientation) {
@@ -92,7 +70,10 @@ class _EditorScreenState extends State<EditorScreen> {
           return _buildOrientationScreen();
         }
 
-        return _buildEditor(controller);
+        return _buildEditor(
+          context,
+          controller,
+        );
       },
     );
   }
@@ -120,10 +101,6 @@ class _EditorScreenState extends State<EditorScreen> {
   // ============================================================
   // ADD FRAMES SHEET
   // ============================================================
-  //
-  // This is the same 1–30 selector.
-  // It operates on the SAME BottomBarController.
-  // ============================================================
 
   void _showAddFramesSheet(
     BuildContext context,
@@ -139,13 +116,12 @@ class _EditorScreenState extends State<EditorScreen> {
         return;
       }
 
-      _controller.bottomBarController
-          .addFrames(count);
+      _controller.bottomBarController.addFrames(count);
     });
   }
 
   // ============================================================
-  // PORTRAIT ORIENTATION SCREEN
+  // PORTRAIT SCREEN
   // ============================================================
 
   Widget _buildOrientationScreen() {
@@ -153,42 +129,65 @@ class _EditorScreenState extends State<EditorScreen> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
-          child: Padding(
-            padding:
-                const EdgeInsets.symmetric(
-              horizontal: 32,
-            ),
-            child: Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.screen_rotation_alt_rounded,
-                  size: 88,
-                  color: Colors.black,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+
+              final horizontalPadding =
+                  width < 360 ? 20.0 : 32.0;
+
+              final iconSize =
+                  width < 360 ? 64.0 : 88.0;
+
+              final titleSize =
+                  width < 360 ? 22.0 : 26.0;
+
+              final bodySize =
+                  width < 360 ? 14.0 : 16.0;
+
+              return Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: horizontalPadding,
                 ),
-                const SizedBox(height: 28),
-                const Text(
-                  'Rotate Your Device',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
-                  ),
+                child: Column(
+                  mainAxisAlignment:
+                      MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.screen_rotation_alt_rounded,
+                      size: iconSize,
+                      color: Colors.black,
+                    ),
+
+                    SizedBox(
+                      height: width < 360 ? 20 : 28,
+                    ),
+
+                    Text(
+                      'Rotate Your Device',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: titleSize,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Text(
+                      'Turn your device sideways to use the editor in landscape mode.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: bodySize,
+                        height: 1.5,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Turn your device sideways to use the editor in landscape mode.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                    color: Colors.black54,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
         ),
       ),
@@ -200,321 +199,322 @@ class _EditorScreenState extends State<EditorScreen> {
   // ============================================================
 
   Widget _buildEditor(
+    BuildContext context,
     ProjectController projectController,
   ) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          // =======================================================
-          // TOP BAR
-          // =======================================================
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final metrics =
+            EditorResponsive.forSize(
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+        );
 
-          AnimatedBuilder(
-            animation: Listenable.merge([
-              _controller,
-              _controller.topBarController,
-            ]),
-            builder: (context, child) {
-              final topBar =
-                  _controller.topBarController;
+        return Scaffold(
+          backgroundColor: Colors.white,
+          body: Column(
+            children: [
+              // ==================================================
+              // TOP BAR
+              // ==================================================
 
-              if (topBar.panelsHidden) {
-                return const SizedBox.shrink();
-              }
+              AnimatedBuilder(
+                animation: Listenable.merge([
+                  _controller,
+                  _controller.topBarController,
+                ]),
+                builder: (context, child) {
+                  final topBar =
+                      _controller.topBarController;
 
-              return EditorTopBar(
-                // ------------------------------------------------
-                // BACK
-                // ------------------------------------------------
+                  if (topBar.panelsHidden) {
+                    return const SizedBox.shrink();
+                  }
 
-                onBack: () {
-                  Navigator.of(context).pop();
-                },
+                  return EditorTopBar(
+                    metrics: metrics,
+                    onBack: () {
+                      Navigator.of(context).pop();
+                    },
 
-                // ------------------------------------------------
-                // TOP BAR ACTIONS
-                // ------------------------------------------------
+                    onDiamond:
+                        _controller.onDiamondPressed,
 
-                onDiamond:
-                    _controller.onDiamondPressed,
+                    onAudio:
+                        _controller.onAudioPressed,
 
-                onAudio:
-                    _controller.onAudioPressed,
+                    onCopy:
+                        _controller.onCopyPressed,
 
-                onCopy:
-                    _controller.onCopyPressed,
+                    onPaste:
+                        _controller.onPastePressed,
 
-                onPaste:
-                    _controller.onPastePressed,
+                    onDuplicate:
+                        _controller.onDuplicatePressed,
 
-                onDuplicate:
-                    _controller.onDuplicatePressed,
+                    onUndo:
+                        _controller.onUndoPressed,
 
-                onUndo:
-                    _controller.onUndoPressed,
+                    onRedo:
+                        _controller.onRedoPressed,
 
-                onRedo:
-                    _controller.onRedoPressed,
+                    onMore:
+                        _controller.onMorePressed,
 
-                onMore:
-                    _controller.onMorePressed,
+                    onProjectSettings: () {
+                      projectController
+                          .beginEditCurrentProject();
 
-                // ------------------------------------------------
-                // PROJECT SETTINGS
-                // ------------------------------------------------
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              const CreateProjectScreen(),
+                        ),
+                      );
+                    },
 
-                onProjectSettings: () {
-                  projectController
-                      .beginEditCurrentProject();
+                    onFramesViewer:
+                        _openFramesViewer,
 
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          const CreateProjectScreen(),
-                    ),
+                    onFitToScreen:
+                        _controller.onFitToScreen,
+
+                    onHidePanels:
+                        _controller.onHidePanels,
                   );
                 },
+              ),
 
-                // ------------------------------------------------
-                // FULL-SCREEN FRAMES VIEWER
-                // ------------------------------------------------
+              // ==================================================
+              // EDITOR AREA
+              // ==================================================
 
-                onFramesViewer:
-                    _openFramesViewer,
+              Expanded(
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([
+                    _controller,
+                    _controller.topBarController,
+                    _controller.leftPanelController,
+                    _controller.bottomBarController,
+                    _controller.framesViewerController,
+                  ]),
+                  builder: (context, child) {
+                    final leftPanel =
+                        _controller.leftPanelController;
 
-                // ------------------------------------------------
-                // FIT
-                // ------------------------------------------------
+                    final topBar =
+                        _controller.topBarController;
 
-                onFitToScreen:
-                    _controller.onFitToScreen,
+                    final controlsHidden =
+                        topBar.panelsHidden;
 
-                // ------------------------------------------------
-                // HIDE CONTROLS
-                // ------------------------------------------------
+                    return Stack(
+                      clipBehavior: Clip.hardEdge,
+                      children: [
+                        // =========================================
+                        // CANVAS
+                        // =========================================
 
-                onHidePanels:
-                    _controller.onHidePanels,
-              );
-            },
-          ),
-
-          // =======================================================
-          // EDITOR AREA
-          // =======================================================
-
-          Expanded(
-            child: AnimatedBuilder(
-              animation: Listenable.merge([
-                _controller,
-                _controller.topBarController,
-                _controller.leftPanelController,
-                _controller.bottomBarController,
-                _controller.framesViewerController,
-              ]),
-              builder: (context, child) {
-                final leftPanel =
-                    _controller.leftPanelController;
-
-                final topBar =
-                    _controller.topBarController;
-
-                final controlsHidden =
-                    topBar.panelsHidden;
-
-                return Stack(
-                  children: [
-                    // =================================================
-                    // CANVAS
-                    // =================================================
-
-                    Positioned.fill(
-                      child: MiddleUI(
-                        controller:
-                            _controller.middleController,
-                      ),
-                    ),
-
-                    // =================================================
-                    // LEFT FLOATING TOOLBAR
-                    // =================================================
-
-                    if (!leftPanel.paintSheetOpen)
-                      Positioned(
-                        left: 16,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: LeftPanelUI(
-                            controller: leftPanel,
-                            compact:
-                                controlsHidden,
+                        Positioned.fill(
+                          child: MiddleUI(
+                            metrics: metrics,
+                            controller:
+                                _controller.middleController,
                           ),
                         ),
-                      ),
 
-                    // =================================================
-                    // RIGHT FLOATING TOOL PANEL
-                    // =================================================
+                        // =========================================
+                        // LEFT FLOATING TOOLBAR
+                        // =========================================
 
-                    if (leftPanel.rightPanelOpen)
-                      Positioned(
-                        right: 16,
-                        top: 0,
-                        bottom: 0,
-                        child: Center(
-                          child: RightPanelUI(
-                            tool:
-                                leftPanel.selectedTool,
+                        if (!leftPanel.paintSheetOpen)
+                          Positioned(
+                            left: metrics.horizontalInset,
+                            top: 0,
+                            bottom:
+                                metrics.bottomBarHeight,
+                            child: Center(
+                              child: LeftPanelUI(
+                                metrics: metrics,
+                                controller: leftPanel,
+                                compact:
+                                    controlsHidden,
+                              ),
+                            ),
                           ),
-                        ),
-                      ),
 
-                    // =================================================
-                    // FULL-SCREEN PAINT SHEET
-                    // =================================================
+                        // =========================================
+                        // RIGHT FLOATING TOOL PANEL
+                        // =========================================
 
-                    if (leftPanel.paintSheetOpen)
-                      Positioned.fill(
-                        child: Material(
-                          color: Colors.white,
-                          child: SafeArea(
-                            child: Column(
-                              children: [
-                                Container(
-                                  height: 64,
-                                  padding:
-                                      const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                  ),
-                                  decoration:
-                                      const BoxDecoration(
-                                    color: Colors.white,
-                                    border: Border(
-                                      bottom:
-                                          BorderSide(
-                                        color:
-                                            Color(
-                                          0xFFEAEAEA,
-                                        ),
+                        if (leftPanel.rightPanelOpen)
+                          Positioned(
+                            right:
+                                metrics.horizontalInset,
+                            top: 0,
+                            bottom:
+                                metrics.bottomBarHeight,
+                            child: Center(
+                              child: RightPanelUI(
+                                metrics: metrics,
+                                tool:
+                                    leftPanel.selectedTool,
+                              ),
+                            ),
+                          ),
+
+                        // =========================================
+                        // FULL SCREEN PAINT SHEET
+                        // =========================================
+
+                        if (leftPanel.paintSheetOpen)
+                          Positioned.fill(
+                            child: Material(
+                              color: Colors.white,
+                              child: SafeArea(
+                                child: Column(
+                                  children: [
+                                    Container(
+                                      height:
+                                          metrics.topBarHeight,
+                                      padding:
+                                          EdgeInsets.symmetric(
+                                        horizontal:
+                                            metrics.horizontalInset,
                                       ),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      IconButton(
-                                        onPressed: () {
-                                          leftPanel
-                                              .closePaintSheet();
-                                        },
-                                        icon: const Icon(
-                                          Icons
-                                              .arrow_back_rounded,
-                                          color:
-                                              Colors.black,
-                                        ),
-                                      ),
-                                      const Expanded(
-                                        child: Center(
-                                          child:
-                                              Text(
-                                            'Paint',
-                                            style:
-                                                TextStyle(
-                                              fontSize:
-                                                  18,
-                                              fontWeight:
-                                                  FontWeight
-                                                      .w700,
-                                              color:
-                                                  Colors.black,
+                                      decoration:
+                                          const BoxDecoration(
+                                        color: Colors.white,
+                                        border: Border(
+                                          bottom:
+                                              BorderSide(
+                                            color:
+                                                Color(
+                                              0xFFEAEAEA,
                                             ),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(
-                                        width: 48,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Expanded(
-                                  child: Center(
-                                    child: Text(
-                                      'Paint',
-                                      style:
-                                          TextStyle(
-                                        fontSize: 18,
-                                        color: Colors
-                                            .black54,
+                                      child: Row(
+                                        children: [
+                                          IconButton(
+                                            onPressed: () {
+                                              leftPanel
+                                                  .closePaintSheet();
+                                            },
+                                            icon:
+                                                const Icon(
+                                              Icons
+                                                  .arrow_back_rounded,
+                                              color:
+                                                  Colors.black,
+                                            ),
+                                          ),
+
+                                          const Expanded(
+                                            child: Center(
+                                              child: Text(
+                                                'Paint',
+                                                style:
+                                                    TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight:
+                                                      FontWeight.w700,
+                                                  color:
+                                                      Colors.black,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+
+                                          SizedBox(
+                                            width:
+                                                metrics
+                                                    .topActionWidth,
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
+
+                                    const Expanded(
+                                      child: Center(
+                                        child: Text(
+                                          'Paint',
+                                          style:
+                                              TextStyle(
+                                            fontSize: 18,
+                                            color:
+                                                Colors.black54,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
 
-                    // =================================================
-                    // FLOATING BOTTOM BAR
-                    // =================================================
+                        // =========================================
+                        // BOTTOM BAR
+                        // =========================================
 
-                    if (!leftPanel.paintSheetOpen)
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: BottomBarUI(
-                          controller:
-                              _controller
-                                  .bottomBarController,
+                        if (!leftPanel.paintSheetOpen)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: BottomBarUI(
+                              metrics: metrics,
+                              controller:
+                                  _controller
+                                      .bottomBarController,
 
-                          onPreviousFrame:
-                              _controller
-                                  .onPreviousFramePressed,
+                              onPreviousFrame:
+                                  _controller
+                                      .onPreviousFramePressed,
 
-                          onPlayPause:
-                              _controller
-                                  .onPlayPausePressed,
+                              onPlayPause:
+                                  _controller
+                                      .onPlayPausePressed,
 
-                          onNextFrame:
-                              _controller
-                                  .onNextFramePressed,
+                              onNextFrame:
+                                  _controller
+                                      .onNextFramePressed,
 
-                          controlsHidden:
-                              controlsHidden,
-                        ),
-                      ),
-
-                    // =================================================
-                    // SHOW CONTROLS BUTTON
-                    // =================================================
-
-                    if (controlsHidden &&
-                        !leftPanel.paintSheetOpen)
-                      Positioned(
-                        top: 4,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child:
-                              _ShowControlsButton(
-                            onTap:
-                                _controller
-                                    .onHidePanels,
+                              controlsHidden:
+                                  controlsHidden,
+                            ),
                           ),
-                        ),
-                      ),
-                  ],
-                );
-              },
-            ),
+
+                        // =========================================
+                        // SHOW CONTROLS
+                        // =========================================
+
+                        if (controlsHidden &&
+                            !leftPanel.paintSheetOpen)
+                          Positioned(
+                            top: metrics.panelGap,
+                            left: 0,
+                            right: 0,
+                            child: Center(
+                              child:
+                                  _ShowControlsButton(
+                                onTap:
+                                    _controller
+                                        .onHidePanels,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -523,7 +523,8 @@ class _EditorScreenState extends State<EditorScreen> {
 // ADD FRAMES SHEET
 // ================================================================
 
-class _AddFramesSheet extends StatelessWidget {
+class _AddFramesSheet
+    extends StatelessWidget {
   const _AddFramesSheet();
 
   @override
@@ -549,9 +550,12 @@ class _AddFramesSheet extends StatelessWidget {
             top: Radius.circular(24),
           ),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
+        child:
+            SingleChildScrollView(
+          child:
+              Column(
+            mainAxisSize:
+                MainAxisSize.min,
             children: [
               Container(
                 width: 42,
@@ -561,23 +565,31 @@ class _AddFramesSheet extends StatelessWidget {
                   color:
                       const Color(0xFFD8D8D8),
                   borderRadius:
-                      BorderRadius.circular(10),
+                      BorderRadius.circular(
+                    10,
+                  ),
                 ),
               ),
 
-              const SizedBox(height: 14),
+              const SizedBox(
+                height: 14,
+              ),
 
               const Text(
                 'Add Frames',
-                style: TextStyle(
+                style:
+                    TextStyle(
                   fontSize: 18,
                   fontWeight:
                       FontWeight.w700,
-                  color: Colors.black87,
+                  color:
+                      Colors.black87,
                 ),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(
+                height: 16,
+              ),
 
               GridView.builder(
                 shrinkWrap: true,
@@ -605,7 +617,8 @@ class _AddFramesSheet extends StatelessWidget {
                         BorderRadius.circular(
                       10,
                     ),
-                    child: InkWell(
+                    child:
+                        InkWell(
                       onTap: () {
                         Navigator.of(
                           context,
@@ -615,12 +628,15 @@ class _AddFramesSheet extends StatelessWidget {
                           BorderRadius.circular(
                         10,
                       ),
-                      child: Center(
-                        child: Text(
+                      child:
+                          Center(
+                        child:
+                            Text(
                           '$count',
                           style:
                               const TextStyle(
-                            fontSize: 14,
+                            fontSize:
+                                14,
                             fontWeight:
                                 FontWeight.w600,
                             color:
@@ -654,57 +670,95 @@ class _ShowControlsButton
 
   @override
   Widget build(BuildContext context) {
+    final metrics =
+        EditorResponsive.of(context);
+
     return Material(
       color: Colors.transparent,
       borderRadius:
-          BorderRadius.circular(10),
-      child: InkWell(
+          BorderRadius.circular(
+        10,
+      ),
+      child:
+          InkWell(
         onTap: onTap,
         borderRadius:
-            BorderRadius.circular(10),
-        child: Container(
+            BorderRadius.circular(
+          10,
+        ),
+        child:
+            Container(
           padding:
-              const EdgeInsets.symmetric(
-            horizontal: 10,
-            vertical: 6,
+              EdgeInsets.symmetric(
+            horizontal:
+                metrics.isSmall
+                    ? 8
+                    : 10,
+            vertical:
+                metrics.isSmall
+                    ? 5
+                    : 6,
           ),
           decoration:
               BoxDecoration(
             color: Colors.white,
             borderRadius:
-                BorderRadius.circular(10),
+                BorderRadius.circular(
+              10,
+            ),
             border:
                 Border.all(
               color:
-                  const Color(0xFFEAEAEA),
+                  const Color(
+                0xFFEAEAEA,
+              ),
             ),
-            boxShadow: const [
+            boxShadow:
+                const [
               BoxShadow(
                 color:
-                    Color(0x18000000),
+                    Color(
+                  0x18000000,
+                ),
                 blurRadius: 8,
                 offset:
-                    Offset(0, 3),
+                    Offset(
+                  0,
+                  3,
+                ),
               ),
             ],
           ),
-          child: const Column(
+          child:
+              Column(
             mainAxisSize:
                 MainAxisSize.min,
             children: [
               Icon(
-                Icons.fit_screen_rounded,
-                size: 17,
-                color: Colors.black87,
+                Icons
+                    .fit_screen_rounded,
+                size:
+                    metrics.isSmall
+                        ? 15
+                        : 17,
+                color:
+                    Colors.black87,
               ),
-              SizedBox(height: 1),
+              const SizedBox(
+                height: 1,
+              ),
               Text(
                 'Show',
-                style: TextStyle(
-                  fontSize: 8,
+                style:
+                    TextStyle(
+                  fontSize:
+                      metrics.isSmall
+                          ? 7
+                          : 8,
                   fontWeight:
                       FontWeight.w600,
-                  color: Colors.black54,
+                  color:
+                      Colors.black54,
                 ),
               ),
             ],
