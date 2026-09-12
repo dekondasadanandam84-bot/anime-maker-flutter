@@ -24,7 +24,6 @@ class EditorScreen extends StatefulWidget {
 
 class _EditorScreenState extends State<EditorScreen> {
   late final EditorController _controller;
-
   bool _controllerInitialized = false;
 
   ProjectController get projectController => ProjectScope.of(context);
@@ -32,27 +31,19 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    if (_controllerInitialized) {
-      return;
-    }
+    if (_controllerInitialized) return;
 
     final controller = ProjectScope.of(context);
-
     _controller = EditorController(
       projectController: controller,
       clipId: widget.clipId,
     );
-
     _controllerInitialized = true;
   }
 
   @override
   void dispose() {
-    if (_controllerInitialized) {
-      _controller.dispose();
-    }
-
+    if (_controllerInitialized) _controller.dispose();
     super.dispose();
   }
 
@@ -65,15 +56,10 @@ class _EditorScreenState extends State<EditorScreen> {
         if (orientation == Orientation.portrait) {
           return _buildOrientationScreen();
         }
-
         return _buildEditor(context, controller);
       },
     );
   }
-
-  // ============================================================
-  // OPEN FRAMES VIEWER
-  // ============================================================
 
   void _openFramesViewer() {
     Navigator.of(context).push(
@@ -81,53 +67,35 @@ class _EditorScreenState extends State<EditorScreen> {
         builder: (_) => FramesViewerUI(
           bottomBarController: _controller.bottomBarController,
           controller: _controller.framesViewerController,
-          onAddFrames: () {
-            _showAddFramesSheet(context);
-          },
+          onAddFrames: () => _showAddFramesSheet(context),
         ),
       ),
     );
   }
 
-  // ============================================================
-  // ADD FRAMES SHEET
-  // ============================================================
-
   void _showAddFramesSheet(BuildContext context) {
     showModalBottomSheet<int>(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        return const _AddFramesSheet();
-      },
+      builder: (_) => const _AddFramesSheet(),
     ).then((count) {
-      if (count == null) {
-        return;
-      }
-
-      _controller.bottomBarController.addFrames(count);
+      if (count != null) _controller.bottomBarController.addFrames(count);
     });
   }
 
-  // ============================================================
-  // PORTRAIT SCREEN
-  // ============================================================
-
   Widget _buildOrientationScreen() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Center(
           child: LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
-
               final horizontalPadding = width < 360 ? 20.0 : 32.0;
-
               final iconSize = width < 360 ? 64.0 : 88.0;
-
               final titleSize = width < 360 ? 22.0 : 26.0;
-
               final bodySize = width < 360 ? 14.0 : 16.0;
 
               return Padding(
@@ -138,30 +106,26 @@ class _EditorScreenState extends State<EditorScreen> {
                     Icon(
                       Icons.screen_rotation_alt_rounded,
                       size: iconSize,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                     ),
-
                     SizedBox(height: width < 360 ? 20 : 28),
-
                     Text(
                       'Rotate Your Device',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: titleSize,
                         fontWeight: FontWeight.w700,
-                        color: Colors.black,
+                        color: colorScheme.onSurface,
                       ),
                     ),
-
                     const SizedBox(height: 12),
-
                     Text(
                       'Turn your device sideways to use the editor in landscape mode.',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: bodySize,
                         height: 1.5,
-                        color: Colors.black54,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -174,14 +138,12 @@ class _EditorScreenState extends State<EditorScreen> {
     );
   }
 
-  // ============================================================
-  // LANDSCAPE EDITOR
-  // ============================================================
-
   Widget _buildEditor(
     BuildContext context,
     ProjectController projectController,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final metrics = EditorResponsive.forSize(
@@ -190,12 +152,9 @@ class _EditorScreenState extends State<EditorScreen> {
         );
 
         return Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: colorScheme.surface,
           body: Column(
             children: [
-              // ==================================================
-              // TOP BAR
-              // ==================================================
               AnimatedBuilder(
                 animation: Listenable.merge([
                   _controller,
@@ -203,55 +162,35 @@ class _EditorScreenState extends State<EditorScreen> {
                 ]),
                 builder: (context, child) {
                   final topBar = _controller.topBarController;
-
                   if (topBar.panelsHidden) {
                     return const SizedBox.shrink();
                   }
 
                   return EditorTopBar(
                     metrics: metrics,
-                    onBack: () {
-                      Navigator.of(context).pop();
-                    },
-
+                    onBack: () => Navigator.of(context).pop(),
                     onDiamond: _controller.onDiamondPressed,
-
                     onAudio: _controller.onAudioPressed,
-
                     onCopy: _controller.onCopyPressed,
-
                     onPaste: _controller.onPastePressed,
-
                     onDuplicate: _controller.onDuplicatePressed,
-
                     onUndo: _controller.onUndoPressed,
-
                     onRedo: _controller.onRedoPressed,
-
                     onMore: _controller.onMorePressed,
-
                     onProjectSettings: () {
                       projectController.beginEditCurrentProject();
-
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => const CreateProjectScreen(),
                         ),
                       );
                     },
-
                     onFramesViewer: _openFramesViewer,
-
                     onFitToScreen: _controller.onFitToScreen,
-
                     onHidePanels: _controller.onHidePanels,
                   );
                 },
               ),
-
-              // ==================================================
-              // EDITOR AREA
-              // ==================================================
               Expanded(
                 child: AnimatedBuilder(
                   animation: Listenable.merge([
@@ -263,27 +202,18 @@ class _EditorScreenState extends State<EditorScreen> {
                   ]),
                   builder: (context, child) {
                     final leftPanel = _controller.leftPanelController;
-
                     final topBar = _controller.topBarController;
-
                     final controlsHidden = topBar.panelsHidden;
 
                     return Stack(
                       clipBehavior: Clip.hardEdge,
                       children: [
-                        // =========================================
-                        // CANVAS
-                        // =========================================
                         Positioned.fill(
                           child: MiddleUI(
                             metrics: metrics,
                             controller: _controller.middleController,
                           ),
                         ),
-
-                        // =========================================
-                        // LEFT FLOATING TOOLBAR
-                        // =========================================
                         if (!leftPanel.paintSheetOpen)
                           Positioned(
                             left: metrics.horizontalInset,
@@ -297,10 +227,6 @@ class _EditorScreenState extends State<EditorScreen> {
                               ),
                             ),
                           ),
-
-                        // =========================================
-                        // RIGHT FLOATING TOOL PANEL
-                        // =========================================
                         if (leftPanel.rightPanelOpen)
                           Positioned(
                             right: metrics.horizontalInset,
@@ -313,14 +239,10 @@ class _EditorScreenState extends State<EditorScreen> {
                               ),
                             ),
                           ),
-
-                        // =========================================
-                        // FULL SCREEN PAINT SHEET
-                        // =========================================
                         if (leftPanel.paintSheetOpen)
                           Positioned.fill(
                             child: Material(
-                              color: Colors.white,
+                              color: colorScheme.surface,
                               child: SafeArea(
                                 child: Column(
                                   children: [
@@ -329,53 +251,48 @@ class _EditorScreenState extends State<EditorScreen> {
                                       padding: EdgeInsets.symmetric(
                                         horizontal: metrics.horizontalInset,
                                       ),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.surface,
                                         border: Border(
                                           bottom: BorderSide(
-                                            color: Color(0xFFEAEAEA),
+                                            color: colorScheme.outlineVariant,
                                           ),
                                         ),
                                       ),
                                       child: Row(
                                         children: [
                                           IconButton(
-                                            onPressed: () {
-                                              leftPanel.closePaintSheet();
-                                            },
-                                            icon: const Icon(
+                                            onPressed: leftPanel.closePaintSheet,
+                                            icon: Icon(
                                               Icons.arrow_back_rounded,
-                                              color: Colors.black,
+                                              color: colorScheme.onSurface,
                                             ),
                                           ),
-
-                                          const Expanded(
+                                          Expanded(
                                             child: Center(
                                               child: Text(
                                                 'Paint',
                                                 style: TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.w700,
-                                                  color: Colors.black,
+                                                  color: colorScheme.onSurface,
                                                 ),
                                               ),
                                             ),
                                           ),
-
                                           SizedBox(
                                             width: metrics.topActionWidth,
                                           ),
                                         ],
                                       ),
                                     ),
-
-                                    const Expanded(
+                                    Expanded(
                                       child: Center(
                                         child: Text(
                                           'Paint',
                                           style: TextStyle(
                                             fontSize: 18,
-                                            color: Colors.black54,
+                                            color: colorScheme.onSurfaceVariant,
                                           ),
                                         ),
                                       ),
@@ -385,10 +302,6 @@ class _EditorScreenState extends State<EditorScreen> {
                               ),
                             ),
                           ),
-
-                        // =========================================
-                        // BOTTOM BAR
-                        // =========================================
                         if (!leftPanel.paintSheetOpen)
                           Positioned(
                             left: 0,
@@ -397,21 +310,12 @@ class _EditorScreenState extends State<EditorScreen> {
                             child: BottomBarUI(
                               metrics: metrics,
                               controller: _controller.bottomBarController,
-
-                              onPreviousFrame:
-                                  _controller.onPreviousFramePressed,
-
+                              onPreviousFrame: _controller.onPreviousFramePressed,
                               onPlayPause: _controller.onPlayPausePressed,
-
                               onNextFrame: _controller.onNextFramePressed,
-
                               controlsHidden: controlsHidden,
                             ),
                           ),
-
-                        // =========================================
-                        // SHOW CONTROLS
-                        // =========================================
                         if (controlsHidden && !leftPanel.paintSheetOpen)
                           Positioned(
                             top: metrics.panelGap,
@@ -419,6 +323,7 @@ class _EditorScreenState extends State<EditorScreen> {
                             right: 0,
                             child: Center(
                               child: _ShowControlsButton(
+                                metrics: metrics,
                                 onTap: _controller.onHidePanels,
                               ),
                             ),
@@ -436,22 +341,22 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 }
 
-// ================================================================
-// ADD FRAMES SHEET
-// ================================================================
-
 class _AddFramesSheet extends StatelessWidget {
   const _AddFramesSheet();
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SafeArea(
       child: Container(
         constraints: const BoxConstraints(maxHeight: 520),
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
+            top: Radius.circular(24),
+          ),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -461,29 +366,26 @@ class _AddFramesSheet extends StatelessWidget {
                 width: 42,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD8D8D8),
+                  color: colorScheme.outlineVariant,
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-
               const SizedBox(height: 14),
-
-              const Text(
+              Text(
                 'Add Frames',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+                  color: colorScheme.onSurface,
                 ),
               ),
-
               const SizedBox(height: 16),
-
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: 30,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 6,
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
@@ -491,22 +393,19 @@ class _AddFramesSheet extends StatelessWidget {
                 ),
                 itemBuilder: (context, index) {
                   final count = index + 1;
-
                   return Material(
-                    color: const Color(0xFFF5F7FA),
+                    color: colorScheme.surfaceContainer,
                     borderRadius: BorderRadius.circular(10),
                     child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).pop(count);
-                      },
+                      onTap: () => Navigator.of(context).pop(count),
                       borderRadius: BorderRadius.circular(10),
                       child: Center(
                         child: Text(
                           '$count',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Colors.black87,
+                            color: colorScheme.onSurface,
                           ),
                         ),
                       ),
@@ -522,18 +421,18 @@ class _AddFramesSheet extends StatelessWidget {
   }
 }
 
-// ================================================================
-// SHOW CONTROLS BUTTON
-// ================================================================
-
 class _ShowControlsButton extends StatelessWidget {
-  const _ShowControlsButton({required this.onTap});
+  const _ShowControlsButton({
+    required this.metrics,
+    required this.onTap,
+  });
 
+  final EditorResponsiveData metrics;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final metrics = EditorResponsive.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Material(
       color: Colors.transparent,
@@ -547,14 +446,14 @@ class _ShowControlsButton extends StatelessWidget {
             vertical: metrics.isSmall ? 5 : 6,
           ),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: colorScheme.surface,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFEAEAEA)),
-            boxShadow: const [
+            border: Border.all(color: colorScheme.outlineVariant),
+            boxShadow: [
               BoxShadow(
-                color: Color(0x18000000),
+                color: colorScheme.shadow.withValues(alpha: 0.08),
                 blurRadius: 8,
-                offset: Offset(0, 3),
+                offset: const Offset(0, 3),
               ),
             ],
           ),
@@ -564,7 +463,7 @@ class _ShowControlsButton extends StatelessWidget {
               Icon(
                 Icons.fit_screen_rounded,
                 size: metrics.isSmall ? 15 : 17,
-                color: Colors.black87,
+                color: colorScheme.onSurface,
               ),
               const SizedBox(height: 1),
               Text(
@@ -572,7 +471,7 @@ class _ShowControlsButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: metrics.isSmall ? 7 : 8,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black54,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],

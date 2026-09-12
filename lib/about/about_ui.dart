@@ -366,7 +366,7 @@ class AboutUI extends StatelessWidget {
                 ),
               ),
               child: const Icon(
-                Icons.arrow_back,
+                Icons.close_rounded,
                 size: 22,
                 color: Colors.black,
               ),

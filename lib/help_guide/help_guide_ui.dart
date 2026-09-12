@@ -22,7 +22,7 @@ class _HelpGuideUiState extends State<HelpGuideUi> {
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.close_rounded,),
           color: Colors.black,
           onPressed: () => Navigator.of(context).maybePop(),
         ),

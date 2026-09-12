@@ -99,7 +99,7 @@ class _FollowUsAppBar extends StatelessWidget {
               tooltip: 'Back',
               onPressed: () => Navigator.pop(context),
               icon: Icon(
-                Icons.arrow_back_rounded,
+                Icons.close_rounded,
                 color: Colors.black87,
                 size: AppMedia.icon(24),
               ),

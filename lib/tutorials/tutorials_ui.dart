@@ -68,7 +68,7 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: const Icon(Icons.arrow_back, color: Colors.black),
+                icon: const Icon(Icons.close_rounded, color: Colors.black),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),

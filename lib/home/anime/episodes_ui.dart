@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../models/episode_model.dart';
@@ -19,10 +18,6 @@ class EpisodesScreen extends StatefulWidget {
 class _EpisodesScreenState extends State<EpisodesScreen> {
   // ============================================================
   // PROJECT CONTROLLER
-  // ============================================================
-  //
-  // ProjectController is the single source of truth.
-  // This screen does not store project/season/episode data.
   // ============================================================
 
   ProjectController get projectController =>
@@ -55,9 +50,16 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     final create = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final colorScheme =
+            Theme.of(dialogContext).colorScheme;
+
         return AlertDialog(
-          title: const Text(
+          backgroundColor: colorScheme.surfaceContainer,
+          title: Text(
             'Create Episode',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
           ),
           content: TextField(
             controller: controller,
@@ -117,9 +119,16 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     final save = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final colorScheme =
+            Theme.of(dialogContext).colorScheme;
+
         return AlertDialog(
+          backgroundColor: colorScheme.surfaceContainer,
           title: Text(
             'Rename Episode ${episode.episodeNumber}',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
           ),
           content: TextField(
             controller: controller,
@@ -174,15 +183,25 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final colorScheme =
+            Theme.of(dialogContext).colorScheme;
+
         return AlertDialog(
-          title: const Text(
+          backgroundColor: colorScheme.surfaceContainer,
+          title: Text(
             'Delete Episode?',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
           ),
           content: Text(
             'Are you sure you want to delete '
             '"${episode.displayName}"? '
             'This action cannot be undone and will remove '
             'all clips within.',
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           actions: [
             TextButton(
@@ -194,9 +213,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor:
-                    Theme.of(dialogContext)
-                        .colorScheme
-                        .error,
+                    colorScheme.error,
+                foregroundColor:
+                    colorScheme.onError,
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
@@ -227,19 +246,27 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor:
+          Theme.of(context).colorScheme.surface,
       builder: (sheetContext) {
-        final errorColor =
-            Theme.of(context).colorScheme.error;
+        final colorScheme =
+            Theme.of(sheetContext).colorScheme;
 
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.edit_outlined,
+                  color: colorScheme.onSurface,
                 ),
-                title: const Text('Rename'),
+                title: Text(
+                  'Rename',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
 
@@ -251,12 +278,12 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
               ListTile(
                 leading: Icon(
                   Icons.delete_outline,
-                  color: errorColor,
+                  color: colorScheme.error,
                 ),
                 title: Text(
                   'Delete',
                   style: TextStyle(
-                    color: errorColor,
+                    color: colorScheme.error,
                   ),
                 ),
                 onTap: () {
@@ -283,13 +310,24 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor:
+          Theme.of(context).colorScheme.surface,
       builder: (sheetContext) {
+        final colorScheme =
+            Theme.of(sheetContext).colorScheme;
+
         return SafeArea(
           child: ListTile(
-            leading: const Icon(
+            leading: Icon(
               Icons.refresh_outlined,
+              color: colorScheme.onSurface,
             ),
-            title: const Text('Refresh'),
+            title: Text(
+              'Refresh',
+              style: TextStyle(
+                color: colorScheme.onSurface,
+              ),
+            ),
             onTap: () {
               Navigator.of(sheetContext).pop();
             },
@@ -328,6 +366,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     // ProjectScope.of() makes this screen reactive to
     // ProjectController.notifyListeners().
@@ -336,10 +375,10 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     final season = controller.currentSeason;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: colorScheme.surface,
 
       appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
 
@@ -348,8 +387,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          icon: const Icon(
-            Icons.arrow_back,
+          icon: Icon(
+            Icons.close_rounded,
+            color: colorScheme.onSurface,
           ),
         ),
 
@@ -357,8 +397,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
           IconButton(
             tooltip: 'More options',
             onPressed: _showSeasonMenu,
-            icon: const Icon(
+            icon: Icon(
               Icons.more_vert,
+              color: colorScheme.onSurface,
             ),
           ),
         ],
@@ -368,7 +409,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
               const Size.fromHeight(1),
           child: Divider(
             height: 1,
-            color: theme.colorScheme.outlineVariant,
+            color: colorScheme.outlineVariant,
           ),
         ),
 
@@ -380,6 +421,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             Text(
               'Episodes',
               style: theme.textTheme.titleLarge?.copyWith(
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -389,7 +431,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelMedium?.copyWith(
                 color:
-                    theme.colorScheme.onSurfaceVariant,
+                    colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -397,9 +439,12 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
       ),
 
       body: season == null
-          ? const Center(
+          ? Center(
               child: Text(
                 'Season not found',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
               ),
             )
           : Column(
@@ -418,6 +463,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                         style:
                             theme.textTheme.headlineSmall
                                 ?.copyWith(
+                          color:
+                              colorScheme.onSurface,
                           fontWeight:
                               FontWeight.w700,
                         ),
@@ -428,8 +475,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                         style:
                             theme.textTheme.bodyLarge
                                 ?.copyWith(
-                          color: theme
-                              .colorScheme
+                          color: colorScheme
                               .onSurfaceVariant,
                         ),
                       ),
@@ -455,6 +501,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     ThemeData theme,
     List<EpisodeModel> episodes,
   ) {
+    final colorScheme = theme.colorScheme;
+
     if (episodes.isEmpty) {
       return _buildEmptyState(theme);
     }
@@ -478,7 +526,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             'End of season',
             style: theme.textTheme.bodyMedium?.copyWith(
               color:
-                  theme.colorScheme.onSurfaceVariant,
+                  colorScheme.onSurfaceVariant,
               fontStyle: FontStyle.italic,
             ),
           ),
@@ -496,10 +544,11 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     EpisodeModel episode, {
     required bool isLast,
   }) {
+    final colorScheme = theme.colorScheme;
     final empty = episode.clipCount == 0;
 
     return Material(
-      color: theme.colorScheme.surface,
+      color: colorScheme.surface,
       child: InkWell(
         onTap: () {
           _openEpisode(episode);
@@ -515,9 +564,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 ? null
                 : Border(
                     bottom: BorderSide(
-                      color: theme
-                          .colorScheme
-                          .surfaceContainerHighest,
+                      color:
+                          colorScheme.outlineVariant,
                     ),
                   ),
           ),
@@ -527,18 +575,17 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: theme
-                      .colorScheme
-                      .surfaceContainerHigh,
+                  color: colorScheme.primaryContainer,
                   borderRadius:
                       BorderRadius.circular(10),
                 ),
                 child: Icon(
                   Icons.video_library_outlined,
                   color: empty
-                      ? theme.colorScheme.onSurface
+                      ? colorScheme
+                          .onPrimaryContainer
                           .withValues(alpha: 0.5)
-                      : theme.colorScheme.onSurface,
+                      : colorScheme.onPrimaryContainer,
                 ),
               ),
               const SizedBox(width: 16),
@@ -555,6 +602,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                       style:
                           theme.textTheme.bodyLarge
                               ?.copyWith(
+                        color:
+                            colorScheme.onSurface,
                         fontWeight:
                             FontWeight.w600,
                       ),
@@ -580,8 +629,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 onPressed: () {
                   _renameEpisode(episode);
                 },
-                icon: const Icon(
+                icon: Icon(
                   Icons.edit_outlined,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               IconButton(
@@ -589,8 +639,9 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
                 onPressed: () {
                   _showEpisodeMenu(episode);
                 },
-                icon: const Icon(
+                icon: Icon(
                   Icons.more_horiz,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -607,6 +658,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   Widget _buildEmptyState(
     ThemeData theme,
   ) {
+    final colorScheme = theme.colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(
         vertical: 64,
@@ -617,12 +670,13 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             Icons.video_library_outlined,
             size: 48,
             color:
-                theme.colorScheme.onSurfaceVariant,
+                colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 16),
           Text(
             'No episodes yet',
             style: theme.textTheme.titleMedium?.copyWith(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -632,7 +686,7 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
               color:
-                  theme.colorScheme.onSurfaceVariant,
+                  colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -647,6 +701,8 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
   Widget _buildBottomAction(
     ThemeData theme,
   ) {
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(
         16,
@@ -655,13 +711,10 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
         16,
       ),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface.withValues(
-          alpha: 0.96,
-        ),
+        color: colorScheme.surface,
         border: Border(
           top: BorderSide(
-            color:
-                theme.colorScheme.surfaceContainerHighest,
+            color: colorScheme.outlineVariant,
           ),
         ),
       ),
@@ -684,4 +737,3 @@ class _EpisodesScreenState extends State<EpisodesScreen> {
     );
   }
 }
-

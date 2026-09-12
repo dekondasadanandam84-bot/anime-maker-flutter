@@ -4,15 +4,17 @@ import 'package:flutter_application_1/core/app_media.dart';
 
 class DrawerUI extends StatelessWidget {
   final HomeController controller = const HomeController();
+
   const DrawerUI({super.key});
 
   @override
   Widget build(BuildContext context) {
     AppMedia.init(context);
-    const Color dividerColor = Color(0xFFEAEAEA);
+
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -22,14 +24,14 @@ class DrawerUI extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  const Center(
+                  Center(
                     child: Text(
-                      "AnimeClip",
+                      'AnimeClip',
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         letterSpacing: -.3,
-                        color: Colors.black,
+                        color: colorScheme.onSurface,
                       ),
                     ),
                   ),
@@ -39,9 +41,9 @@ class DrawerUI extends StatelessWidget {
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      icon: const Icon(
-                        Icons.close,
-                        color: Colors.grey,
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: colorScheme.onSurfaceVariant,
                         size: 26,
                       ),
                     ),
@@ -50,11 +52,18 @@ class DrawerUI extends StatelessWidget {
               ),
             ),
 
-            const Divider(height: 1, thickness: 1, color: dividerColor),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: colorScheme.outlineVariant,
+            ),
 
             Expanded(
               child: SingleChildScrollView(
-                padding: AppMedia.symmetric(horizontal: 24, vertical: 28),
+                padding: AppMedia.symmetric(
+                  horizontal: 24,
+                  vertical: 28,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -69,7 +78,8 @@ class DrawerUI extends StatelessWidget {
                               icon: '⚙️',
                               color: Colors.blue,
                               title: 'Settings',
-                              onTap: () => controller.openSettings(context),
+                              onTap: () =>
+                                  controller.openSettings(context),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -78,7 +88,8 @@ class DrawerUI extends StatelessWidget {
                               icon: '🎨',
                               color: Colors.purple,
                               title: 'Templates',
-                              onTap: () => controller.openTemplates(context),
+                              onTap: () =>
+                                  controller.openTemplates(context),
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -87,7 +98,8 @@ class DrawerUI extends StatelessWidget {
                               icon: '🎓',
                               color: Colors.green,
                               title: 'Tutorials',
-                              onTap: () => controller.openTutorials(context),
+                              onTap: () =>
+                                  controller.openTutorials(context),
                             ),
                           ),
                         ],
@@ -100,69 +112,90 @@ class DrawerUI extends StatelessWidget {
                     _MenuTile(
                       icon: '💎',
                       iconColor: Colors.indigo,
-                      title: "Go Plus",
+                      title: 'Go Plus',
                       onTapDown: () {
                         const HomeController().openGoPlus(context);
                       },
                     ),
 
-                    const Divider(color: dividerColor, height: 1),
+                    Divider(
+                      color: colorScheme.outlineVariant,
+                      height: 1,
+                    ),
 
                     _MenuTile(
                       icon: '🤝',
                       iconColor: Colors.orange,
-                      title: "Collaborations",
+                      title: 'Collaborations',
                       onTapDown: () {
                         controller.openCollaborations(context);
                       },
                     ),
 
-                    const Divider(color: dividerColor, height: 1),
+                    Divider(
+                      color: colorScheme.outlineVariant,
+                      height: 1,
+                    ),
 
                     _MenuTile(
                       icon: '🪙',
                       iconColor: Colors.amber,
-                      title: "Earn Coins",
+                      title: 'Earn Coins',
                       onTapDown: () {
                         controller.openEarnCoins(context);
                       },
                     ),
 
-                    const Divider(color: dividerColor, height: 1),
+                    Divider(
+                      color: colorScheme.outlineVariant,
+                      height: 1,
+                    ),
 
                     _MenuTile(
                       icon: '🌐',
                       iconColor: Colors.blue,
-                      title: "Follow Us",
+                      title: 'Follow Us',
                       onTapDown: () {
                         controller.openFollowUs(context);
                       },
                     ),
 
-                    const Divider(color: dividerColor, height: 1),
+                    Divider(
+                      color: colorScheme.outlineVariant,
+                      height: 1,
+                    ),
 
                     _MenuTile(
                       icon: 'ℹ️',
                       iconColor: Colors.teal,
-                      title: "About Us",
+                      title: 'About Us',
                       onTapDown: () {
                         controller.openAbout(context);
                       },
                     ),
-                    const Divider(color: dividerColor, height: 1),
+
+                    Divider(
+                      color: colorScheme.outlineVariant,
+                      height: 1,
+                    ),
 
                     _MenuTile(
                       icon: '💡',
                       iconColor: Colors.green,
-                      title: "Help & Guide",
+                      title: 'Help & Guide',
                       onTapDown: () {
                         controller.openHelpGuide(context);
                       },
                     ),
 
-                    const Divider(color: dividerColor, height: 1),
+                    Divider(
+                      color: colorScheme.outlineVariant,
+                      height: 1,
+                    ),
 
-                    _AccountTile(controller: controller),
+                    _AccountTile(
+                      controller: controller,
+                    ),
 
                     const SizedBox(height: 32),
                   ],
@@ -170,13 +203,20 @@ class DrawerUI extends StatelessWidget {
               ),
             ),
 
-            const Divider(height: 1, thickness: 1, color: dividerColor),
+            Divider(
+              height: 1,
+              thickness: 1,
+              color: colorScheme.outlineVariant,
+            ),
 
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 24),
               child: Text(
-                "Version 1.0.0",
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                'Version 1.0.0',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ),
           ],
@@ -201,24 +241,39 @@ class _QuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppMedia.r(18)),
+      borderRadius: BorderRadius.circular(
+        AppMedia.r(18),
+      ),
       child: Container(
-        constraints: const BoxConstraints(minHeight: 100),
+        constraints: const BoxConstraints(
+          minHeight: 100,
+        ),
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(AppMedia.r(18)),
-          border: Border.all(color: const Color(0xFFEAEAEA)),
-          boxShadow: const [
+          color: colorScheme.surfaceContainer,
+          borderRadius: BorderRadius.circular(
+            AppMedia.r(18),
+          ),
+          border: Border.all(
+            color: colorScheme.outlineVariant,
+          ),
+          boxShadow: [
             BoxShadow(
-              color: Color(0x11000000),
+              color: colorScheme.shadow.withValues(
+                alpha: 0.06,
+              ),
               blurRadius: 8,
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
+        padding: const EdgeInsets.symmetric(
+          vertical: 4,
+          horizontal: 6,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -229,7 +284,10 @@ class _QuickActionCard extends StatelessWidget {
               child: Center(
                 child: Text(
                   icon,
-                  style: const TextStyle(fontSize: 24, height: 1),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    height: 1,
+                  ),
                 ),
               ),
             ),
@@ -239,7 +297,7 @@ class _QuickActionCard extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: AppMedia.sp(12),
-                color: Colors.grey,
+                color: colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -265,6 +323,8 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTapDown: (_) {
         onTapDown?.call();
@@ -280,7 +340,10 @@ class _MenuTile extends StatelessWidget {
                 child: Text(
                   icon,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 25, height: 1),
+                  style: const TextStyle(
+                    fontSize: 25,
+                    height: 1,
+                  ),
                 ),
               ),
             ),
@@ -288,10 +351,16 @@ class _MenuTile extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(fontSize: 16, color: Colors.black87),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.grey),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),
@@ -302,10 +371,14 @@ class _MenuTile extends StatelessWidget {
 class _AccountTile extends StatelessWidget {
   final HomeController controller;
 
-  const _AccountTile({required this.controller});
+  const _AccountTile({
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: () => controller.openAccounts(context),
       child: SizedBox(
@@ -315,8 +388,8 @@ class _AccountTile extends StatelessWidget {
             Container(
               width: 37,
               height: 37,
-              decoration: const BoxDecoration(
-                color: Color(0xFFE3F2FD),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
                 shape: BoxShape.circle,
               ),
               child: const SizedBox(
@@ -326,19 +399,28 @@ class _AccountTile extends StatelessWidget {
                   child: Text(
                     '👤',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 22, height: 1),
+                    style: TextStyle(
+                      fontSize: 22,
+                      height: 1,
+                    ),
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 18),
-            const Expanded(
+            Expanded(
               child: Text(
-                "Account",
-                style: TextStyle(fontSize: 16, color: Colors.black87),
+                'Account',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: colorScheme.onSurface,
+                ),
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.grey),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ],
         ),
       ),

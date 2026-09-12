@@ -16,146 +16,78 @@ class FramesViewerUI extends StatefulWidget {
   final VoidCallback onAddFrames;
 
   @override
-  State<FramesViewerUI> createState() =>
-      _FramesViewerUIState();
+  State<FramesViewerUI> createState() => _FramesViewerUIState();
 }
 
-class _FramesViewerUIState
-    extends State<FramesViewerUI> {
-  // ============================================================
-  // FRAME ACTIONS
-  // ============================================================
-
+class _FramesViewerUIState extends State<FramesViewerUI> {
   bool _showFrameActions = false;
 
-  // ============================================================
-  // SHORTCUTS
-  // ============================================================
-
-  BottomBarController get bottomBarController =>
-      widget.bottomBarController;
-
-  FramesViewerController get controller =>
-      widget.controller;
-
-  // ============================================================
-  // BUILD
-  // ============================================================
+  BottomBarController get bottomBarController => widget.bottomBarController;
+  FramesViewerController get controller => widget.controller;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
-
-      // ============================================================
-      // APP BAR
-      // ============================================================
-
+      backgroundColor: colorScheme.surface,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
           tooltip: 'Back',
           onPressed: () {
             _closeFrameActions();
-
-            if (controller.selectionMode) {
-              controller.cancelSelection();
-            }
-
+            if (controller.selectionMode) controller.cancelSelection();
             Navigator.of(context).pop();
           },
-          icon: const Icon(
-            Icons.arrow_back_rounded,
-            color: Colors.black,
-          ),
+          icon: Icon(Icons.arrow_back_rounded, color: colorScheme.onSurface),
         ),
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Frames Viewer',
           style: TextStyle(
-            color: Colors.black,
+            color: colorScheme.onSurface,
             fontWeight: FontWeight.w700,
           ),
         ),
       ),
-
-      // ============================================================
-      // BODY
-      // ============================================================
-
       body: SafeArea(
         child: AnimatedBuilder(
-          animation: Listenable.merge([
-            bottomBarController,
-            controller,
-          ]),
+          animation: Listenable.merge([bottomBarController, controller]),
           builder: (context, _) {
             return Column(
               children: [
-                // ==================================================
-                // SELECTION HEADER
-                // ==================================================
-
                 if (controller.selectionMode)
                   _SelectionHeader(
-                    selectedCount:
-                        controller.selectedFrames.length,
+                    selectedCount: controller.selectedFrames.length,
                     onCancel: () {
                       controller.cancelSelection();
                       _closeFrameActions();
                     },
-                    onSelectAll:
-                        controller.selectAll,
+                    onSelectAll: controller.selectAll,
                   ),
-
-                // ==================================================
-                // FRAME AREA
-                // ==================================================
-
                 Expanded(
                   child: _FramesArea(
-                    bottomBarController:
-                        bottomBarController,
-                    controller:
-                        controller,
-                    onAddFrames:
-                        widget.onAddFrames,
-                    onFrameTap:
-                        _handleFrameTap,
-                    onFrameLongPress:
-                        _handleFrameLongPress,
+                    bottomBarController: bottomBarController,
+                    controller: controller,
+                    onAddFrames: widget.onAddFrames,
+                    onFrameTap: _handleFrameTap,
+                    onFrameLongPress: _handleFrameLongPress,
                   ),
                 ),
-
-                // ==================================================
-                // NORMAL SELECTED FRAME ACTIONS
-                // ==================================================
-
-                if (_showFrameActions &&
-                    !controller.selectionMode)
+                if (_showFrameActions && !controller.selectionMode)
                   _FrameActionsBar(
-                    controller:
-                        controller,
-                    bottomBarController:
-                        bottomBarController,
-                    onClose:
-                        _closeFrameActions,
+                    controller: controller,
+                    bottomBarController: bottomBarController,
+                    onClose: _closeFrameActions,
                   ),
-
-                // ==================================================
-                // MULTI-SELECTION DELETE BAR
-                // ==================================================
-
                 if (controller.selectionMode)
                   _SelectionActionsBar(
-                    controller:
-                        controller,
-                    bottomBarController:
-                        bottomBarController,
-                    onClose:
-                        _closeSelection,
+                    controller: controller,
+                    bottomBarController: bottomBarController,
+                    onClose: _closeSelection,
                   ),
               ],
             );
@@ -165,72 +97,27 @@ class _FramesViewerUIState
     );
   }
 
-  // ============================================================
-  // FRAME TAP
-  // ============================================================
-
-  void _handleFrameTap(
-    int frame,
-  ) {
-    final showActions =
-        controller.onFrameTap(frame);
-
-    // ----------------------------------------------------------
-    // Selection mode is handled by controller.
-    // ----------------------------------------------------------
-
+  void _handleFrameTap(int frame) {
+    final showActions = controller.onFrameTap(frame);
     if (controller.selectionMode) {
       _closeFrameActions();
       return;
     }
-
-    // ----------------------------------------------------------
-    // First tap.
-    // ----------------------------------------------------------
-
     if (!showActions) {
       _closeFrameActions();
       return;
     }
-
-    // ----------------------------------------------------------
-    // Second tap on selected frame.
-    // ----------------------------------------------------------
-
-    setState(() {
-      _showFrameActions = true;
-    });
+    setState(() => _showFrameActions = true);
   }
 
-  // ============================================================
-  // LONG PRESS
-  // ============================================================
-
-  void _handleFrameLongPress(
-    int frame,
-  ) {
+  void _handleFrameLongPress(int frame) {
     _closeFrameActions();
-
     controller.onFrameLongPress(frame);
   }
 
-  // ============================================================
-  // CLOSE FRAME ACTIONS
-  // ============================================================
-
   void _closeFrameActions() {
-    if (!_showFrameActions) {
-      return;
-    }
-
-    setState(() {
-      _showFrameActions = false;
-    });
+    if (_showFrameActions) setState(() => _showFrameActions = false);
   }
-
-  // ============================================================
-  // CLOSE SELECTION
-  // ============================================================
 
   void _closeSelection() {
     controller.cancelSelection();
@@ -238,12 +125,7 @@ class _FramesViewerUIState
   }
 }
 
-// =====================================================================
-// SELECTION HEADER
-// =====================================================================
-
-class _SelectionHeader
-    extends StatelessWidget {
+class _SelectionHeader extends StatelessWidget {
   const _SelectionHeader({
     required this.selectedCount,
     required this.onCancel,
@@ -256,66 +138,39 @@ class _SelectionHeader
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       height: 52,
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 16,
-      ),
-      decoration:
-          const BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(
-            color:
-                Color(0xFFEAEAEA),
-          ),
+          bottom: BorderSide(color: colorScheme.outlineVariant),
         ),
       ),
       child: Row(
         children: [
-          TextButton(
-            onPressed:
-                onCancel,
-            child:
-                const Text(
-              'Cancel',
-            ),
-          ),
-
+          TextButton(onPressed: onCancel, child: const Text('Cancel')),
           Expanded(
             child: Center(
               child: Text(
                 '$selectedCount selected',
-                style:
-                    const TextStyle(
-                  fontWeight:
-                      FontWeight.w600,
+                style: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
-
-          TextButton(
-            onPressed:
-                onSelectAll,
-            child:
-                const Text(
-              'Select All',
-            ),
-          ),
+          TextButton(onPressed: onSelectAll, child: const Text('Select All')),
         ],
       ),
     );
   }
 }
 
-// =====================================================================
-// FRAMES AREA
-// =====================================================================
-
-class _FramesArea
-    extends StatelessWidget {
+class _FramesArea extends StatelessWidget {
   const _FramesArea({
     required this.bottomBarController,
     required this.controller,
@@ -326,109 +181,49 @@ class _FramesArea
 
   final BottomBarController bottomBarController;
   final FramesViewerController controller;
-
   final VoidCallback onAddFrames;
-
   final ValueChanged<int> onFrameTap;
   final ValueChanged<int> onFrameLongPress;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (
-        context,
-        constraints,
-      ) {
-        const double minCardWidth = 120;
-        const double cardHeight = 80;
-        const double spacing = 12;
+      builder: (context, constraints) {
+        const minCardWidth = 120.0;
+        const cardHeight = 80.0;
+        const spacing = 12.0;
 
-        final availableWidth =
-            constraints.maxWidth;
-
-        int columns =
-            ((availableWidth + spacing) /
-                    (minCardWidth + spacing))
-                .floor();
-
-        if (columns < 1) {
-          columns = 1;
-        }
+        final availableWidth = constraints.maxWidth;
+        int columns = ((availableWidth + spacing) /
+                (minCardWidth + spacing))
+            .floor();
+        if (columns < 1) columns = 1;
 
         return GridView.builder(
-          padding:
-              const EdgeInsets.fromLTRB(
-            20,
-            20,
-            20,
-            30,
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columns,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+            childAspectRatio: minCardWidth / cardHeight,
           ),
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount:
-                columns,
-            crossAxisSpacing:
-                spacing,
-            mainAxisSpacing:
-                spacing,
-            childAspectRatio:
-                minCardWidth /
-                    cardHeight,
-          ),
-          itemCount:
-              bottomBarController
-                      .frames
-                      .length +
-                  1,
-          itemBuilder:
-              (context, index) {
-            // =========================================================
-            // PLUS CARD
-            // =========================================================
-
-            if (index ==
-                bottomBarController
-                    .frames
-                    .length) {
-              return _AddFrameCard(
-                onTap:
-                    onAddFrames,
-              );
+          itemCount: bottomBarController.frames.length + 1,
+          itemBuilder: (context, index) {
+            if (index == bottomBarController.frames.length) {
+              return _AddFrameCard(onTap: onAddFrames);
             }
 
-            // =========================================================
-            // FRAME
-            // =========================================================
-
-            final frame =
-                bottomBarController
-                    .frames[index];
-
-            final selected =
-                controller.selectionMode
-                    ? controller
-                        .isFrameSelected(
-                        frame,
-                      )
-                    : bottomBarController
-                            .selectedFrame ==
-                        frame;
+            final frame = bottomBarController.frames[index];
+            final selected = controller.selectionMode
+                ? controller.isFrameSelected(frame)
+                : bottomBarController.selectedFrame == frame;
 
             return _FrameCard(
-              frameNumber:
-                  frame,
-              selected:
-                  selected,
-              selectionMode:
-                  controller.selectionMode,
-              onTap: () {
-                onFrameTap(frame);
-              },
-              onLongPress: () {
-                onFrameLongPress(
-                  frame,
-                );
-              },
+              frameNumber: frame,
+              selected: selected,
+              selectionMode: controller.selectionMode,
+              onTap: () => onFrameTap(frame),
+              onLongPress: () => onFrameLongPress(frame),
             );
           },
         );
@@ -437,16 +232,7 @@ class _FramesArea
   }
 }
 
-// =====================================================================
-// NORMAL FRAME ACTIONS BAR
-// =====================================================================
-//
-// Appears when the already-selected frame is tapped again.
-//
-// =====================================================================
-
-class _FrameActionsBar
-    extends StatelessWidget {
+class _FrameActionsBar extends StatelessWidget {
   const _FrameActionsBar({
     required this.controller,
     required this.bottomBarController,
@@ -459,124 +245,82 @@ class _FrameActionsBar
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.fromLTRB(
-        8,
-        8,
-        8,
-        8,
-      ),
-      decoration:
-          const BoxDecoration(
-        color: Colors.white,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
         border: Border(
-          top: BorderSide(
-            color:
-                Color(0xFFE0E0E0),
-          ),
+          top: BorderSide(color: colorScheme.outlineVariant),
         ),
-        boxShadow:
-            [
+        boxShadow: [
           BoxShadow(
-            color:
-                Color(0x18000000),
+            color: colorScheme.shadow.withValues(alpha: 0.10),
             blurRadius: 12,
-            offset:
-                Offset(0, -3),
+            offset: const Offset(0, -3),
           ),
         ],
       ),
       child: SafeArea(
         top: false,
-        child:
-            SingleChildScrollView(
-          scrollDirection:
-              Axis.horizontal,
-          child:
-              Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _ActionButton(
-                icon:
-                    Icons.vertical_align_top_rounded,
-                label:
-                    'Add Before',
+                icon: Icons.vertical_align_top_rounded,
+                label: 'Add Before',
                 onTap: () {
-                  controller
-                      .addBefore();
+                  controller.addBefore();
                   onClose();
                 },
               ),
-
               _ActionButton(
-                icon:
-                    Icons.vertical_align_bottom_rounded,
-                label:
-                    'Add After',
+                icon: Icons.vertical_align_bottom_rounded,
+                label: 'Add After',
                 onTap: () {
-                  controller
-                      .addAfter();
+                  controller.addAfter();
                   onClose();
                 },
               ),
-
               _ActionButton(
-                icon:
-                    Icons.content_copy_outlined,
-                label:
-                    'Copy',
+                icon: Icons.content_copy_outlined,
+                label: 'Copy',
                 onTap: () {
                   controller.copy();
                   onClose();
                 },
               ),
-
               _ActionButton(
-                icon:
-                    Icons.content_paste_outlined,
-                label:
-                    'Paste',
-                onTap:
-                    bottomBarController
-                            .canPaste
-                        ? () {
-                            controller
-                                .paste();
-                            onClose();
-                          }
-                        : null,
+                icon: Icons.content_paste_outlined,
+                label: 'Paste',
+                onTap: bottomBarController.canPaste
+                    ? () {
+                        controller.paste();
+                        onClose();
+                      }
+                    : null,
               ),
-
               _ActionButton(
-                icon:
-                    Icons.copy_all_outlined,
-                label:
-                    'Duplicate',
+                icon: Icons.copy_all_outlined,
+                label: 'Duplicate',
                 onTap: () {
-                  controller
-                      .duplicate();
+                  controller.duplicate();
                   onClose();
                 },
               ),
-
               _ActionButton(
-                icon:
-                    Icons.backspace_outlined,
-                label:
-                    'Erase',
-                onTap:
-                    bottomBarController
-                                .frameCount >
-                            1
-                        ? () {
-                            controller
-                                .erase();
-                            onClose();
-                          }
-                        : null,
+                icon: Icons.backspace_outlined,
+                label: 'Erase',
+                onTap: bottomBarController.frameCount > 1
+                    ? () {
+                        controller.erase();
+                        onClose();
+                      }
+                    : null,
               ),
             ],
           ),
@@ -586,19 +330,7 @@ class _FrameActionsBar
   }
 }
 
-// =====================================================================
-// MULTI-SELECTION ACTIONS BAR
-// =====================================================================
-//
-// Appears after long-press selection.
-//
-// Contains DELETE only.
-// "Select All" remains in the header.
-//
-// =====================================================================
-
-class _SelectionActionsBar
-    extends StatelessWidget {
+class _SelectionActionsBar extends StatelessWidget {
   const _SelectionActionsBar({
     required this.controller,
     required this.bottomBarController,
@@ -611,59 +343,31 @@ class _SelectionActionsBar
 
   @override
   Widget build(BuildContext context) {
-    final hasSelection =
-        controller.hasSelection;
-
-    final canDelete =
-        hasSelection &&
+    final canDelete = controller.hasSelection &&
         bottomBarController.frameCount > 1;
 
     return Container(
       width: double.infinity,
-      padding:
-          const EdgeInsets.fromLTRB(
-        8,
-        8,
-        8,
-        8,
-      ),
-      decoration:
-          const BoxDecoration(
-        color: Colors.white,
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceContainer,
         border: Border(
           top: BorderSide(
-            color:
-                Color(0xFFE0E0E0),
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
-        boxShadow:
-            [
-          BoxShadow(
-            color:
-                Color(0x18000000),
-            blurRadius: 12,
-            offset:
-                Offset(0, -3),
-          ),
-        ],
       ),
       child: SafeArea(
         top: false,
         child: Center(
           child: _DeleteActionButton(
-            enabled:
-                canDelete,
-            selectedCount:
-                controller
-                    .selectedFrames
-                    .length,
-            onTap:
-                canDelete
-                    ? () {
-                        controller.erase();
-                        onClose();
-                      }
-                    : null,
+            enabled: canDelete,
+            onTap: canDelete
+                ? () {
+                    controller.erase();
+                    onClose();
+                  }
+                : null,
           ),
         ),
       ),
@@ -671,98 +375,59 @@ class _SelectionActionsBar
   }
 }
 
-// =====================================================================
-// DELETE ACTION BUTTON
-// =====================================================================
-
-class _DeleteActionButton
-    extends StatelessWidget {
+class _DeleteActionButton extends StatelessWidget {
   const _DeleteActionButton({
     required this.enabled,
-    required this.selectedCount,
     required this.onTap,
   });
 
   final bool enabled;
-  final int selectedCount;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Material(
-      color:
-          Colors.transparent,
-      borderRadius:
-          BorderRadius.circular(
-        12,
-      ),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap:
-            onTap,
-        borderRadius:
-            BorderRadius.circular(
-          12,
-        ),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
         child: Container(
           width: 130,
           height: 58,
-          padding:
-              const EdgeInsets
-                  .symmetric(
-            horizontal: 16,
-          ),
-          decoration:
-              BoxDecoration(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
             color: enabled
-                ? const Color(
-                    0xFFFFF3F3,
-                  )
-                : const Color(
-                    0xFFF5F5F5,
-                  ),
-            borderRadius:
-                BorderRadius.circular(
-              12,
-            ),
-            border:
-                Border.all(
+                ? colorScheme.errorContainer
+                : colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
               color: enabled
-                  ? const Color(
-                      0xFFFFCDD2,
-                    )
-                  : const Color(
-                      0xFFE0E0E0,
-                    ),
+                  ? colorScheme.error
+                  : colorScheme.outlineVariant,
             ),
           ),
           child: Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 Icons.delete_outline,
                 size: 20,
                 color: enabled
-                    ? Colors.red
-                    : Colors.black26,
+                    ? colorScheme.onErrorContainer
+                    : colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
               ),
-
-              const SizedBox(
-                width: 7,
-              ),
-
+              const SizedBox(width: 7),
               Text(
-                selectedCount > 0
-                    ? 'Delete'
-                    : 'Delete',
-                style:
-                    TextStyle(
+                'Delete',
+                style: TextStyle(
                   fontSize: 10,
-                  fontWeight:
-                      FontWeight.w700,
+                  fontWeight: FontWeight.w700,
                   color: enabled
-                      ? Colors.red
-                      : Colors.black26,
+                      ? colorScheme.onErrorContainer
+                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
                 ),
               ),
             ],
@@ -773,12 +438,7 @@ class _DeleteActionButton
   }
 }
 
-// =====================================================================
-// ACTION BUTTON
-// =====================================================================
-
-class _ActionButton
-    extends StatelessWidget {
+class _ActionButton extends StatelessWidget {
   const _ActionButton({
     required this.icon,
     required this.label,
@@ -791,65 +451,42 @@ class _ActionButton
 
   @override
   Widget build(BuildContext context) {
-    final enabled =
-        onTap != null;
+    final colorScheme = Theme.of(context).colorScheme;
+    final enabled = onTap != null;
 
     return Padding(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 2,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
       child: Material(
-        color:
-            Colors.transparent,
-        borderRadius:
-            BorderRadius.circular(
-          10,
-        ),
-        child:
-            InkWell(
-          onTap:
-              onTap,
-          borderRadius:
-              BorderRadius.circular(
-            10,
-          ),
-          child:
-              SizedBox(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(10),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: SizedBox(
             width: 82,
             height: 58,
-            child:
-                Column(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   icon,
                   size: 19,
                   color: enabled
-                      ? Colors.black87
-                      : Colors.black26,
+                      ? colorScheme.onSurface
+                      : colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
                 ),
-
-                const SizedBox(
-                  height: 3,
-                ),
-
+                const SizedBox(height: 3),
                 Text(
                   label,
                   maxLines: 1,
-                  overflow:
-                      TextOverflow.ellipsis,
-                  textAlign:
-                      TextAlign.center,
-                  style:
-                      TextStyle(
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
                     fontSize: 9,
-                    fontWeight:
-                        FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                     color: enabled
-                        ? Colors.black54
-                        : Colors.black26,
+                        ? colorScheme.onSurfaceVariant
+                        : colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
                   ),
                 ),
               ],
@@ -861,12 +498,7 @@ class _ActionButton
   }
 }
 
-// =====================================================================
-// FRAME CARD
-// =====================================================================
-
-class _FrameCard
-    extends StatelessWidget {
+class _FrameCard extends StatelessWidget {
   const _FrameCard({
     required this.frameNumber,
     required this.selected,
@@ -878,164 +510,84 @@ class _FrameCard
   final int frameNumber;
   final bool selected;
   final bool selectionMode;
-
   final VoidCallback onTap;
   final VoidCallback onLongPress;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
-      onLongPress:
-          onLongPress,
-      child:
-          Material(
-        color:
-            Colors.transparent,
-        borderRadius:
-            BorderRadius.circular(
-          8,
-        ),
-        child:
-            InkWell(
-          onTap:
-              onTap,
-          borderRadius:
-              BorderRadius.circular(
-            8,
-          ),
-          child:
-              Container(
+      onLongPress: onLongPress,
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(8),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
             width: 120,
             height: 80,
-            decoration:
-                BoxDecoration(
-              color:
-                  Colors.white,
-              borderRadius:
-                  BorderRadius.circular(
-                8,
-              ),
-              border:
-                  Border.all(
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainer,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
                 color: selected
-                    ? Colors.blue
-                    : const Color(
-                        0xFFD9D9D9,
-                      ),
-                width:
-                    selected ? 2 : 1,
+                    ? colorScheme.primary
+                    : colorScheme.outlineVariant,
+                width: selected ? 2 : 1,
               ),
-              boxShadow:
-                  const [
+              boxShadow: [
                 BoxShadow(
-                  color:
-                      Color(
-                    0x14000000,
-                  ),
-                  blurRadius:
-                      5,
-                  offset:
-                      Offset(0, 2),
+                  color: colorScheme.shadow.withValues(alpha: 0.08),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child:
-                Stack(
+            child: Stack(
               children: [
-                // ==================================================
-                // THUMBNAIL
-                // ==================================================
-
                 Positioned.fill(
-                  child:
-                      Padding(
-                    padding:
-                        const EdgeInsets
-                            .all(
-                      3,
-                    ),
-                    child:
-                        ClipRRect(
-                      borderRadius:
-                          BorderRadius
-                              .circular(
-                        5,
-                      ),
-                      child:
-                          Container(
-                        color:
-                            const Color(
-                          0xFFF7F7F7,
-                        ),
-                      ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(3),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(5),
+                      child: Container(color: colorScheme.surface),
                     ),
                   ),
                 ),
-
-                // ==================================================
-                // FRAME NUMBER
-                // ==================================================
-
                 Positioned(
                   top: 5,
                   right: 5,
-                  child:
-                      Container(
-                    constraints:
-                        const BoxConstraints(
-                      minWidth:
-                          22,
-                    ),
+                  child: Container(
+                    constraints: const BoxConstraints(minWidth: 22),
                     height: 21,
-                    padding:
-                        const EdgeInsets
-                            .symmetric(
-                      horizontal:
-                          5,
-                    ),
-                    alignment:
-                        Alignment.center,
-                    decoration:
-                        BoxDecoration(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
                       color: selected
-                          ? Colors.blue
-                          : Colors.black54,
-                      borderRadius:
-                          BorderRadius.circular(
-                        5,
-                      ),
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                      borderRadius: BorderRadius.circular(5),
                     ),
-                    child:
-                        Text(
+                    child: Text(
                       '$frameNumber',
-                      style:
-                          const TextStyle(
-                        color:
-                            Colors.white,
-                        fontSize:
-                            10,
-                        fontWeight:
-                            FontWeight.w700,
+                      style: TextStyle(
+                        color: colorScheme.onPrimary,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ),
-
-                // ==================================================
-                // SELECTION CHECK
-                // ==================================================
-
-                if (selectionMode &&
-                    selected)
-                  const Positioned(
+                if (selectionMode && selected)
+                  Positioned(
                     left: 5,
                     top: 5,
-                    child:
-                        Icon(
+                    child: Icon(
                       Icons.check_circle,
                       size: 19,
-                      color:
-                          Colors.blue,
+                      color: colorScheme.primary,
                     ),
                   ),
               ],
@@ -1047,77 +599,33 @@ class _FrameCard
   }
 }
 
-// =====================================================================
-// ADD FRAME CARD
-// =====================================================================
-
-class _AddFrameCard
-    extends StatelessWidget {
-  const _AddFrameCard({
-    required this.onTap,
-  });
+class _AddFrameCard extends StatelessWidget {
+  const _AddFrameCard({required this.onTap});
 
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Material(
-      color:
-          Colors.transparent,
-      borderRadius:
-          BorderRadius.circular(
-        8,
-      ),
-      child:
-          InkWell(
-        onTap:
-            onTap,
-        borderRadius:
-            BorderRadius.circular(
-          8,
-        ),
-        child:
-            Container(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
           width: 120,
           height: 80,
-          decoration:
-              BoxDecoration(
-            color:
-                Colors.white,
-            borderRadius:
-                BorderRadius.circular(
-              8,
-            ),
-            border:
-                Border.all(
-              color:
-                  const Color(
-                0xFFD9D9D9,
-              ),
-            ),
-            boxShadow:
-                const [
-              BoxShadow(
-                color:
-                    Color(
-                  0x14000000,
-                ),
-                blurRadius:
-                    5,
-                offset:
-                    Offset(0, 2),
-              ),
-            ],
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: colorScheme.outlineVariant),
           ),
-          child:
-              const Center(
-            child:
-                Icon(
-              Icons.add_rounded,
-              size: 34,
-              color:
-                  Colors.blue,
-            ),
+          child: Icon(
+            Icons.add_rounded,
+            size: 34,
+            color: colorScheme.primary,
           ),
         ),
       ),

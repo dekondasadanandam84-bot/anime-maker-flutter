@@ -117,7 +117,7 @@ class AccountsUIState extends State<AccountsUI> {
             onPressed: () => Navigator.of(context).maybePop(),
             tooltip: 'Back',
             icon: const Icon(
-              Icons.arrow_back,
+              Icons.close_rounded,
               color: Colors.black,
               size: 22,
             ),

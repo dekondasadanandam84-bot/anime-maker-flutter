@@ -326,7 +326,7 @@ class _ClipsScreenState extends State<ClipsScreen> {
             Navigator.of(context).pop();
           },
           icon: const Icon(
-            Icons.arrow_back,
+            Icons.close_rounded,
           ),
         ),
 
@@ -783,4 +783,3 @@ class _ClipsScreenState extends State<ClipsScreen> {
   // ============================================================
 
 }
-

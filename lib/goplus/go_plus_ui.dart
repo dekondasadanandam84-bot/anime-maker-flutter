@@ -87,7 +87,7 @@ Widget _buildHeader() {
           Navigator.pop(context);
         },
         icon: const Icon(
-          Icons.arrow_back,
+          Icons.close_rounded,
           color: Colors.grey,
           size: 26,
         ),

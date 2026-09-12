@@ -18,34 +18,60 @@ class ProjectCardUI extends StatelessWidget {
   final VoidCallback? onDownload;
 
   void _showMenu(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
       builder: (sheetContext) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(Icons.edit_outlined),
-                title: const Text('Edit'),
+                leading: Icon(
+                  Icons.edit_outlined,
+                  color: colorScheme.onSurface,
+                ),
+                title: Text(
+                  'Edit',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   onEdit?.call();
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.delete_outline),
-                title: const Text('Delete'),
+                leading: Icon(
+                  Icons.delete_outline,
+                  color: colorScheme.onSurface,
+                ),
+                title: Text(
+                  'Delete',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   onDelete?.call();
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.download_outlined),
-                title: const Text('Download'),
+                leading: Icon(
+                  Icons.download_outlined,
+                  color: colorScheme.onSurface,
+                ),
+                title: Text(
+                  'Download',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   onDownload?.call();
@@ -61,6 +87,8 @@ class ProjectCardUI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SizedBox(
       width: 160,
       child: Column(
@@ -73,19 +101,28 @@ class ProjectCardUI extends StatelessWidget {
             width: 160,
             height: 120,
             decoration: BoxDecoration(
-              color: const Color(0xffF7F7F7),
+              color: colorScheme.surfaceContainer,
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xffEAEAEA)),
-              boxShadow: const [
+              border: Border.all(
+                color: colorScheme.outlineVariant,
+              ),
+              boxShadow: [
                 BoxShadow(
-                  color: Color(0x10000000),
+                  color: colorScheme.shadow.withValues(
+                    alpha: 0.06,
+                  ),
                   blurRadius: 8,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
             child: Center(
-              child: Text(emoji, style: const TextStyle(fontSize: 48)),
+              child: Text(
+                emoji,
+                style: const TextStyle(
+                  fontSize: 48,
+                ),
+              ),
             ),
           ),
 
@@ -102,10 +139,10 @@ class ProjectCardUI extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Colors.black,
+                    color: colorScheme.onSurface,
                     height: 1.25,
                   ),
                 ),
@@ -118,10 +155,10 @@ class ProjectCardUI extends StatelessWidget {
                   padding: EdgeInsets.zero,
                   splashRadius: 18,
                   onPressed: () => _showMenu(context),
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.more_vert,
                     size: 21,
-                    color: Colors.black,
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),

@@ -1,195 +1,190 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_application_1/core/app_media.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
+import 'package:flutter_application_1/goplus/go_plus_ui.dart';
 
-enum AppThemeMode {
-  light,
-  dark,
-}
+enum InputMode { stylus, finger, both }
 
-enum InputMode {
-  stylus,
-  finger,
-  both,
-}
 class SettingsUI extends StatefulWidget {
   const SettingsUI({super.key});
- @override
+
+  @override
   State<SettingsUI> createState() => _SettingsUIState();
 }
+
 class _SettingsUIState extends State<SettingsUI> {
-  AppThemeMode themeMode = AppThemeMode.light;
   InputMode inputMode = InputMode.stylus;
-  Color selectedAccent = Colors.black;
-  final List<Color> accentColors = [
-    Colors.black,
-    const Color(0xff3F51B5),
-    const Color(0xff009688),
-    const Color(0xff4CAF50),
-    const Color(0xffFFC107),
-    const Color(0xffFF9800),
-    const Color(0xffFF5722),
+
+  final List<AppAccentColor> accentColors = [
+    AppAccentColor.black,
+    AppAccentColor.indigo,
+    AppAccentColor.teal,
+    AppAccentColor.green,
+    AppAccentColor.amber,
+    AppAccentColor.orange,
+    AppAccentColor.deepOrange,
   ];
+
   @override
   Widget build(BuildContext context) {
- AppMedia.init(context);
+    AppMedia.init(context);
+
+    final themeController = AppThemeScope.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: const Color(0xfff9f9f9),
+      backgroundColor: colorScheme.surface,
       body: SafeArea(
-  child: SingleChildScrollView(
-    padding: const EdgeInsets.symmetric(
-      horizontal: 16,
-      vertical: 16,
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Top bar — now part of the screen content
-        SizedBox(
-          height: 48,
-          width: double.infinity,
-          child: Stack(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.grey,
-                    size: 26,
-                  ),
+              SizedBox(
+                height: 48,
+                width: double.infinity,
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        icon: Icon(
+                          Icons.close_rounded,
+                          color: colorScheme.onSurfaceVariant,
+                          size: 26,
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: colorScheme.primary,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
 
-              const Center(
-                child: Text(
-                  "Settings",
-                  style: TextStyle(
-                    color: Color.fromARGB(255, 13, 113, 254),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                  ),
+              const SizedBox(height: 16),
+
+              _proCard(),
+
+              const SizedBox(height: 40),
+
+              _sectionTitle(
+                'Appearance',
+                'Customize how AnimeClip looks on your device.',
+              ),
+
+              const SizedBox(height: 20),
+
+              _themeSelector(themeController),
+
+              const SizedBox(height: 25),
+
+              Text(
+                'ACCENT COLOR',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
+
+              const SizedBox(height: 16),
+
+              Wrap(
+                spacing: 16,
+                runSpacing: 12,
+                children: accentColors.map((accent) {
+                  return GestureDetector(
+                    onTap: () {
+                      themeController.setAccentColor(accent);
+                    },
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: accent.color,
+                        border: Border.all(
+                          color: themeController.accentColor == accent
+                              ? colorScheme.onSurface
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: themeController.accentColor == accent
+                          ? const Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 20,
+                            )
+                          : null,
+                    ),
+                  );
+                }).toList(),
+              ),
+
+              const SizedBox(height: 40),
+
+              _sectionTitle(
+                'Input Methods',
+                'Configure how you interact with the canvas.',
+              ),
+
+              const SizedBox(height: 20),
+
+              _inputMethodsCard(),
             ],
           ),
         ),
-
-        const SizedBox(height: 16),
-
-        // Existing body content
-        _proCard(),
-
-        const SizedBox(height: 40),
-
-        _sectionTitle(
-          "Appearance",
-          "Customize how AnimeClip looks on your device.",
-        ),
-
-        const SizedBox(height: 20),
-
-        _themeSelector(),
-
-        const SizedBox(height: 25),
-
-        const Text(
-          "ACCENT COLOR",
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 1,
-            color: Color(0xff4c4546),
-          ),
-        ),
-
-        const SizedBox(height: 16),
-
-        Wrap(
-          spacing: 16,
-          children: accentColors.map((color) {
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  selectedAccent = color;
-                });
-              },
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color,
-                  border: Border.all(
-                    color: selectedAccent == color
-                        ? Colors.black
-                        : Colors.transparent,
-                    width: 2,
-                  ),
-                ),
-                child: selectedAccent == color
-                    ? const Icon(
-                        Icons.check,
-                        color: Colors.white,
-                        size: 20,
-                      )
-                    : null,
-              ),
-            );
-          }).toList(),
-        ),
-
-        const SizedBox(height: 40),
-
-        _sectionTitle(
-          "Input Methods",
-          "Configure how you interact with the canvas.",
-        ),
-
-        const SizedBox(height: 20),
-
-        _inputMethodsCard(),
-      ],
-    ),
-  ),
-),
+      ),
     );
   }
-    Widget _proCard() {
+
+  Widget _proCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xffcfc4c5),
-        ),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
           Container(
             height: 180,
             width: double.infinity,
-            decoration: const BoxDecoration(
-              borderRadius: BorderRadius.vertical(
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(16),
               ),
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xffeeeeee),
-                  Colors.white,
+                  colorScheme.surfaceContainerHighest,
+                  colorScheme.surfaceContainer,
                 ],
               ),
             ),
-            child: const Center(
+            child: Center(
               child: Icon(
                 Icons.movie_creation_outlined,
                 size: 70,
-                color: Colors.black,
+                color: colorScheme.onSurface,
               ),
             ),
           ),
@@ -197,21 +192,22 @@ class _SettingsUIState extends State<SettingsUI> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const Text(
-                  "Unlock AnimeClip Pro",
+                Text(
+                  'Unlock AnimeClip Pro',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  "Get unlimited cloud projects, cloud sync, and advanced export tools.",
+                Text(
+                  'Get unlimited cloud projects, cloud sync, and advanced export tools.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 14,
-                    color: Color(0xff4c4546),
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
                 const SizedBox(height: 20),
@@ -219,19 +215,21 @@ class _SettingsUIState extends State<SettingsUI> {
                   width: double.infinity,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const GoPlusUI()),
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.black,
-                      foregroundColor: Colors.white,
+                      backgroundColor: colorScheme.primary,
+                      foregroundColor: colorScheme.onPrimary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     child: const Text(
-                      "Upgrade Now",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      'Upgrade Now',
+                      style: TextStyle(fontWeight: FontWeight.w600),
                     ),
                   ),
                 ),
@@ -242,85 +240,81 @@ class _SettingsUIState extends State<SettingsUI> {
       ),
     );
   }
-  Widget _sectionTitle(
-      String title,
-      String subtitle,
-      ) {
+
+  Widget _sectionTitle(String title, String subtitle) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Color(0xff4c4546),
-          ),
+          style: TextStyle(fontSize: 14, color: colorScheme.onSurfaceVariant),
         ),
       ],
     );
   }
-  Widget _themeSelector() {
+
+  Widget _themeSelector(AppThemeController themeController) {
     return Row(
       children: [
         Expanded(
           child: _themeCard(
-            title: "Light",
-            isSelected: themeMode == AppThemeMode.light,
+            title: 'Light',
+            isSelected: themeController.mode == AppThemeMode.light,
             isDark: false,
-            onTap: (){
-              setState(() {
-                themeMode = AppThemeMode.light;
-              });
+            onTap: () {
+              themeController.setMode(AppThemeMode.light);
             },
           ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: _themeCard(
-            title: "Dark",
-            isSelected: themeMode == AppThemeMode.dark,
+            title: 'Dark',
+            isSelected: themeController.mode == AppThemeMode.dark,
             isDark: true,
-            onTap: (){
-              setState(() {
-                themeMode = AppThemeMode.dark;
-              });
+            onTap: () {
+              themeController.setMode(AppThemeMode.dark);
             },
           ),
         ),
       ],
     );
   }
+
   Widget _themeCard({
     required String title,
     required bool isSelected,
     required bool isDark,
     required VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
         children: [
           Container(
-  height: 125,
-  padding: const EdgeInsets.all(8),
+            height: 125,
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isDark
-                  ? const Color(0xff1b1c1c)
-                  : Colors.white,
+              color: isDark ? const Color(0xff1b1c1c) : Colors.white,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 width: isSelected ? 2 : 1,
                 color: isSelected
-                    ? Colors.black
-                    : const Color(0xffcfc4c5),
+                    ? colorScheme.primary
+                    : colorScheme.outlineVariant,
               ),
             ),
             child: Column(
@@ -341,9 +335,7 @@ class _SettingsUIState extends State<SettingsUI> {
                   height: 35,
                   width: double.infinity,
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xff2f3131)
-                        : Colors.white,
+                    color: isDark ? const Color(0xff2f3131) : Colors.white,
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
@@ -371,15 +363,15 @@ class _SettingsUIState extends State<SettingsUI> {
                     ),
                   ],
                 ),
-                if(isSelected)
+                if (isSelected)
                   Align(
                     alignment: Alignment.topRight,
                     child: CircleAvatar(
                       radius: 10,
-                      backgroundColor: Colors.black,
-                      child: const Icon(
+                      backgroundColor: colorScheme.primary,
+                      child: Icon(
                         Icons.check,
-                        color: Colors.white,
+                        color: colorScheme.onPrimary,
                         size: 14,
                       ),
                     ),
@@ -391,33 +383,32 @@ class _SettingsUIState extends State<SettingsUI> {
           Text(
             title,
             style: TextStyle(
-              fontWeight: isSelected
-                  ? FontWeight.w700
-                  : FontWeight.w500,
+              color: colorScheme.onSurface,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ],
       ),
     );
   }
-    Widget _inputMethodsCard() {
+
+  Widget _inputMethodsCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: const Color(0xffcfc4c5),
-        ),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
           _inputTile(
             icon: Icons.edit,
-            title: "Stylus",
-            subtitle:
-                "Optimized pressure sensitivity and tilt support.",
+            title: 'Stylus',
+            subtitle: 'Optimized pressure sensitivity and tilt support.',
             value: inputMode == InputMode.stylus,
-            onChanged: (){
+            onChanged: () {
               setState(() {
                 inputMode = InputMode.stylus;
               });
@@ -426,11 +417,10 @@ class _SettingsUIState extends State<SettingsUI> {
           _divider(),
           _inputTile(
             icon: Icons.touch_app,
-            title: "Finger",
-            subtitle:
-                "Enable touch gestures for canvas manipulation.",
+            title: 'Finger',
+            subtitle: 'Enable touch gestures for canvas manipulation.',
             value: inputMode == InputMode.finger,
-            onChanged: (){
+            onChanged: () {
               setState(() {
                 inputMode = InputMode.finger;
               });
@@ -439,11 +429,11 @@ class _SettingsUIState extends State<SettingsUI> {
           _divider(),
           _inputTile(
             icon: Icons.devices,
-            title: "Both (Stylus & Finger)",
+            title: 'Both (Stylus & Finger)',
             subtitle:
-                "Seamlessly switch between stylus precision and touch gestures.",
+                'Seamlessly switch between stylus precision and touch gestures.',
             value: inputMode == InputMode.both,
-            onChanged: (){
+            onChanged: () {
               setState(() {
                 inputMode = InputMode.both;
               });
@@ -453,6 +443,7 @@ class _SettingsUIState extends State<SettingsUI> {
       ),
     );
   }
+
   Widget _inputTile({
     required IconData icon,
     required String title,
@@ -460,26 +451,22 @@ class _SettingsUIState extends State<SettingsUI> {
     required bool value,
     required VoidCallback onChanged,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: onChanged,
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         child: Row(
           children: [
             Container(
               height: 42,
               width: 42,
               decoration: BoxDecoration(
-                color: const Color(0xffeeeeee),
+                color: colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
-                icon,
-                color: Colors.black,
-              ),
+              child: Icon(icon, color: colorScheme.onSurface),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -488,17 +475,18 @@ class _SettingsUIState extends State<SettingsUI> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xff4c4546),
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -509,17 +497,18 @@ class _SettingsUIState extends State<SettingsUI> {
               onChanged: (_) {
                 onChanged();
               },
-              activeThumbColor: Colors.black,
+              activeThumbColor: colorScheme.primary,
             ),
           ],
         ),
       ),
     );
   }
-  Widget _divider(){
-    return const Divider(
+
+  Widget _divider() {
+    return Divider(
       height: 1,
-      color: Color(0xffcfc4c5),
+      color: Theme.of(context).colorScheme.outlineVariant,
     );
   }
 }

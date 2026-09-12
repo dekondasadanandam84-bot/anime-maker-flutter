@@ -21,13 +21,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   // ============================================================
   // TEMPORARY FORM STATE
   // ============================================================
-  //
-  // These values are only draft values while the user is filling
-  // the form.
-  //
-  // They are NOT the source of truth for a saved project.
-  // The final saved values go into ProjectController.
-  // ============================================================
 
   String _aspectRatio = '16:9';
   String _resolution = '1920 × 1080';
@@ -303,10 +296,6 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
         quality: _quality,
       );
 
-      // ONE central project update.
-      //
-      // ProjectController remains the single source of truth.
-      // Name and settings are committed together.
       controller.updateCurrentProject(
         name: name,
         settings: updatedSettings,
@@ -414,12 +403,14 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     // Establish the reactive dependency on ProjectController.
     ProjectScope.of(context);
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: colorScheme.surface,
         elevation: 0,
         centerTitle: true,
 
@@ -430,27 +421,27 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
             Navigator.of(context).maybePop();
           },
-          icon: const Icon(
-            Icons.arrow_back,
-            color: Colors.black,
+          icon: Icon(
+            Icons.close_rounded,
+            color: colorScheme.onSurface,
           ),
         ),
 
         title: Text(
           screenTitle,
-          style: const TextStyle(
-            color: Color(0xFF1A1C1C),
+          style: TextStyle(
+            color: colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
 
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
           child: Divider(
             height: 1,
             thickness: 1,
-            color: Color(0xFFEAEAEA),
+            color: colorScheme.outlineVariant,
           ),
         ),
       ),
@@ -632,8 +623,8 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     child: ElevatedButton(
                       onPressed: _saveProject,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
+                        backgroundColor: colorScheme.primary,
+                        foregroundColor: colorScheme.onPrimary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius:
@@ -676,13 +667,15 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: const TextStyle(
-            color: Color(0xFF1A1C1C),
+          style: TextStyle(
+            color: colorScheme.onSurface,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
@@ -690,8 +683,8 @@ class _SectionHeader extends StatelessWidget {
         const SizedBox(height: 5),
         Text(
           subtitle,
-          style: const TextStyle(
-            color: Color(0xFF6B6B6B),
+          style: TextStyle(
+            color: colorScheme.onSurfaceVariant,
             fontSize: 13,
             height: 1.4,
           ),
@@ -720,34 +713,36 @@ class _TitleField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return TextField(
       controller: controller,
       textCapitalization: TextCapitalization.sentences,
       decoration: InputDecoration(
         prefixIcon: Icon(
           icon,
-          color: const Color(0xFF555555),
+          color: colorScheme.onSurfaceVariant,
         ),
         labelText: label,
         hintText: hint,
         filled: true,
-        fillColor: const Color(0xFFF9F9F9),
-        labelStyle: const TextStyle(
-          color: Color(0xFF444444),
+        fillColor: colorScheme.surfaceContainerHighest,
+        labelStyle: TextStyle(
+          color: colorScheme.onSurfaceVariant,
         ),
-        hintStyle: const TextStyle(
-          color: Color(0xFF999999),
+        hintStyle: TextStyle(
+          color: colorScheme.onSurfaceVariant,
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: Color(0xFFE2E2E2),
+          borderSide: BorderSide(
+            color: colorScheme.outlineVariant,
           ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(
-            color: Colors.black,
+          borderSide: BorderSide(
+            color: colorScheme.primary,
             width: 1.2,
           ),
         ),
@@ -775,13 +770,15 @@ class _SimpleDropdown<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF1A1C1C),
+            style: TextStyle(
+              color: colorScheme.onSurface,
               fontSize: 15,
               fontWeight: FontWeight.w600,
             ),
@@ -791,14 +788,16 @@ class _SimpleDropdown<T> extends StatelessWidget {
           child: DropdownButton<T>(
             value: value,
             borderRadius: BorderRadius.circular(12),
+            dropdownColor: colorScheme.surfaceContainer,
+            iconEnabledColor: colorScheme.primary,
             items: items.map(
               (item) {
                 return DropdownMenuItem<T>(
                   value: item,
                   child: Text(
                     item.toString(),
-                    style: const TextStyle(
-                      color: Color(0xFF1A1C1C),
+                    style: TextStyle(
+                      color: colorScheme.onSurface,
                       fontSize: 14,
                     ),
                   ),
@@ -836,6 +835,8 @@ class _SliderSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -845,16 +846,16 @@ class _SliderSetting extends StatelessWidget {
           children: [
             Text(
               label,
-              style: const TextStyle(
-                color: Color(0xFF1A1C1C),
+              style: TextStyle(
+                color: colorScheme.onSurface,
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
               ),
             ),
             Text(
               valueText,
-              style: const TextStyle(
-                color: Color(0xFF1A1C1C),
+              style: TextStyle(
+                color: colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
               ),
@@ -868,23 +869,26 @@ class _SliderSetting extends StatelessWidget {
           max: max,
           divisions: 29,
           label: valueText,
+          activeColor: colorScheme.primary,
+          inactiveColor: colorScheme.surfaceContainerHighest,
+          thumbColor: colorScheme.primary,
           onChanged: onChanged,
         ),
-        const Row(
+        Row(
           mainAxisAlignment:
               MainAxisAlignment.spaceBetween,
           children: [
             Text(
               '1 FPS',
               style: TextStyle(
-                color: Color(0xFF888888),
+                color: colorScheme.onSurfaceVariant,
                 fontSize: 11,
               ),
             ),
             Text(
               '30 FPS',
               style: TextStyle(
-                color: Color(0xFF888888),
+                color: colorScheme.onSurfaceVariant,
                 fontSize: 11,
               ),
             ),
@@ -908,13 +912,15 @@ class _StructureSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Project Structure',
           style: TextStyle(
-            color: Color(0xFF1A1C1C),
+            color: colorScheme.onSurface,
             fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
@@ -922,17 +928,17 @@ class _StructureSection extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           value,
-          style: const TextStyle(
-            color: Color(0xFF6B6B6B),
+          style: TextStyle(
+            color: colorScheme.onSurfaceVariant,
             fontSize: 13,
             height: 1.5,
           ),
         ),
         const SizedBox(height: 14),
-        const Divider(
+        Divider(
           height: 1,
           thickness: 1,
-          color: Color(0xFFEAEAEA),
+          color: colorScheme.outlineVariant,
         ),
       ],
     );

@@ -1,8 +1,8 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:flutter_application_1/home/drawer_ui.dart';
 import 'package:flutter_application_1/core/app_media.dart';
+import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/search/search_ui.dart';
 
 import 'create_project_button.dart';
@@ -56,13 +56,12 @@ class _HomeUIState extends State<HomeUI> {
   void didChangeDependencies() {
     super.didChangeDependencies();
 
-    // This establishes the reactive dependency on ProjectController.
     final controller = ProjectScope.of(context);
 
     final currentProjectId = controller.currentProjectId;
 
-    // Settings/name/list updates for the SAME project should simply
-    // rebuild through ProjectScope. They should not change the tab.
+    // Settings/name/list updates for the SAME project should
+    // simply rebuild through ProjectScope.
     if (currentProjectId == _lastKnownProjectId) {
       return;
     }
@@ -163,7 +162,6 @@ class _HomeUIState extends State<HomeUI> {
     }
 
     // Always get the project again from ProjectController.
-    // Do not continue using a potentially stale ProjectModel copy.
     final selectedProject = controller.currentProject;
 
     if (selectedProject == null) {
@@ -226,28 +224,39 @@ class _HomeUIState extends State<HomeUI> {
   Widget build(BuildContext context) {
     AppMedia.init(context);
 
-    // IMPORTANT:
+    // Flutter/Chrome can briefly report an extremely small
+    // window width during resize or browser transitions.
+    //
+    // Do not wrap the entire Scaffold in LayoutBuilder.
+    // That was unnecessary and made the widget tree more complex.
+    final screenWidth = MediaQuery.sizeOf(context).width;
+
+    if (screenWidth < 120) {
+      return const SizedBox.shrink();
+    }
+
     // ProjectScope.of() makes this widget rebuild whenever
     // ProjectController calls notifyListeners().
-    //
-    // Therefore project name/settings/project lists are always
-    // obtained from the current central controller state.
     final controller = ProjectScope.of(context);
 
     final projects = _projectsForSelectedTab(controller);
 
+    AppThemeScope.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: colorScheme.surface,
 
       // ==========================================================
       // TOP APP BAR
       // ==========================================================
 
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.white,
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: colorScheme.surface,
         elevation: 0,
         centerTitle: true,
+        titleSpacing: 0,
 
         leading: IconButton(
           onPressed: () {
@@ -258,23 +267,27 @@ class _HomeUIState extends State<HomeUI> {
               ),
             );
           },
-          icon: const Text(
+          icon: Text(
             '☰',
             style: TextStyle(
               fontSize: 28,
-              color: Colors.black,
+              color: colorScheme.onSurface,
               height: 1,
             ),
           ),
         ),
 
-        title: const Text(
-          'AnimeClip',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: Color(0xff1E293B),
-            letterSpacing: -.3,
+        title: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            'AnimeClip',
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              color: colorScheme.onSurface,
+              letterSpacing: -.3,
+            ),
           ),
         ),
 
@@ -293,7 +306,7 @@ class _HomeUIState extends State<HomeUI> {
             icon: const Text(
               '🔍',
               style: TextStyle(
-                fontSize: 30,
+                fontSize: 26,
               ),
             ),
           ),
@@ -303,7 +316,7 @@ class _HomeUIState extends State<HomeUI> {
           preferredSize: const Size.fromHeight(1),
           child: Container(
             height: 1,
-            color: const Color(0xffECECEC),
+            color: colorScheme.outlineVariant,
           ),
         ),
       ),
@@ -314,7 +327,9 @@ class _HomeUIState extends State<HomeUI> {
 
       body: SafeArea(
         child: Padding(
-          padding: AppMedia.symmetric(horizontal: 16),
+          padding: AppMedia.symmetric(
+            horizontal: 16,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -432,21 +447,37 @@ class _ProjectContent extends StatelessWidget {
     // GRID
     // ==========================================================
 
-    return GridView.builder(
-      padding: const EdgeInsets.only(
-        bottom: 20,
-      ),
-      gridDelegate:
-          const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 180,
-        mainAxisExtent: 185,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 20,
-        childAspectRatio: 1,
-      ),
-      itemCount: cards.length,
-      itemBuilder: (context, index) {
-        return cards[index];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Prevent grid construction during an extremely small
+        // transient width.
+        if (!constraints.hasBoundedWidth ||
+            constraints.maxWidth < 120) {
+          return const SizedBox.shrink();
+        }
+
+        final crossAxisCount =
+            ((constraints.maxWidth + 16) / 196)
+                .floor()
+                .clamp(1, 6)
+                .toInt();
+
+        return GridView.builder(
+          padding: const EdgeInsets.only(
+            bottom: 20,
+          ),
+          gridDelegate:
+              SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisExtent: 185,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 20,
+          ),
+          itemCount: cards.length,
+          itemBuilder: (context, index) {
+            return cards[index];
+          },
+        );
       },
     );
   }
@@ -460,9 +491,9 @@ class _EmptyProjectState extends StatelessWidget {
   const _EmptyProjectState();
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -474,20 +505,20 @@ class _EmptyProjectState extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
+          Text(
             'No projects yet',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
-              color: Colors.black,
+              color: colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 5),
-          const Text(
+          Text(
             'Create a project to get started.',
             style: TextStyle(
               fontSize: 13,
-              color: Color(0xff777777),
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -508,12 +539,12 @@ class _SelectedCategorySection extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     final data = _CategoryData.fromIndex(
       selectedTab,
     );
+
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -533,10 +564,10 @@ class _SelectedCategorySection extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 data.title,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
-                  color: Colors.black,
+                  color: colorScheme.onSurface,
                 ),
               ),
             ],
@@ -549,18 +580,18 @@ class _SelectedCategorySection extends StatelessWidget {
           ),
           child: Text(
             data.description,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 13,
-              color: Color(0xff666666),
+              color: colorScheme.onSurfaceVariant,
               height: 1.4,
             ),
           ),
         ),
         const SizedBox(height: 12),
-        const Divider(
+        Divider(
           height: 1,
           thickness: 1,
-          color: Color(0xffEAEAEA),
+          color: colorScheme.outlineVariant,
         ),
       ],
     );
@@ -575,13 +606,11 @@ class _CategoryData {
   final String title;
   final String description;
   final String icon;
-  final Color color;
 
   const _CategoryData({
     required this.title,
     required this.description,
     required this.icon,
-    required this.color,
   });
 
   static _CategoryData fromIndex(
@@ -594,7 +623,6 @@ class _CategoryData {
           description:
               'Create and organize episodic anime projects.',
           icon: '📺',
-          color: Color(0xff7C3AED),
         );
 
       case 1:
@@ -603,7 +631,6 @@ class _CategoryData {
           description:
               'Create and manage long-form animated movies.',
           icon: '🎬',
-          color: Color(0xffE11D48),
         );
 
       case 2:
@@ -612,7 +639,6 @@ class _CategoryData {
           description:
               'Create and organize manga series and pages.',
           icon: '📚',
-          color: Color(0xff0EA5E9),
         );
 
       case 3:
@@ -621,7 +647,6 @@ class _CategoryData {
           description:
               'Create and manage standalone manga books.',
           icon: '📖',
-          color: Color(0xff16A34A),
         );
 
       default:
@@ -630,7 +655,6 @@ class _CategoryData {
           description:
               'Create and manage long-form animated movies.',
           icon: '🎬',
-          color: Color(0xffE11D48),
         );
     }
   }
@@ -646,19 +670,19 @@ class CreateBottomItem extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       width: 58,
       height: 58,
-      decoration: const BoxDecoration(
-        color: Color(0xFFE91E63),
+      decoration: BoxDecoration(
+        color: colorScheme.primary,
         shape: BoxShape.circle,
       ),
-      child: const Icon(
+      child: Icon(
         Icons.add,
-        color: Colors.white,
+        color: colorScheme.onPrimary,
         size: 34,
       ),
     );
@@ -680,16 +704,16 @@ class HomeBottomBar extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       height: 82,
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
         border: Border(
           top: BorderSide(
-            color: Color(0xffEAEAEA),
+            color: colorScheme.outlineVariant,
             width: 1,
           ),
         ),
@@ -702,7 +726,6 @@ class HomeBottomBar extends StatelessWidget {
               child: _BottomItem(
                 icon: '📺',
                 title: 'Series',
-                color: const Color(0xff7C3AED),
                 selected: selectedTab == 0,
                 onTap: () => onTabSelected(0),
               ),
@@ -711,7 +734,6 @@ class HomeBottomBar extends StatelessWidget {
               child: _BottomItem(
                 icon: '🎬',
                 title: 'Movies',
-                color: const Color(0xffE11D48),
                 selected: selectedTab == 1,
                 onTap: () => onTabSelected(1),
               ),
@@ -725,7 +747,6 @@ class HomeBottomBar extends StatelessWidget {
               child: _BottomItem(
                 icon: '📚',
                 title: 'Manga',
-                color: const Color(0xff0EA5E9),
                 selected: selectedTab == 2,
                 onTap: () => onTabSelected(2),
               ),
@@ -734,7 +755,6 @@ class HomeBottomBar extends StatelessWidget {
               child: _BottomItem(
                 icon: '📖',
                 title: 'Book',
-                color: const Color(0xff16A34A),
                 selected: selectedTab == 3,
                 onTap: () => onTabSelected(3),
               ),
@@ -761,61 +781,74 @@ class ProjectCard extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SizedBox(
-      width: 160,
+      width: double.infinity,
+      height: 185,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            width: 160,
+          SizedBox(
+            width: double.infinity,
             height: 120,
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: const Color(0xffEAEAEA),
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Color(0x10000000),
-                  blurRadius: 8,
-                  offset: Offset(0, 2),
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainer,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: colorScheme.outlineVariant,
                 ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(18),
-              child: Image.asset(
-                imageAsset,
-                fit: BoxFit.cover,
-                errorBuilder: (_, _, _) {
-                  return Container(
-                    color: const Color(0xffF4F4F4),
-                    child: const Center(
-                      child: Icon(
-                        Icons.image_outlined,
-                        size: 40,
-                        color: Colors.grey,
-                      ),
+                boxShadow: [
+                  BoxShadow(
+                    color: colorScheme.shadow.withValues(
+                      alpha: 0.06,
                     ),
-                  );
-                },
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(18),
+                child: Image.asset(
+                  imageAsset,
+                  width: double.infinity,
+                  height: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) {
+                    return Container(
+                      color: colorScheme.surfaceContainerHighest,
+                      child: Center(
+                        child: Icon(
+                          Icons.image_outlined,
+                          size: 40,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
+
           const SizedBox(height: 10),
-          Center(
+
+          SizedBox(
+            height: 40,
             child: Text(
               projectName,
-              style: const TextStyle(
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: colorScheme.onSurface,
+                height: 1.25,
               ),
-              textAlign: TextAlign.center,
             ),
           ),
         ],
@@ -831,22 +864,20 @@ class ProjectCard extends StatelessWidget {
 class _BottomItem extends StatelessWidget {
   final String icon;
   final String title;
-  final Color color;
   final bool selected;
   final VoidCallback onTap;
 
   const _BottomItem({
     required this.icon,
     required this.title,
-    required this.color,
     required this.selected,
     required this.onTap,
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
@@ -870,7 +901,7 @@ class _BottomItem extends StatelessWidget {
                   bottom: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: color,
+                  color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(99),
                 ),
               ),
@@ -892,8 +923,8 @@ class _BottomItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   color: selected
-                      ? color
-                      : const Color(0xff555555),
+                      ? colorScheme.primary
+                      : colorScheme.onSurfaceVariant,
                   fontWeight: selected
                       ? FontWeight.w700
                       : FontWeight.w600,
@@ -917,14 +948,14 @@ class RecentSection extends StatelessWidget {
   });
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(
+        Padding(
+          padding: const EdgeInsets.symmetric(
             horizontal: 2,
           ),
           child: Text(
@@ -932,15 +963,15 @@ class RecentSection extends StatelessWidget {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
-              color: Colors.black,
+              color: colorScheme.onSurface,
             ),
           ),
         ),
         const SizedBox(height: 12),
-        const Divider(
+        Divider(
           height: 1,
           thickness: 1,
-          color: Color(0xffEAEAEA),
+          color: colorScheme.outlineVariant,
         ),
       ],
     );

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../models/season_model.dart';
@@ -19,10 +18,6 @@ class SeasonsScreen extends StatefulWidget {
 class _SeasonsScreenState extends State<SeasonsScreen> {
   // ============================================================
   // PROJECT CONTROLLER
-  // ============================================================
-  //
-  // ProjectController is the single source of truth.
-  // This screen does not store project/series/settings data.
   // ============================================================
 
   ProjectController get projectController =>
@@ -55,13 +50,22 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     final shouldCreate = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final colorScheme =
+            Theme.of(dialogContext).colorScheme;
+
         return AlertDialog(
-          title: const Text('Create Season'),
+          backgroundColor: colorScheme.surfaceContainer,
+          title: Text(
+            'Create Season',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
+          ),
           content: TextField(
             controller: controller,
             autofocus: true,
             textInputAction: TextInputAction.done,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               labelText: 'Season Name',
               hintText: 'Enter season name',
             ),
@@ -113,9 +117,16 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     final shouldRename = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final colorScheme =
+            Theme.of(dialogContext).colorScheme;
+
         return AlertDialog(
+          backgroundColor: colorScheme.surfaceContainer,
           title: Text(
             'Rename Season ${season.number}',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
           ),
           content: TextField(
             controller: controller,
@@ -170,13 +181,25 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final colorScheme =
+            Theme.of(dialogContext).colorScheme;
+
         return AlertDialog(
-          title: const Text('Delete Season?'),
+          backgroundColor: colorScheme.surfaceContainer,
+          title: Text(
+            'Delete Season?',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
+          ),
           content: Text(
             'Are you sure you want to delete '
             '"${season.displayName}"? '
             'This action cannot be undone and will remove '
             'all episodes within.',
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           actions: [
             TextButton(
@@ -187,10 +210,8 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor:
-                    Theme.of(dialogContext)
-                        .colorScheme
-                        .error,
+                backgroundColor: colorScheme.error,
+                foregroundColor: colorScheme.onError,
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
@@ -221,19 +242,27 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor:
+          Theme.of(context).colorScheme.surface,
       builder: (sheetContext) {
-        final errorColor =
-            Theme.of(context).colorScheme.error;
+        final colorScheme =
+            Theme.of(sheetContext).colorScheme;
 
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.edit_outlined,
+                  color: colorScheme.onSurface,
                 ),
-                title: const Text('Rename'),
+                title: Text(
+                  'Rename',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _renameSeason(season);
@@ -242,12 +271,12 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
               ListTile(
                 leading: Icon(
                   Icons.delete_outline,
-                  color: errorColor,
+                  color: colorScheme.error,
                 ),
                 title: Text(
                   'Delete',
                   style: TextStyle(
-                    color: errorColor,
+                    color: colorScheme.error,
                   ),
                 ),
                 onTap: () {
@@ -282,20 +311,18 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     // This creates the dependency on ProjectController.
-    //
-    // When ProjectController calls notifyListeners(),
-    // this screen rebuilds with the latest project data.
     final controller = ProjectScope.of(context);
 
     final series = controller.currentAnimeSeries;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: colorScheme.surface,
 
       appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
 
@@ -304,8 +331,9 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
           onPressed: () {
             Navigator.of(context).pop();
           },
-          icon: const Icon(
-            Icons.arrow_back,
+          icon: Icon(
+            Icons.close_rounded,
+            color: colorScheme.onSurface,
           ),
         ),
 
@@ -314,7 +342,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
               const Size.fromHeight(1),
           child: Divider(
             height: 1,
-            color: theme.colorScheme.outlineVariant,
+            color: colorScheme.outlineVariant,
           ),
         ),
 
@@ -326,6 +354,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
             Text(
               'Seasons',
               style: theme.textTheme.titleLarge?.copyWith(
+                color: colorScheme.onSurface,
                 fontWeight: FontWeight.w700,
               ),
             ),
@@ -335,7 +364,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.labelMedium?.copyWith(
                 color:
-                    theme.colorScheme.onSurfaceVariant,
+                    colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -343,9 +372,12 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
       ),
 
       body: series == null
-          ? const Center(
+          ? Center(
               child: Text(
                 'Anime series not found',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
               ),
             )
           : Column(
@@ -364,6 +396,8 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                         style:
                             theme.textTheme.headlineSmall
                                 ?.copyWith(
+                          color:
+                              colorScheme.onSurface,
                           fontWeight:
                               FontWeight.w700,
                         ),
@@ -374,8 +408,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                         style:
                             theme.textTheme.bodyLarge
                                 ?.copyWith(
-                          color: theme
-                              .colorScheme
+                          color: colorScheme
                               .onSurfaceVariant,
                         ),
                       ),
@@ -401,13 +434,13 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     ThemeData theme,
     List<SeasonModel> seasons,
   ) {
+    final colorScheme = theme.colorScheme;
+
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: colorScheme.surfaceContainer,
         border: Border.all(
-          color: theme
-              .colorScheme
-              .surfaceContainerHighest,
+          color: colorScheme.outlineVariant,
         ),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -423,15 +456,16 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                   Icon(
                     Icons.auto_stories_outlined,
                     size: 42,
-                    color: theme
-                        .colorScheme
-                        .onSurfaceVariant,
+                    color:
+                        colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(height: 12),
                   Text(
                     'No seasons yet',
                     style: theme.textTheme.titleMedium
                         ?.copyWith(
+                      color:
+                          colorScheme.onSurface,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -441,8 +475,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium
                         ?.copyWith(
-                      color: theme
-                          .colorScheme
+                      color: colorScheme
                           .onSurfaceVariant,
                     ),
                   ),
@@ -474,8 +507,10 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     SeasonModel season, {
     required bool isLast,
   }) {
+    final colorScheme = theme.colorScheme;
+
     return Material(
-      color: theme.colorScheme.surface,
+      color: colorScheme.surfaceContainer,
       child: InkWell(
         onTap: () {
           if (!projectController.selectSeason(
@@ -497,9 +532,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                 ? null
                 : Border(
                     bottom: BorderSide(
-                      color: theme
-                          .colorScheme
-                          .surfaceContainerHighest,
+                      color: colorScheme.outlineVariant,
                     ),
                   ),
           ),
@@ -509,14 +542,15 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: theme
-                      .colorScheme
-                      .surfaceContainer,
+                  color:
+                      colorScheme.primaryContainer,
                   borderRadius:
                       BorderRadius.circular(10),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.movie_creation_outlined,
+                  color:
+                      colorScheme.onPrimaryContainer,
                 ),
               ),
               const SizedBox(width: 16),
@@ -532,6 +566,8 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                           TextOverflow.ellipsis,
                       style: theme.textTheme.labelLarge
                           ?.copyWith(
+                        color:
+                            colorScheme.onSurface,
                         fontWeight:
                             FontWeight.w600,
                       ),
@@ -541,8 +577,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                       _episodeLabel(season),
                       style: theme.textTheme.labelMedium
                           ?.copyWith(
-                        color: theme
-                            .colorScheme
+                        color: colorScheme
                             .onSurfaceVariant,
                       ),
                     ),
@@ -554,8 +589,9 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                 onPressed: () {
                   _renameSeason(season);
                 },
-                icon: const Icon(
+                icon: Icon(
                   Icons.edit_outlined,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               IconButton(
@@ -563,8 +599,9 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                 onPressed: () {
                   _showSeasonMenu(season);
                 },
-                icon: const Icon(
+                icon: Icon(
                   Icons.more_vert,
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -581,6 +618,8 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
   Widget _buildBottomAction(
     ThemeData theme,
   ) {
+    final colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.fromLTRB(
         16,
@@ -589,13 +628,10 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
         16,
       ),
       decoration: BoxDecoration(
-        color: theme
-            .colorScheme
-            .surface
-            .withValues(alpha: 0.96),
+        color: colorScheme.surface,
         border: Border(
           top: BorderSide(
-            color: theme.colorScheme.outlineVariant,
+            color: colorScheme.outlineVariant,
           ),
         ),
       ),
@@ -618,4 +654,3 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     );
   }
 }
-

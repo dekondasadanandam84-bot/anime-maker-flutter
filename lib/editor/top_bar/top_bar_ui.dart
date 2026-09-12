@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/goplus/go_plus_ui.dart';
 
 import 'package:flutter_application_1/home/project_controller.dart';
 import 'package:flutter_application_1/home/project_scope.dart';
 
 import '../editor_responsive.dart';
+import 'onion_skin_ui.dart';
+import 'grid_ui.dart';
 
 class EditorTopBar extends StatefulWidget {
   const EditorTopBar({
@@ -24,15 +27,7 @@ class EditorTopBar extends StatefulWidget {
     required this.onFramesViewer,
   });
 
-  // ============================================================
-  // RESPONSIVE METRICS
-  // ============================================================
-
   final EditorResponsiveData metrics;
-
-  // ============================================================
-  // UI ACTION CALLBACKS
-  // ============================================================
 
   final VoidCallback onBack;
   final VoidCallback onDiamond;
@@ -53,10 +48,6 @@ class EditorTopBar extends StatefulWidget {
 }
 
 class _EditorTopBarState extends State<EditorTopBar> {
-  // ============================================================
-  // TEMPORARY UI STATE
-  // ============================================================
-
   bool _onionSkinEnabled = false;
   bool _gridEnabled = false;
 
@@ -72,18 +63,17 @@ class _EditorTopBarState extends State<EditorTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = ProjectScope.of(context);
-
-    final projectName = controller.currentProjectName ?? 'AnimeClip';
+    final colorScheme = Theme.of(context).colorScheme;
+    final projectName = projectController.currentProjectName ?? 'AnimeClip';
 
     final metrics = widget.metrics;
 
     return Container(
       height: metrics.topBarHeight,
       width: double.infinity,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Color(0xFFEAEAEA), width: 1)),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: Stack(
         children: [
@@ -103,9 +93,9 @@ class _EditorTopBarState extends State<EditorTopBar> {
                     onPressed: widget.onBack,
                     tooltip: 'Back',
                     icon: Icon(
-                      Icons.arrow_back_rounded,
+                      Icons.close_rounded,
                       size: metrics.topActionIconSize,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -123,9 +113,42 @@ class _EditorTopBarState extends State<EditorTopBar> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                       fontSize: metrics.isSmall ? 14 : 17,
                       fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+
+                SizedBox(width: metrics.isSmall ? 2 : 6),
+
+                Tooltip(
+                  message: 'Go Plus',
+                  child: Material(
+                    color: Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const GoPlusUI()),
+                        );
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      splashColor: colorScheme.primary.withValues(alpha: 0.18),
+                      highlightColor: colorScheme.primary.withValues(
+                        alpha: 0.10,
+                      ),
+                      child: SizedBox(
+                        width: metrics.isSmall ? 32 : 38,
+                        height: metrics.topBarHeight,
+                        child: Center(
+                          child: Icon(
+                            Icons.diamond_outlined,
+                            size: metrics.isSmall ? 18 : 21,
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -143,8 +166,8 @@ class _EditorTopBarState extends State<EditorTopBar> {
                 child: InkWell(
                   onTap: widget.onFitToScreen,
                   borderRadius: BorderRadius.circular(8),
-                  splashColor: Colors.blue.withValues(alpha: 0.18),
-                  highlightColor: Colors.blue.withValues(alpha: 0.10),
+                  splashColor: colorScheme.primary.withValues(alpha: 0.18),
+                  highlightColor: colorScheme.primary.withValues(alpha: 0.10),
                   child: SizedBox(
                     width: metrics.isSmall ? 42 : 50,
                     height: metrics.topBarHeight,
@@ -155,7 +178,12 @@ class _EditorTopBarState extends State<EditorTopBar> {
                         SizedBox(
                           width: metrics.isSmall ? 22 : 26,
                           height: metrics.isSmall ? 22 : 26,
-                          child: const _FitScreenIcon(),
+                          child: Image.asset(
+                            'assets/fit_screen.png',
+                            width: metrics.isSmall ? 22 : 26,
+                            height: metrics.isSmall ? 22 : 26,
+                            fit: BoxFit.contain,
+                          ),
                         ),
 
                         if (!metrics.isSmall)
@@ -164,7 +192,7 @@ class _EditorTopBarState extends State<EditorTopBar> {
                             style: TextStyle(
                               fontSize: metrics.topActionLabelSize,
                               fontWeight: FontWeight.w500,
-                              color: Colors.black54,
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                       ],
@@ -183,7 +211,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const ClampingScrollPhysics(),
-              padding: EdgeInsets.zero,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -234,7 +261,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
                     label: 'More',
                     onPressed: () {
                       _showToolsBottomSheet(context);
-
                       widget.onMore();
                     },
                     tooltip: 'More',
@@ -258,6 +284,7 @@ class _EditorTopBarState extends State<EditorTopBar> {
     required VoidCallback onPressed,
     required String tooltip,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
     final metrics = widget.metrics;
 
     return SizedBox(
@@ -271,15 +298,15 @@ class _EditorTopBarState extends State<EditorTopBar> {
           child: InkWell(
             onTap: onPressed,
             borderRadius: BorderRadius.circular(8),
-            splashColor: Colors.blue.withValues(alpha: 0.18),
-            highlightColor: Colors.blue.withValues(alpha: 0.10),
+            splashColor: colorScheme.primary.withValues(alpha: 0.18),
+            highlightColor: colorScheme.primary.withValues(alpha: 0.10),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
                   icon,
                   size: metrics.topActionIconSize,
-                  color: Colors.black,
+                  color: colorScheme.onSurface,
                 ),
 
                 if (!metrics.isSmall) ...[
@@ -291,7 +318,7 @@ class _EditorTopBarState extends State<EditorTopBar> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: metrics.topActionLabelSize,
-                      color: Colors.black54,
+                      color: colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -316,7 +343,6 @@ class _EditorTopBarState extends State<EditorTopBar> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         bool onionSkinEnabled = _onionSkinEnabled;
-
         bool gridEnabled = _gridEnabled;
 
         final screenWidth = MediaQuery.sizeOf(context).width;
@@ -325,11 +351,13 @@ class _EditorTopBarState extends State<EditorTopBar> {
 
         return StatefulBuilder(
           builder: (context, setSheetState) {
+            final colorScheme = Theme.of(context).colorScheme;
+
             return SizedBox(
               height: MediaQuery.sizeOf(context).height,
               width: double.infinity,
               child: Material(
-                color: Colors.white,
+                color: colorScheme.surface,
                 child: SafeArea(
                   child: Column(
                     children: [
@@ -345,9 +373,9 @@ class _EditorTopBarState extends State<EditorTopBar> {
                                 Navigator.of(context).pop();
                               },
                               tooltip: 'Close',
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close_rounded,
-                                color: Colors.black,
+                                color: colorScheme.onSurface,
                               ),
                             ),
 
@@ -358,14 +386,14 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               style: TextStyle(
                                 fontSize: compactSheet ? 18 : 20,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.black,
+                                color: colorScheme.onSurface,
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                      const Divider(height: 1, color: Color(0xFFEAEAEA)),
+                      Divider(height: 1, color: colorScheme.outlineVariant),
 
                       // =============================================
                       // TOOLS
@@ -410,11 +438,22 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               },
                             ),
 
+                            // =======================================
+                            // ONION SKIN
+                            // =======================================
                             _toolToggle(
                               icon: Icons.layers_outlined,
                               title: 'Onion Skin',
                               value: onionSkinEnabled,
-                              onEdit: () {},
+                              onEdit: () {
+                                Navigator.of(context).pop();
+
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const OnionSkinUI(),
+                                  ),
+                                );
+                              },
                               onChanged: (value) {
                                 setSheetState(() {
                                   onionSkinEnabled = value;
@@ -426,11 +465,23 @@ class _EditorTopBarState extends State<EditorTopBar> {
                               },
                             ),
 
+                            // =======================================
+                            // GRID
+                            // =======================================
                             _toolToggle(
                               icon: Icons.grid_on_outlined,
                               title: 'Grid',
                               value: gridEnabled,
-                              onEdit: () {},
+                              onEdit: () {
+                                Navigator.of(context).pop();
+
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        GridUI(initialEnabled: gridEnabled),
+                                  ),
+                                );
+                              },
                               onChanged: (value) {
                                 setSheetState(() {
                                   gridEnabled = value;
@@ -464,12 +515,14 @@ class _EditorTopBarState extends State<EditorTopBar> {
     required String title,
     required VoidCallback onTap,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final compact = widget.metrics.isCompact;
 
     return Padding(
       padding: EdgeInsets.only(bottom: compact ? 8 : 12),
       child: Material(
-        color: const Color(0xFFF7F7F7),
+        color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(compact ? 12 : 14),
         child: InkWell(
           onTap: onTap,
@@ -481,7 +534,11 @@ class _EditorTopBarState extends State<EditorTopBar> {
             ),
             child: Row(
               children: [
-                Icon(icon, color: Colors.black, size: compact ? 20 : 22),
+                Icon(
+                  icon,
+                  color: colorScheme.onSurface,
+                  size: compact ? 20 : 22,
+                ),
 
                 SizedBox(width: compact ? 10 : 14),
 
@@ -491,14 +548,14 @@ class _EditorTopBarState extends State<EditorTopBar> {
                     style: TextStyle(
                       fontSize: compact ? 14 : 15,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
 
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: Colors.black54,
+                  color: colorScheme.onSurfaceVariant,
                   size: compact ? 20 : 22,
                 ),
               ],
@@ -520,148 +577,105 @@ class _EditorTopBarState extends State<EditorTopBar> {
     required VoidCallback onEdit,
     required ValueChanged<bool> onChanged,
   }) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final compact = widget.metrics.isCompact;
+
+    final radius = BorderRadius.circular(compact ? 12 : 14);
 
     return Padding(
       padding: EdgeInsets.only(bottom: compact ? 8 : 12),
-      child: Container(
-        decoration: BoxDecoration(
-          color: const Color(0xFFF7F7F7),
-          borderRadius: BorderRadius.circular(compact ? 12 : 14),
-        ),
-        padding: EdgeInsets.symmetric(
-          horizontal: compact ? 14 : 18,
-          vertical: compact ? 8 : 10,
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.black, size: compact ? 20 : 22),
-
-            SizedBox(width: compact ? 10 : 14),
-
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  fontSize: compact ? 14 : 15,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
-                ),
-              ),
+      child: Material(
+        color: colorScheme.surfaceContainer,
+        borderRadius: radius,
+        child: InkWell(
+          onTap: onEdit,
+          borderRadius: radius,
+          splashColor: colorScheme.primary.withValues(alpha: 0.10),
+          highlightColor: colorScheme.primary.withValues(alpha: 0.06),
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 14 : 18,
+              vertical: compact ? 8 : 10,
             ),
-
-            TextButton(
-              onPressed: onEdit,
-              style: TextButton.styleFrom(
-                padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 10),
-                minimumSize: Size.zero,
-                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-              ),
-              child: Text(
-                'Edit',
-                style: TextStyle(
-                  fontSize: compact ? 12 : 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
+            child: Row(
+              children: [
+                Icon(
+                  icon,
+                  color: colorScheme.onSurface,
+                  size: compact ? 20 : 22,
                 ),
-              ),
-            ),
 
-            SizedBox(width: compact ? 4 : 8),
+                SizedBox(width: compact ? 10 : 14),
 
-            GestureDetector(
-              onTap: () {
-                onChanged(!value);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                width: compact ? 38 : 42,
-                height: 24,
-                padding: const EdgeInsets.all(3),
-                decoration: BoxDecoration(
-                  color: value ? Colors.black : const Color(0xFFD6D6D6),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: AnimatedAlign(
-                  duration: const Duration(milliseconds: 180),
-                  alignment: value
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Container(
-                    width: 18,
-                    height: 18,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
+                Expanded(
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: compact ? 14 : 15,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
                     ),
                   ),
                 ),
-              ),
+
+                TextButton(
+                  onPressed: onEdit,
+                  child: Text(
+                    'Edit',
+                    style: TextStyle(
+                      fontSize: compact ? 12 : 13,
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.primary,
+                    ),
+                  ),
+                ),
+
+                SizedBox(width: compact ? 4 : 8),
+
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    onChanged(!value);
+                  },
+                  child: SizedBox(
+                    width: compact ? 42 : 46,
+                    height: 36,
+                    child: Center(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        width: compact ? 38 : 42,
+                        height: 24,
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          color: value
+                              ? colorScheme.primary
+                              : colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: AnimatedAlign(
+                          duration: const Duration(milliseconds: 180),
+                          alignment: value
+                              ? Alignment.centerRight
+                              : Alignment.centerLeft,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              color: colorScheme.onPrimary,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
-  }
-}
-
-// =====================================================================
-// FIT TO SCREEN ICON
-// =====================================================================
-
-class _FitScreenIcon extends StatelessWidget {
-  const _FitScreenIcon();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(30, 30),
-      painter: _FitScreenIconPainter(),
-    );
-  }
-}
-
-class _FitScreenIconPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final scaleX = size.width / 30;
-    final scaleY = size.height / 30;
-
-    canvas.save();
-    canvas.scale(scaleX, scaleY);
-
-    final paint = Paint()
-      ..color = Colors.black87
-      ..strokeWidth = 2.4
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    // TOP-LEFT
-    canvas.drawLine(const Offset(11, 4), const Offset(4, 4), paint);
-
-    canvas.drawLine(const Offset(4, 4), const Offset(4, 11), paint);
-
-    // TOP-RIGHT
-    canvas.drawLine(const Offset(19, 4), const Offset(26, 4), paint);
-
-    canvas.drawLine(const Offset(26, 4), const Offset(26, 11), paint);
-
-    // BOTTOM-LEFT
-    canvas.drawLine(const Offset(4, 19), const Offset(4, 26), paint);
-
-    canvas.drawLine(const Offset(4, 26), const Offset(11, 26), paint);
-
-    // BOTTOM-RIGHT
-    canvas.drawLine(const Offset(19, 26), const Offset(26, 26), paint);
-
-    canvas.drawLine(const Offset(26, 26), const Offset(26, 19), paint);
-
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
   }
 }

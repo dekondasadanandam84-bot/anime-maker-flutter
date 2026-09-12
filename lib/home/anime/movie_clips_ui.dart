@@ -68,60 +68,58 @@ class _MovieClipsScreenState
     super.dispose();
   }
 
-
-
   // ============================================================
   // CREATE CLIP
   // ============================================================
 
   Future<void> _createClip() async {
-  final movie = projectController.currentAnimeMovie;
+    final movie = projectController.currentAnimeMovie;
 
-  if (movie == null || !mounted) {
-    return;
+    if (movie == null || !mounted) {
+      return;
+    }
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) => const _ClipNameDialog(
+        title: 'Create Clip',
+        labelText: 'Clip Name',
+        hintText: 'Enter clip name',
+        actionText: 'Create Clip',
+      ),
+    );
+
+    if (name == null || !mounted) {
+      return;
+    }
+
+    await _controller.createClip(
+      name: name,
+    );
   }
 
-  final name = await showDialog<String>(
-    context: context,
-    builder: (_) => const _ClipNameDialog(
-      title: 'Create Clip',
-      labelText: 'Clip Name',
-      hintText: 'Enter clip name',
-      actionText: 'Create Clip',
-    ),
-  );
+  Future<void> _renameClip(
+    ClipModel clip,
+  ) async {
+    final name = await showDialog<String>(
+      context: context,
+      builder: (_) => _ClipNameDialog(
+        title: 'Rename Clip ${clip.number}',
+        labelText: 'Clip Name',
+        initialText: clip.name,
+        actionText: 'Save',
+      ),
+    );
 
-  if (name == null || !mounted) {
-    return;
+    if (name == null || !mounted) {
+      return;
+    }
+
+    await _controller.renameClip(
+      clipId: clip.id,
+      newName: name,
+    );
   }
-
-  await _controller.createClip(
-    name: name,
-  );
-}
-
-Future<void> _renameClip(
-  ClipModel clip,
-) async {
-  final name = await showDialog<String>(
-    context: context,
-    builder: (_) => _ClipNameDialog(
-      title: 'Rename Clip ${clip.number}',
-      labelText: 'Clip Name',
-      initialText: clip.name,
-      actionText: 'Save',
-    ),
-  );
-
-  if (name == null || !mounted) {
-    return;
-  }
-
-  await _controller.renameClip(
-    clipId: clip.id,
-    newName: name,
-  );
-}
 
   // ============================================================
   // DELETE CLIP
@@ -133,12 +131,25 @@ Future<void> _renameClip(
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
+        final colorScheme =
+            Theme.of(dialogContext).colorScheme;
+
         return AlertDialog(
-          title: const Text('Delete Clip?'),
+          backgroundColor:
+              colorScheme.surfaceContainer,
+          title: Text(
+            'Delete Clip?',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+            ),
+          ),
           content: Text(
             'Are you sure you want to delete '
             '"${clip.name}"? '
             'This action cannot be undone.',
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           actions: [
             TextButton(
@@ -150,9 +161,9 @@ Future<void> _renameClip(
             FilledButton(
               style: FilledButton.styleFrom(
                 backgroundColor:
-                    Theme.of(dialogContext)
-                        .colorScheme
-                        .error,
+                    colorScheme.error,
+                foregroundColor:
+                    colorScheme.onError,
               ),
               onPressed: () {
                 Navigator.of(dialogContext).pop(true);
@@ -183,19 +194,27 @@ Future<void> _renameClip(
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor:
+          Theme.of(context).colorScheme.surface,
       builder: (sheetContext) {
-        final errorColor =
-            Theme.of(context).colorScheme.error;
+        final colorScheme =
+            Theme.of(sheetContext).colorScheme;
 
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
-                leading: const Icon(
+                leading: Icon(
                   Icons.edit_outlined,
+                  color: colorScheme.onSurface,
                 ),
-                title: const Text('Rename'),
+                title: Text(
+                  'Rename',
+                  style: TextStyle(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   _renameClip(clip);
@@ -204,12 +223,12 @@ Future<void> _renameClip(
               ListTile(
                 leading: Icon(
                   Icons.delete_outline,
-                  color: errorColor,
+                  color: colorScheme.error,
                 ),
                 title: Text(
                   'Delete',
                   style: TextStyle(
-                    color: errorColor,
+                    color: colorScheme.error,
                   ),
                 ),
                 onTap: () {
@@ -230,42 +249,42 @@ Future<void> _renameClip(
   // ============================================================
 
   Future<void> _openClip(
-  ClipModel clip,
-) async {
-  final controller = projectController;
+    ClipModel clip,
+  ) async {
+    final controller = projectController;
 
-  final currentProject = controller.currentProject;
+    final currentProject = controller.currentProject;
 
-  if (currentProject == null ||
-      currentProject.animeMovie == null) {
-    return;
-  }
+    if (currentProject == null ||
+        currentProject.animeMovie == null) {
+      return;
+    }
 
-  // Re-read the latest clip from ProjectController.
-  final currentClip =
-      controller.findCurrentClipById(clip.id);
+    // Re-read the latest clip from ProjectController.
+    final currentClip =
+        controller.findCurrentClipById(clip.id);
 
-  if (currentClip == null) {
-    return;
-  }
+    if (currentClip == null) {
+      return;
+    }
 
-  // Make this clip the active clip in the central controller.
-  final selected = controller.selectClip(
-    currentClip.id,
-  );
+    // Make this clip the active clip in the central controller.
+    final selected = controller.selectClip(
+      currentClip.id,
+    );
 
-  if (!selected) {
-    return;
-  }
+    if (!selected) {
+      return;
+    }
 
-  await Navigator.of(context).push(
-    MaterialPageRoute(
-      builder: (_) => EditorScreen(
-        clipId: currentClip.id,
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => EditorScreen(
+          clipId: currentClip.id,
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // ============================================================
   // BUILD
@@ -274,15 +293,16 @@ Future<void> _renameClip(
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     // Reactive connection to the central ProjectController.
     final controller = ProjectScope.of(context);
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: colorScheme.surface,
 
       appBar: AppBar(
-        backgroundColor: theme.colorScheme.surface,
+        backgroundColor: colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 0,
 
@@ -291,12 +311,11 @@ Future<void> _renameClip(
           onPressed: () {
             Navigator.of(context).pop();
           },
-          icon: const Icon(
-            Icons.arrow_back,
+          icon: Icon(
+            Icons.close_rounded,
+            color: colorScheme.onSurface,
           ),
         ),
-
-        
 
         bottom: PreferredSize(
           preferredSize:
@@ -304,7 +323,7 @@ Future<void> _renameClip(
           child: Divider(
             height: 1,
             color:
-                theme.colorScheme.outlineVariant,
+                colorScheme.outlineVariant,
           ),
         ),
 
@@ -318,6 +337,7 @@ Future<void> _renameClip(
               style:
                   theme.textTheme.titleLarge
                       ?.copyWith(
+                color: colorScheme.onSurface,
                 fontWeight:
                     FontWeight.w700,
               ),
@@ -331,8 +351,7 @@ Future<void> _renameClip(
               style:
                   theme.textTheme.labelMedium
                       ?.copyWith(
-                color: theme
-                    .colorScheme
+                color: colorScheme
                     .onSurfaceVariant,
               ),
             ),
@@ -347,9 +366,15 @@ Future<void> _renameClip(
               controller.currentAnimeMovie;
 
           if (movie == null) {
-            return const Center(
+            return Center(
               child: Text(
                 'Anime movie not found',
+                style:
+                    theme.textTheme.bodyLarge
+                        ?.copyWith(
+                  color:
+                      colorScheme.onSurface,
+                ),
               ),
             );
           }
@@ -385,6 +410,9 @@ Future<void> _renameClip(
                                   .textTheme
                                   .headlineSmall
                                   ?.copyWith(
+                                color:
+                                    colorScheme
+                                        .onSurface,
                                 fontWeight:
                                     FontWeight.w700,
                               ),
@@ -398,8 +426,7 @@ Future<void> _renameClip(
                                   .textTheme
                                   .bodyLarge
                                   ?.copyWith(
-                                color: theme
-                                    .colorScheme
+                                color: colorScheme
                                     .onSurfaceVariant,
                               ),
                             ),
@@ -419,8 +446,7 @@ Future<void> _renameClip(
                                 border: Border(
                                   bottom:
                                       BorderSide(
-                                    color: theme
-                                        .colorScheme
+                                    color: colorScheme
                                         .outlineVariant,
                                   ),
                                 ),
@@ -432,8 +458,7 @@ Future<void> _renameClip(
                                     .textTheme
                                     .labelSmall
                                     ?.copyWith(
-                                  color: theme
-                                      .colorScheme
+                                  color: colorScheme
                                       .onSurfaceVariant,
                                   fontWeight:
                                       FontWeight.w600,
@@ -491,8 +516,7 @@ Future<void> _renameClip(
                                 .textTheme
                                 .bodyMedium
                                 ?.copyWith(
-                              color: theme
-                                  .colorScheme
+                              color: colorScheme
                                   .onSurfaceVariant,
                               fontStyle:
                                   FontStyle.italic,
@@ -522,12 +546,14 @@ Future<void> _renameClip(
     int index, {
     required Key key,
   }) {
+    final colorScheme = theme.colorScheme;
+
     return ReorderableDelayedDragStartListener(
       key: key,
       index: index,
 
       child: Material(
-        color: theme.colorScheme.surface,
+        color: colorScheme.surface,
 
         child: InkWell(
           onTap: () {
@@ -546,8 +572,7 @@ Future<void> _renameClip(
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
-                  color: theme
-                      .colorScheme
+                  color: colorScheme
                       .outlineVariant,
                 ),
               ),
@@ -560,9 +585,11 @@ Future<void> _renameClip(
                   height: 40,
                   alignment:
                       Alignment.center,
-                  child: const Icon(
+                  child: Icon(
                     Icons.drag_indicator,
                     size: 18,
+                    color: colorScheme
+                        .onSurfaceVariant,
                   ),
                 ),
 
@@ -573,8 +600,7 @@ Future<void> _renameClip(
                   height: 48,
                   decoration:
                       BoxDecoration(
-                    color: theme
-                        .colorScheme
+                    color: colorScheme
                         .surfaceContainer,
                     borderRadius:
                         BorderRadius.circular(
@@ -583,8 +609,7 @@ Future<void> _renameClip(
                   ),
                   child: Icon(
                     Icons.movie_outlined,
-                    color: theme
-                        .colorScheme
+                    color: colorScheme
                         .onSurfaceVariant,
                   ),
                 ),
@@ -606,21 +631,24 @@ Future<void> _renameClip(
                             .textTheme
                             .labelLarge
                             ?.copyWith(
+                          color:
+                              colorScheme.onSurface,
                           fontWeight:
                               FontWeight.w600,
                         ),
                       ),
+
                       const SizedBox(
                         height: 3,
                       ),
+
                       Text(
                         clip.metadataLabel,
                         style: theme
                             .textTheme
                             .bodyMedium
                             ?.copyWith(
-                          color: theme
-                              .colorScheme
+                          color: colorScheme
                               .onSurfaceVariant,
                         ),
                       ),
@@ -633,8 +661,10 @@ Future<void> _renameClip(
                   onPressed: () {
                     _renameClip(clip);
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.edit_outlined,
+                    color:
+                        colorScheme.onSurfaceVariant,
                   ),
                 ),
 
@@ -643,8 +673,10 @@ Future<void> _renameClip(
                   onPressed: () {
                     _showClipMenu(clip);
                   },
-                  icon: const Icon(
+                  icon: Icon(
                     Icons.more_horiz,
+                    color:
+                        colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -662,6 +694,8 @@ Future<void> _renameClip(
   Widget _buildEmptyState(
     ThemeData theme,
   ) {
+    final colorScheme = theme.colorScheme;
+
     return ListView(
       padding:
           const EdgeInsets.fromLTRB(
@@ -677,7 +711,7 @@ Future<void> _renameClip(
           Icons.movie_outlined,
           size: 52,
           color:
-              theme.colorScheme.onSurfaceVariant,
+              colorScheme.onSurfaceVariant,
         ),
 
         const SizedBox(height: 16),
@@ -685,8 +719,11 @@ Future<void> _renameClip(
         Text(
           'No clips yet',
           textAlign: TextAlign.center,
-          style: theme.textTheme.titleMedium
+          style: theme
+              .textTheme
+              .titleMedium
               ?.copyWith(
+            color: colorScheme.onSurface,
             fontWeight:
                 FontWeight.w600,
           ),
@@ -697,11 +734,12 @@ Future<void> _renameClip(
         Text(
           'Create the first clip for this movie.',
           textAlign: TextAlign.center,
-          style: theme.textTheme.bodyMedium
+          style: theme
+              .textTheme
+              .bodyMedium
               ?.copyWith(
-            color: theme
-                .colorScheme
-                .onSurfaceVariant,
+            color:
+                colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -715,6 +753,8 @@ Future<void> _renameClip(
   Widget _buildBottomAction(
     ThemeData theme,
   ) {
+    final colorScheme = theme.colorScheme;
+
     return Positioned(
       left: 0,
       right: 0,
@@ -734,9 +774,9 @@ Future<void> _renameClip(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              theme.colorScheme.surface
+              colorScheme.surface
                   .withValues(alpha: 0.0),
-              theme.colorScheme.surface
+              colorScheme.surface
                   .withValues(alpha: 0.98),
             ],
           ),

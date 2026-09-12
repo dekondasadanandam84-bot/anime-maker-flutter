@@ -22,19 +22,21 @@ class CreateProjectButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return InkWell(
       onTap: () => _openCreateProjectSheet(context),
       borderRadius: BorderRadius.circular(30),
       child: Container(
         width: 58,
         height: 58,
-        decoration: const BoxDecoration(
-          color: Color(0xFFE91E63),
+        decoration: BoxDecoration(
+          color: colorScheme.primary,
           shape: BoxShape.circle,
         ),
-        child: const Icon(
+        child: Icon(
           Icons.add,
-          color: Colors.white,
+          color: colorScheme.onPrimary,
           size: 34,
         ),
       ),
@@ -49,8 +51,7 @@ class _CreateProjectSheet extends StatelessWidget {
     BuildContext context,
     CreateProjectOption type,
   ) {
-    final projectController =
-        ProjectScope.read(context);
+    final projectController = ProjectScope.read(context);
 
     Navigator.of(context).pop();
 
@@ -62,8 +63,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) =>
-                const CreateProjectScreen(),
+            builder: (_) => const CreateProjectScreen(),
           ),
         );
         break;
@@ -75,8 +75,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) =>
-                const CreateProjectScreen(),
+            builder: (_) => const CreateProjectScreen(),
           ),
         );
         break;
@@ -88,8 +87,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) =>
-                const CreateProjectScreen(),
+            builder: (_) => const CreateProjectScreen(),
           ),
         );
         break;
@@ -101,8 +99,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (_) =>
-                const CreateProjectScreen(),
+            builder: (_) => const CreateProjectScreen(),
           ),
         );
         break;
@@ -115,6 +112,8 @@ class _CreateProjectSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return SafeArea(
       top: false,
       child: Container(
@@ -122,9 +121,9 @@ class _CreateProjectSheet extends StatelessWidget {
           maxHeight:
               MediaQuery.of(context).size.height * 0.85,
         ),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(
             top: Radius.circular(24),
           ),
         ),
@@ -142,18 +141,17 @@ class _CreateProjectSheet extends StatelessWidget {
                 width: 42,
                 height: 5,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD6D6D6),
-                  borderRadius:
-                      BorderRadius.circular(20),
+                  color: colorScheme.outlineVariant,
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
 
               const SizedBox(height: 20),
 
-              const Text(
+              Text(
                 'Create Project',
                 style: TextStyle(
-                  color: Color(0xFF1A1C1C),
+                  color: colorScheme.onSurface,
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
                 ),
@@ -161,10 +159,10 @@ class _CreateProjectSheet extends StatelessWidget {
 
               const SizedBox(height: 6),
 
-              const Text(
+              Text(
                 'Choose a project type',
                 style: TextStyle(
-                  color: Color(0xFF6B6B6B),
+                  color: colorScheme.onSurfaceVariant,
                   fontSize: 14,
                 ),
               ),
@@ -173,8 +171,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '📺',
-                iconColor:
-                    const Color(0xff7C3AED),
+                iconColor: const Color(0xff7C3AED),
                 title: 'Anime Series',
                 description:
                     'Create an episodic anime project with seasons and episodes.',
@@ -188,8 +185,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '🎬',
-                iconColor:
-                    const Color(0xffE11D48),
+                iconColor: const Color(0xffE11D48),
                 title: 'Anime Movie',
                 description:
                     'Create a long-form animated movie project.',
@@ -203,8 +199,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '📚',
-                iconColor:
-                    const Color(0xff0EA5E9),
+                iconColor: const Color(0xff0EA5E9),
                 title: 'Manga Series',
                 description:
                     'Create a manga series containing multiple books.',
@@ -218,8 +213,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '📖',
-                iconColor:
-                    const Color(0xff16A34A),
+                iconColor: const Color(0xff16A34A),
                 title: 'Manga Book',
                 description:
                     'Create a standalone manga book project.',
@@ -233,8 +227,7 @@ class _CreateProjectSheet extends StatelessWidget {
 
               _CreateProjectOption(
                 icon: '📤',
-                iconColor:
-                    const Color(0xFFF59E0B),
+                iconColor: const Color(0xFFF59E0B),
                 title: 'Import Project',
                 description:
                     'Import an existing AnimeClip project file.',
@@ -251,8 +244,7 @@ class _CreateProjectSheet extends StatelessWidget {
   }
 }
 
-class _CreateProjectOption
-    extends StatelessWidget {
+class _CreateProjectOption extends StatelessWidget {
   final String icon;
   final Color iconColor;
   final String title;
@@ -269,23 +261,22 @@ class _CreateProjectOption
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius:
-            BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
           width: double.infinity,
-          padding:
-              const EdgeInsets.all(14),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFFF9F9F9),
+            color: colorScheme.surfaceContainer,
             border: Border.all(
-              color: const Color(0xFFE5E5E5),
+              color: colorScheme.outlineVariant,
             ),
-            borderRadius:
-                BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: Row(
             children: [
@@ -296,13 +287,14 @@ class _CreateProjectOption
                   color: iconColor.withValues(
                     alpha: 0.10,
                   ),
-                  borderRadius:
-                      BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(
-                  icon,
-                  style: const TextStyle(
-                    fontSize: 27,
+                child: Center(
+                  child: Text(
+                    icon,
+                    style: const TextStyle(
+                      fontSize: 27,
+                    ),
                   ),
                 ),
               ),
@@ -316,13 +308,10 @@ class _CreateProjectOption
                   children: [
                     Text(
                       title,
-                      style:
-                          const TextStyle(
-                        color:
-                            Color(0xFF1A1C1C),
+                      style: TextStyle(
+                        color: colorScheme.onSurface,
                         fontSize: 15,
-                        fontWeight:
-                            FontWeight.w700,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
 
@@ -330,10 +319,8 @@ class _CreateProjectOption
 
                     Text(
                       description,
-                      style:
-                          const TextStyle(
-                        color:
-                            Color(0xFF6B6B6B),
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
                         fontSize: 12.5,
                         height: 1.35,
                       ),
@@ -344,9 +331,9 @@ class _CreateProjectOption
 
               const SizedBox(width: 8),
 
-              const Icon(
+              Icon(
                 Icons.chevron_right_rounded,
-                color: Color(0xFF777777),
+                color: colorScheme.primary,
                 size: 24,
               ),
             ],
