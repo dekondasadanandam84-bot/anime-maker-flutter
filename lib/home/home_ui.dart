@@ -15,9 +15,7 @@ import 'package:flutter_application_1/home/anime/seasons_ui.dart';
 import 'package:flutter_application_1/home/anime/movie_clips_ui.dart';
 
 class HomeUI extends StatefulWidget {
-  const HomeUI({
-    super.key,
-  });
+  const HomeUI({super.key});
 
   @override
   State<HomeUI> createState() => _HomeUIState();
@@ -35,18 +33,13 @@ class _HomeUIState extends State<HomeUI> {
 
   int _selectedTab = 1;
 
-  // Used only to detect when a completely different project
-  // becomes the current project.
-  //
-  // Project data itself is NOT stored here.
   String? _lastKnownProjectId;
 
   // ============================================================
   // PROJECT CONTEXT
   // ============================================================
 
-  ProjectController get projectController =>
-      ProjectScope.read(context);
+  ProjectController get projectController => ProjectScope.read(context);
 
   // ============================================================
   // DEPENDENCY CHANGES
@@ -60,8 +53,6 @@ class _HomeUIState extends State<HomeUI> {
 
     final currentProjectId = controller.currentProjectId;
 
-    // Settings/name/list updates for the SAME project should
-    // simply rebuild through ProjectScope.
     if (currentProjectId == _lastKnownProjectId) {
       return;
     }
@@ -103,9 +94,7 @@ class _HomeUIState extends State<HomeUI> {
   // PROJECTS FOR SELECTED CATEGORY
   // ============================================================
 
-  List<ProjectModel> _projectsForSelectedTab(
-    ProjectController controller,
-  ) {
+  List<ProjectModel> _projectsForSelectedTab(ProjectController controller) {
     switch (_selectedTab) {
       case 0:
         return controller.animeSeriesProjects;
@@ -114,11 +103,9 @@ class _HomeUIState extends State<HomeUI> {
         return controller.animeMovieProjects;
 
       case 2:
-        // Manga will be added later.
         return const [];
 
       case 3:
-        // Manga Book will be added later.
         return const [];
 
       default:
@@ -127,16 +114,16 @@ class _HomeUIState extends State<HomeUI> {
   }
 
   // ============================================================
-  // PROJECT EMOJI
+  // PROJECT ICON
   // ============================================================
 
-  String _emojiForProject(ProjectModel project) {
+  IconData _iconForProject(ProjectModel project) {
     switch (project.projectType) {
       case ProjectType.animeSeries:
-        return '📺';
+        return Icons.tv_outlined;
 
       case ProjectType.animeMovie:
-        return '🎬';
+        return Icons.movie_outlined;
     }
   }
 
@@ -161,7 +148,6 @@ class _HomeUIState extends State<HomeUI> {
       return;
     }
 
-    // Always get the project again from ProjectController.
     final selectedProject = controller.currentProject;
 
     if (selectedProject == null) {
@@ -169,37 +155,25 @@ class _HomeUIState extends State<HomeUI> {
     }
 
     switch (selectedProject.projectType) {
-      // ========================================================
-      // ANIME SERIES
-      // ========================================================
-
       case ProjectType.animeSeries:
         if (selectedProject.animeSeries == null) {
           return;
         }
 
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const SeasonsScreen(),
-          ),
-        );
+        await Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const SeasonsScreen()));
 
         break;
-
-      // ========================================================
-      // ANIME MOVIE
-      // ========================================================
 
       case ProjectType.animeMovie:
         if (selectedProject.animeMovie == null) {
           return;
         }
 
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => const MovieClipsScreen(),
-          ),
-        );
+        await Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => const MovieClipsScreen()));
 
         break;
     }
@@ -210,9 +184,40 @@ class _HomeUIState extends State<HomeUI> {
   // ============================================================
 
   void _downloadProject(ProjectModel project) {
-    // Download workflow will be connected later.
-    debugPrint(
-      'Download project: ${project.name}',
+    debugPrint('Download project: ${project.name}');
+  }
+
+  // ============================================================
+  // OPEN DRAWER
+  // ============================================================
+
+  void _openDrawer() {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: false,
+        barrierColor: Colors.transparent,
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 250),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return const DrawerUI();
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curvedAnimation = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+
+          return SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(-1, 0),
+              end: Offset.zero,
+            ).animate(curvedAnimation),
+            child: child,
+          );
+        },
+      ),
     );
   }
 
@@ -224,24 +229,18 @@ class _HomeUIState extends State<HomeUI> {
   Widget build(BuildContext context) {
     AppMedia.init(context);
 
-    // Flutter/Chrome can briefly report an extremely small
-    // window width during resize or browser transitions.
-    //
-    // Do not wrap the entire Scaffold in LayoutBuilder.
-    // That was unnecessary and made the widget tree more complex.
     final screenWidth = MediaQuery.sizeOf(context).width;
 
     if (screenWidth < 120) {
       return const SizedBox.shrink();
     }
 
-    // ProjectScope.of() makes this widget rebuild whenever
-    // ProjectController calls notifyListeners().
     final controller = ProjectScope.of(context);
 
     final projects = _projectsForSelectedTab(controller);
 
     AppThemeScope.of(context);
+
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -250,7 +249,6 @@ class _HomeUIState extends State<HomeUI> {
       // ==========================================================
       // TOP APP BAR
       // ==========================================================
-
       appBar: AppBar(
         backgroundColor: colorScheme.surface,
         surfaceTintColor: colorScheme.surface,
@@ -259,21 +257,12 @@ class _HomeUIState extends State<HomeUI> {
         titleSpacing: 0,
 
         leading: IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => const DrawerUI(),
-              ),
-            );
-          },
-          icon: Text(
-            '☰',
-            style: TextStyle(
-              fontSize: 28,
-              color: colorScheme.onSurface,
-              height: 1,
-            ),
+          onPressed: _openDrawer,
+          tooltip: 'Menu',
+          icon: Icon(
+            Icons.menu_rounded,
+            color: colorScheme.onSurface,
+            size: 26,
           ),
         ),
 
@@ -297,47 +286,37 @@ class _HomeUIState extends State<HomeUI> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => SearchUI(
-                    projectController: controller,
-                  ),
+                  builder: (_) => SearchUI(projectController: controller),
                 ),
               );
             },
-            icon: const Text(
-              '🔍',
-              style: TextStyle(
-                fontSize: 26,
-              ),
+            tooltip: 'Search',
+            icon: Icon(
+              Icons.search_outlined,
+              color: colorScheme.onSurface,
+              size: 25,
             ),
           ),
         ],
 
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1),
-          child: Container(
-            height: 1,
-            color: colorScheme.outlineVariant,
-          ),
+          child: Container(height: 1, color: colorScheme.outlineVariant),
         ),
       ),
 
       // ==========================================================
       // MIDDLE CONTENT
       // ==========================================================
-
       body: SafeArea(
         child: Padding(
-          padding: AppMedia.symmetric(
-            horizontal: 16,
-          ),
+          padding: AppMedia.symmetric(horizontal: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 24),
 
-              _SelectedCategorySection(
-                selectedTab: _selectedTab,
-              ),
+              _SelectedCategorySection(selectedTab: _selectedTab),
 
               const SizedBox(height: 20),
 
@@ -345,7 +324,7 @@ class _HomeUIState extends State<HomeUI> {
                 child: _ProjectContent(
                   selectedTab: _selectedTab,
                   projects: projects,
-                  emojiBuilder: _emojiForProject,
+                  iconBuilder: _iconForProject,
                   onEdit: _editProject,
                   onDelete: _deleteProject,
                   onDownload: _downloadProject,
@@ -359,7 +338,6 @@ class _HomeUIState extends State<HomeUI> {
       // ==========================================================
       // BOTTOM NAVIGATION
       // ==========================================================
-
       bottomNavigationBar: HomeBottomBar(
         selectedTab: _selectedTab,
         onTabSelected: (index) {
@@ -379,7 +357,7 @@ class _HomeUIState extends State<HomeUI> {
 class _ProjectContent extends StatelessWidget {
   final int selectedTab;
   final List<ProjectModel> projects;
-  final String Function(ProjectModel) emojiBuilder;
+  final IconData Function(ProjectModel) iconBuilder;
   final void Function(ProjectModel) onEdit;
   final void Function(ProjectModel) onDelete;
   final void Function(ProjectModel) onDownload;
@@ -387,7 +365,7 @@ class _ProjectContent extends StatelessWidget {
   const _ProjectContent({
     required this.selectedTab,
     required this.projects,
-    required this.emojiBuilder,
+    required this.iconBuilder,
     required this.onEdit,
     required this.onDelete,
     required this.onDownload,
@@ -427,7 +405,7 @@ class _ProjectContent extends StatelessWidget {
       cards.add(
         ProjectCardUI(
           title: project.name,
-          emoji: emojiBuilder(project),
+          icon: iconBuilder(project),
           onEdit: () => onEdit(project),
           onDelete: () => onDelete(project),
           onDownload: () => onDownload(project),
@@ -444,39 +422,24 @@ class _ProjectContent extends StatelessWidget {
     }
 
     // ==========================================================
-    // GRID
+    // FIXED 160 WIDTH PROJECT CARDS
     // ==========================================================
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Prevent grid construction during an extremely small
-        // transient width.
-        if (!constraints.hasBoundedWidth ||
-            constraints.maxWidth < 120) {
+        if (!constraints.hasBoundedWidth || constraints.maxWidth < 120) {
           return const SizedBox.shrink();
         }
 
-        final crossAxisCount =
-            ((constraints.maxWidth + 16) / 196)
-                .floor()
-                .clamp(1, 6)
-                .toInt();
-
-        return GridView.builder(
-          padding: const EdgeInsets.only(
-            bottom: 20,
+        return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 20),
+          child: Wrap(
+            spacing: 16,
+            runSpacing: 20,
+            children: cards.map((card) {
+              return SizedBox(width: 160, child: card);
+            }).toList(),
           ),
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            mainAxisExtent: 185,
-            crossAxisSpacing: 16,
-            mainAxisSpacing: 20,
-          ),
-          itemCount: cards.length,
-          itemBuilder: (context, index) {
-            return cards[index];
-          },
         );
       },
     );
@@ -498,11 +461,10 @@ class _EmptyProjectState extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            '📁',
-            style: TextStyle(
-              fontSize: 48,
-            ),
+          Icon(
+            Icons.folder_open_rounded,
+            size: 46,
+            color: colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: 12),
           Text(
@@ -516,10 +478,7 @@ class _EmptyProjectState extends StatelessWidget {
           const SizedBox(height: 5),
           Text(
             'Create a project to get started.',
-            style: TextStyle(
-              fontSize: 13,
-              color: colorScheme.onSurfaceVariant,
-            ),
+            style: TextStyle(fontSize: 13, color: colorScheme.onSurfaceVariant),
           ),
         ],
       ),
@@ -534,15 +493,11 @@ class _EmptyProjectState extends StatelessWidget {
 class _SelectedCategorySection extends StatelessWidget {
   final int selectedTab;
 
-  const _SelectedCategorySection({
-    required this.selectedTab,
-  });
+  const _SelectedCategorySection({required this.selectedTab});
 
   @override
   Widget build(BuildContext context) {
-    final data = _CategoryData.fromIndex(
-      selectedTab,
-    );
+    final data = _CategoryData.fromIndex(selectedTab);
 
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -550,17 +505,10 @@ class _SelectedCategorySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 2,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Row(
             children: [
-              Text(
-                data.icon,
-                style: const TextStyle(
-                  fontSize: 22,
-                ),
-              ),
+              Icon(data.icon, size: 22, color: colorScheme.onSurface),
               const SizedBox(width: 8),
               Text(
                 data.title,
@@ -575,9 +523,7 @@ class _SelectedCategorySection extends StatelessWidget {
         ),
         const SizedBox(height: 6),
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 2,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Text(
             data.description,
             style: TextStyle(
@@ -588,11 +534,7 @@ class _SelectedCategorySection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Divider(
-          height: 1,
-          thickness: 1,
-          color: colorScheme.outlineVariant,
-        ),
+        Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
       ],
     );
   }
@@ -605,7 +547,7 @@ class _SelectedCategorySection extends StatelessWidget {
 class _CategoryData {
   final String title;
   final String description;
-  final String icon;
+  final IconData icon;
 
   const _CategoryData({
     required this.title,
@@ -613,48 +555,41 @@ class _CategoryData {
     required this.icon,
   });
 
-  static _CategoryData fromIndex(
-    int index,
-  ) {
+  static _CategoryData fromIndex(int index) {
     switch (index) {
       case 0:
         return const _CategoryData(
           title: 'Series',
-          description:
-              'Create and organize episodic anime projects.',
-          icon: '📺',
+          description: 'Create and organize episodic anime projects.',
+          icon: Icons.tv_outlined,
         );
 
       case 1:
         return const _CategoryData(
           title: 'Movies',
-          description:
-              'Create and manage long-form animated movies.',
-          icon: '🎬',
+          description: 'Create and manage long-form animated movies.',
+          icon: Icons.movie_outlined,
         );
 
       case 2:
         return const _CategoryData(
           title: 'Manga',
-          description:
-              'Create and organize manga series and pages.',
-          icon: '📚',
+          description: 'Create and organize manga series and pages.',
+          icon: Icons.auto_stories_outlined,
         );
 
       case 3:
         return const _CategoryData(
           title: 'Book',
-          description:
-              'Create and manage standalone manga books.',
-          icon: '📖',
+          description: 'Create and manage standalone manga books.',
+          icon: Icons.menu_book_outlined,
         );
 
       default:
         return const _CategoryData(
           title: 'Movies',
-          description:
-              'Create and manage long-form animated movies.',
-          icon: '🎬',
+          description: 'Create and manage long-form animated movies.',
+          icon: Icons.movie_outlined,
         );
     }
   }
@@ -665,9 +600,7 @@ class _CategoryData {
 // ================================================================
 
 class CreateBottomItem extends StatelessWidget {
-  const CreateBottomItem({
-    super.key,
-  });
+  const CreateBottomItem({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -680,11 +613,7 @@ class CreateBottomItem extends StatelessWidget {
         color: colorScheme.primary,
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        Icons.add,
-        color: colorScheme.onPrimary,
-        size: 34,
-      ),
+      child: Icon(Icons.add_rounded, color: colorScheme.onPrimary, size: 34),
     );
   }
 }
@@ -712,10 +641,7 @@ class HomeBottomBar extends StatelessWidget {
       decoration: BoxDecoration(
         color: colorScheme.surface,
         border: Border(
-          top: BorderSide(
-            color: colorScheme.outlineVariant,
-            width: 1,
-          ),
+          top: BorderSide(color: colorScheme.outlineVariant, width: 1),
         ),
       ),
       child: SafeArea(
@@ -724,7 +650,7 @@ class HomeBottomBar extends StatelessWidget {
           children: [
             Expanded(
               child: _BottomItem(
-                icon: '📺',
+                icon: Icons.tv_outlined,
                 title: 'Series',
                 selected: selectedTab == 0,
                 onTap: () => onTabSelected(0),
@@ -732,20 +658,16 @@ class HomeBottomBar extends StatelessWidget {
             ),
             Expanded(
               child: _BottomItem(
-                icon: '🎬',
+                icon: Icons.movie_outlined,
                 title: 'Movies',
                 selected: selectedTab == 1,
                 onTap: () => onTabSelected(1),
               ),
             ),
-            Expanded(
-              child: Center(
-                child: const CreateProjectButton(),
-              ),
-            ),
+            Expanded(child: Center(child: const CreateProjectButton())),
             Expanded(
               child: _BottomItem(
-                icon: '📚',
+                icon: Icons.auto_stories_outlined,
                 title: 'Manga',
                 selected: selectedTab == 2,
                 onTap: () => onTabSelected(2),
@@ -753,7 +675,7 @@ class HomeBottomBar extends StatelessWidget {
             ),
             Expanded(
               child: _BottomItem(
-                icon: '📖',
+                icon: Icons.menu_book_outlined,
                 title: 'Book',
                 selected: selectedTab == 3,
                 onTap: () => onTabSelected(3),
@@ -785,37 +707,35 @@ class ProjectCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return SizedBox(
-      width: double.infinity,
-      height: 185,
+      width: 160,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // ============================================================
+          // DEMO IMAGE — FIXED 160 × 120
+          // ============================================================
           SizedBox(
-            width: double.infinity,
+            width: 160,
             height: 120,
             child: Container(
               decoration: BoxDecoration(
                 color: colorScheme.surfaceContainer,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: colorScheme.outlineVariant,
-                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: colorScheme.outlineVariant),
                 boxShadow: [
                   BoxShadow(
-                    color: colorScheme.shadow.withValues(
-                      alpha: 0.06,
-                    ),
+                    color: colorScheme.shadow.withValues(alpha: 0.06),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(16),
                 child: Image.asset(
                   imageAsset,
-                  width: double.infinity,
-                  height: double.infinity,
+                  width: 160,
+                  height: 120,
                   fit: BoxFit.cover,
                   errorBuilder: (_, _, _) {
                     return Container(
@@ -823,7 +743,7 @@ class ProjectCard extends StatelessWidget {
                       child: Center(
                         child: Icon(
                           Icons.image_outlined,
-                          size: 40,
+                          size: 36,
                           color: colorScheme.onSurfaceVariant,
                         ),
                       ),
@@ -834,20 +754,27 @@ class ProjectCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 7),
 
+          // ============================================================
+          // DEMO TITLE — CENTERED, NO MENU
+          // ============================================================
           SizedBox(
-            height: 40,
-            child: Text(
-              projectName,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
-                height: 1.25,
+            height: 30,
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Text(
+                  projectName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
               ),
             ),
           ),
@@ -862,7 +789,7 @@ class ProjectCard extends StatelessWidget {
 // ================================================================
 
 class _BottomItem extends StatelessWidget {
-  final String icon;
+  final IconData icon;
   final String title;
   final bool selected;
   final VoidCallback onTap;
@@ -883,23 +810,15 @@ class _BottomItem extends StatelessWidget {
       borderRadius: BorderRadius.circular(14),
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 6,
-            vertical: 5,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 5),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               AnimatedContainer(
-                duration: const Duration(
-                  milliseconds: 180,
-                ),
-                curve: Curves.easeOut,
+                duration: const Duration(milliseconds: 180),
                 width: selected ? 38 : 0,
                 height: 3,
-                margin: const EdgeInsets.only(
-                  bottom: 4,
-                ),
+                margin: const EdgeInsets.only(bottom: 4),
                 decoration: BoxDecoration(
                   color: colorScheme.primary,
                   borderRadius: BorderRadius.circular(99),
@@ -907,15 +826,8 @@ class _BottomItem extends StatelessWidget {
               ),
               AnimatedScale(
                 scale: selected ? 1.08 : 1.0,
-                duration: const Duration(
-                  milliseconds: 180,
-                ),
-                child: Text(
-                  icon,
-                  style: const TextStyle(
-                    fontSize: 23,
-                  ),
-                ),
+                duration: const Duration(milliseconds: 180),
+                child: Icon(icon, size: 23, color: colorScheme.onSurface),
               ),
               const SizedBox(height: 3),
               Text(
@@ -925,9 +837,7 @@ class _BottomItem extends StatelessWidget {
                   color: selected
                       ? colorScheme.primary
                       : colorScheme.onSurfaceVariant,
-                  fontWeight: selected
-                      ? FontWeight.w700
-                      : FontWeight.w600,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
             ],
@@ -943,9 +853,7 @@ class _BottomItem extends StatelessWidget {
 // ================================================================
 
 class RecentSection extends StatelessWidget {
-  const RecentSection({
-    super.key,
-  });
+  const RecentSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -955,9 +863,7 @@ class RecentSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 2,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 2),
           child: Text(
             'Recent',
             style: TextStyle(
@@ -968,11 +874,7 @@ class RecentSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
-        Divider(
-          height: 1,
-          thickness: 1,
-          color: colorScheme.outlineVariant,
-        ),
+        Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
       ],
     );
   }

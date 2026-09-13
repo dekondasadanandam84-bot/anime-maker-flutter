@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 /// AnimeClip Earn Coins screen.
 ///
-/// Presentation layer only:
-/// - Builds the Earn Coins interface.
-/// - Receives screen data from the controller.
-/// - Sends user actions back through callbacks.
-/// - Contains no coin, reward, reset, ad, or weekly business logic.
-class EarnCoinsUI extends StatelessWidget {
+/// TEST MODE:
+/// - "Watch Ad" simulates a completed rewarded ad.
+/// - Each reward can be completed once per daily cycle.
+/// - Each completed reward adds 10 coins.
+/// - Rewards unlock strictly in order: 1 -> 2 -> ... -> 10.
+/// - The daily reward cycle resets at 4:00 AM.
+/// - No real ad SDK or backend reward logic is used here.
+class EarnCoinsUI extends StatefulWidget {
   final int totalCoins;
   final int todayCoins;
   final int dailyCoinLimit;
@@ -16,16 +20,12 @@ class EarnCoinsUI extends StatelessWidget {
   final int weeklyBonus;
   final bool weeklyBonusClaimed;
 
-  /// Number of daily rewards already completed.
   final int completedRewardCount;
-
-  /// The next reward number that can be watched.
-  /// `0` means there is currently no available reward.
   final int availableRewardNumber;
 
-  /// Seven presentation states supplied by the controller.
   final List<WeeklyDayStatus> weeklyDayStatuses;
 
+  /// Kept for compatibility with the existing controller integration.
   final bool isRewardAdLoading;
   final VoidCallback? onWatchAvailableReward;
   final VoidCallback? onClaimWeeklyBonus;
@@ -56,21 +56,207 @@ class EarnCoinsUI extends StatelessWidget {
   });
 
   @override
+  State<EarnCoinsUI> createState() => _EarnCoinsUIState();
+}
+
+class _EarnCoinsUIState extends State<EarnCoinsUI> {
+  late int _totalCoins;
+  late int _todayCoins;
+  late int _weeklyCoins;
+  late int _completedRewardCount;
+  late int _availableRewardNumber;
+  late bool _weeklyBonusClaimed;
+
+  bool _isRewardAdLoading = false;
+  Timer? _resetTimer;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _totalCoins = widget.totalCoins;
+    _todayCoins = widget.todayCoins;
+    _weeklyCoins = widget.weeklyCoins;
+    _completedRewardCount = widget.completedRewardCount.clamp(0, 10);
+    _availableRewardNumber =
+        widget.availableRewardNumber.clamp(0, 10);
+    _weeklyBonusClaimed = widget.weeklyBonusClaimed;
+
+    // Keep test state consistent when the screen is first opened.
+    _syncRewardState();
+    _scheduleNextReset();
+  }
+
+  @override
+  void dispose() {
+    _resetTimer?.cancel();
+    super.dispose();
+  }
+
+  void _syncRewardState() {
+    final completed = _completedRewardCount.clamp(0, 10);
+
+    if (completed >= 10) {
+      _availableRewardNumber = 0;
+    } else {
+      _availableRewardNumber = completed + 1;
+    }
+
+    _completedRewardCount = completed;
+  }
+
+  DateTime _nextResetAt() {
+    final now = DateTime.now();
+
+    DateTime reset = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      4,
+    );
+
+    if (!now.isBefore(reset)) {
+      reset = reset.add(const Duration(days: 1));
+    }
+
+    return reset;
+  }
+
+  void _scheduleNextReset() {
+    _resetTimer?.cancel();
+
+    final delay = _nextResetAt().difference(DateTime.now());
+
+    _resetTimer = Timer(delay, () {
+      if (!mounted) return;
+
+      setState(() {
+        _todayCoins = 0;
+        _completedRewardCount = 0;
+        _availableRewardNumber = 1;
+      });
+
+      _scheduleNextReset();
+    });
+  }
+
+  Future<void> _watchFakeReward() async {
+    if (_isRewardAdLoading) return;
+    if (_completedRewardCount >= 10) return;
+    if (_availableRewardNumber != _completedRewardCount + 1) {
+      _syncRewardState();
+    }
+
+    final rewardNumber = _availableRewardNumber;
+
+    setState(() {
+      _isRewardAdLoading = true;
+    });
+
+    // Fake ad-completion delay for testing only.
+    await Future<void>.delayed(const Duration(milliseconds: 900));
+
+    if (!mounted) return;
+
+    setState(() {
+      _isRewardAdLoading = false;
+
+      // Give the reward only once for the current reward number.
+      if (_completedRewardCount == rewardNumber - 1) {
+        _completedRewardCount = rewardNumber;
+
+        _todayCoins = (_todayCoins + 10).clamp(
+          0,
+          widget.dailyCoinLimit,
+        );
+
+        _totalCoins += 10;
+        _weeklyCoins += 10;
+
+        _syncRewardState();
+      }
+    });
+
+    // Still call the existing callback so a future controller can
+    // observe/replace this test behavior without changing the UI API.
+    widget.onWatchAvailableReward?.call();
+
+    if (!mounted) return;
+
+    final message = _completedRewardCount >= 10
+        ? 'Reward 10 completed! Daily rewards reset at 4:00 AM.'
+        : 'Reward $rewardNumber completed! Reward ${rewardNumber + 1} unlocked. +10 coins';
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(milliseconds: 2200),
+          content: Text(message),
+        ),
+      );
+  }
+
+  void _claimWeeklyBonus() {
+    if (_weeklyBonusClaimed) return;
+    if (_weeklyCoins < widget.weeklyGoal) return;
+
+    setState(() {
+      _weeklyBonusClaimed = true;
+      _totalCoins += widget.weeklyBonus;
+    });
+
+    widget.onClaimWeeklyBonus?.call();
+
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(
+            'Weekly bonus claimed! +${widget.weeklyBonus} coins',
+          ),
+        ),
+      );
+  }
+
+  List<WeeklyDayStatus> _buildTestWeeklyStatuses() {
+    final statuses = List<WeeklyDayStatus>.filled(
+      7,
+      WeeklyDayStatus.locked,
+    );
+
+    final completedDays =
+        (_weeklyCoins ~/ 100).clamp(0, 7);
+
+    for (var i = 0; i < completedDays; i++) {
+      statuses[i] = WeeklyDayStatus.completed;
+    }
+
+    if (completedDays < 7) {
+      statuses[completedDays] = WeeklyDayStatus.current;
+    }
+
+    return statuses;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
     final horizontalPadding = screenWidth < 360 ? 16.0 : 20.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8FC),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: const Color(0xFFF8F8FC),
+        backgroundColor: Theme.of(context).colorScheme.surface,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Earn Coins',
           style: TextStyle(
-            color: Colors.amber,
+            color: Theme.of(context).colorScheme.primary,
             fontSize: 20,
             fontWeight: FontWeight.w800,
           ),
@@ -89,41 +275,40 @@ class EarnCoinsUI extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               WalletBalanceCard(
-                totalCoins: totalCoins,
-                todayCoins: todayCoins,
-                dailyCoinLimit: dailyCoinLimit,
+                totalCoins: _totalCoins,
+                todayCoins: _todayCoins,
+                dailyCoinLimit: widget.dailyCoinLimit,
               ),
               const SizedBox(height: 18),
               DailyEarningCard(
-                todayCoins: todayCoins,
-                dailyCoinLimit: dailyCoinLimit,
+                todayCoins: _todayCoins,
+                dailyCoinLimit: widget.dailyCoinLimit,
               ),
               const SizedBox(height: 18),
               WeeklyGoalCard(
-                weeklyCoins: weeklyCoins,
-                weeklyGoal: weeklyGoal,
-                weeklyBonus: weeklyBonus,
-                weeklyDayStatuses: weeklyDayStatuses,
+                weeklyCoins: _weeklyCoins,
+                weeklyGoal: widget.weeklyGoal,
+                weeklyBonus: widget.weeklyBonus,
+                weeklyDayStatuses: _buildTestWeeklyStatuses(),
               ),
               const SizedBox(height: 18),
               DailyRewardsSection(
-                completedRewardCount: completedRewardCount,
-                availableRewardNumber: availableRewardNumber,
-                isRewardAdLoading: isRewardAdLoading,
-                onWatchAvailableReward: onWatchAvailableReward,
+                completedRewardCount: _completedRewardCount,
+                availableRewardNumber: _availableRewardNumber,
+                isRewardAdLoading: _isRewardAdLoading,
+                onWatchAvailableReward:
+                    _watchFakeReward,
               ),
               const SizedBox(height: 18),
               WeeklyBonusCard(
-                weeklyCoins: weeklyCoins,
-                weeklyGoal: weeklyGoal,
-                weeklyBonus: weeklyBonus,
-                claimed: weeklyBonusClaimed,
-                onClaim: onClaimWeeklyBonus,
+                weeklyCoins: _weeklyCoins,
+                weeklyGoal: widget.weeklyGoal,
+                weeklyBonus: widget.weeklyBonus,
+                claimed: _weeklyBonusClaimed,
+                onClaim: _claimWeeklyBonus,
               ),
               const SizedBox(height: 18),
               const HowItWorksSection(),
-              const SizedBox(height: 18),
-              const DailyResetCard(),
             ],
           ),
         ),
@@ -133,8 +318,6 @@ class EarnCoinsUI extends StatelessWidget {
 }
 
 /// Presentation state for one day in the seven-day weekly tracker.
-///
-/// The controller decides which state applies. The UI only renders it.
 enum WeeklyDayStatus {
   completed,
   current,
@@ -155,6 +338,8 @@ class WalletBalanceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     final progress = dailyCoinLimit <= 0
         ? 0.0
         : (todayCoins / dailyCoinLimit).clamp(0.0, 1.0);
@@ -162,19 +347,19 @@ class WalletBalanceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF7C3AED),
-            Color(0xFF9B5CF6),
-            Color(0xFFEC4899),
+            scheme.primary,
+            scheme.primaryContainer,
+            scheme.secondary,
           ],
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF7C3AED).withValues(alpha: .22),
+            color: scheme.primary.withValues(alpha: .22),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -184,14 +369,14 @@ class WalletBalanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              const _WalletIcon(),
-              const Spacer(),
-              const _WalletLabel(),
+            children: const [
+              _WalletIcon(),
+              Spacer(),
+              _WalletLabel(),
             ],
           ),
           const SizedBox(height: 22),
-          const Text(
+          Text(
             'Total Coins',
             style: TextStyle(
               color: Colors.white70,
@@ -243,8 +428,9 @@ class WalletBalanceCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 7,
-              backgroundColor: Colors.white24,
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+              backgroundColor: Colors.white.withValues(alpha: 0.24),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),
         ],
@@ -258,17 +444,21 @@ class _WalletIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .18),
+        color: scheme.onPrimary.withValues(alpha: .18),
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white24),
+        border: Border.all(
+          color: scheme.onPrimary.withValues(alpha: .24),
+        ),
       ),
-      child: const Icon(
+      child: Icon(
         Icons.account_balance_wallet_rounded,
-        color: Colors.white,
+        color: scheme.onPrimary,
         size: 25,
       ),
     );
@@ -280,21 +470,30 @@ class _WalletLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 7,
+      ),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .16),
+        color: scheme.onPrimary.withValues(alpha: .16),
         borderRadius: BorderRadius.circular(30),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 15),
-          SizedBox(width: 5),
+          Icon(
+            Icons.auto_awesome_rounded,
+            color: scheme.onPrimary,
+            size: 15,
+          ),
+          const SizedBox(width: 5),
           Text(
             'AnimeClip Wallet',
             style: TextStyle(
-              color: Colors.white,
+              color: scheme.onPrimary,
               fontSize: 11,
               fontWeight: FontWeight.w800,
             ),
@@ -317,6 +516,8 @@ class DailyEarningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     final progress = dailyCoinLimit <= 0
         ? 0.0
         : (todayCoins / dailyCoinLimit).clamp(0.0, 1.0);
@@ -339,20 +540,20 @@ class DailyEarningCard extends StatelessWidget {
             children: [
               Text(
                 '$todayCoins',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w900,
-                  color: Color(0xFF1D1930),
+                  color: scheme.onSurface,
                 ),
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 5),
                 child: Text(
                   ' / $dailyCoinLimit coins',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF777381),
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -373,10 +574,9 @@ class DailyEarningCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 9,
-              backgroundColor: const Color(0xFFEDEAF4),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF8B5CF6),
-              ),
+              backgroundColor: scheme.primaryContainer,
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(scheme.primary),
             ),
           ),
           const SizedBox(height: 12),
@@ -384,8 +584,8 @@ class DailyEarningCard extends StatelessWidget {
             dailyGoalCompleted
                 ? 'You reached today\'s earning limit.'
                 : 'Complete the rewards below to keep earning.',
-            style: const TextStyle(
-              color: Color(0xFF777381),
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
               fontSize: 12,
               fontWeight: FontWeight.w600,
             ),
@@ -412,11 +612,14 @@ class WeeklyGoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     final progress = weeklyGoal <= 0
         ? 0.0
         : (weeklyCoins / weeklyGoal).clamp(0.0, 1.0);
     final goalReached = weeklyCoins >= weeklyGoal;
-    final remainingCoins = (weeklyGoal - weeklyCoins).clamp(0, weeklyGoal);
+    final remainingCoins =
+        (weeklyGoal - weeklyCoins).clamp(0, weeklyGoal);
 
     return _SectionCard(
       child: Column(
@@ -433,10 +636,10 @@ class WeeklyGoalCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   '$weeklyCoins / $weeklyGoal',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 25,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF1D1930),
+                    color: scheme.onSurface,
                   ),
                 ),
               ),
@@ -456,28 +659,27 @@ class WeeklyGoalCard extends StatelessWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 9,
-              backgroundColor: const Color(0xFFEDEAF4),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFFF59E0B),
-              ),
+              backgroundColor: scheme.primaryContainer,
+              valueColor:
+                  AlwaysStoppedAnimation<Color>(scheme.secondary),
             ),
           ),
           const SizedBox(height: 14),
           Row(
             children: [
-              const Icon(
+              Icon(
                 Icons.card_giftcard_rounded,
                 size: 18,
-                color: Color(0xFFF59E0B),
+                color: scheme.secondary,
               ),
               const SizedBox(width: 7),
               Expanded(
                 child: Text(
                   'Reach the goal to unlock +$weeklyBonus bonus coins',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF615C6C),
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -499,7 +701,15 @@ class WeeklyDayTracker extends StatelessWidget {
     required this.statuses,
   });
 
-  static const dayLabels = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'];
+  static const dayLabels = [
+    'D1',
+    'D2',
+    'D3',
+    'D4',
+    'D5',
+    'D6',
+    'D7',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -537,20 +747,22 @@ class WeeklyDayItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     final completed = status == WeeklyDayStatus.completed;
     final current = status == WeeklyDayStatus.current;
 
     final background = completed
-        ? const Color(0xFFE9F9EF)
+        ? scheme.tertiaryContainer
         : current
-            ? const Color(0xFFF0E9FF)
-            : const Color(0xFFF3F1F7);
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerLow;
 
     final foreground = completed
-        ? const Color(0xFF16A34A)
+        ? scheme.tertiary
         : current
-            ? const Color(0xFF7C3AED)
-            : const Color(0xFF9B96A5);
+            ? scheme.primary
+            : scheme.onSurfaceVariant;
 
     final icon = completed
         ? Icons.check_circle_rounded
@@ -565,7 +777,7 @@ class WeeklyDayItem extends StatelessWidget {
         borderRadius: BorderRadius.circular(13),
         border: Border.all(
           color: current
-              ? const Color(0xFFBDA1F5)
+              ? scheme.primary.withValues(alpha: 0.45)
               : Colors.transparent,
         ),
       ),
@@ -604,16 +816,21 @@ class DailyRewardsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final safeCompletedCount = completedRewardCount.clamp(0, 10);
-    final safeAvailableNumber = availableRewardNumber.clamp(0, 10);
+    final scheme = Theme.of(context).colorScheme;
+
+    final safeCompletedCount =
+        completedRewardCount.clamp(0, 10);
+    final safeAvailableNumber =
+        availableRewardNumber.clamp(0, 10);
+    final allCompleted = safeCompletedCount >= 10;
 
     return _SectionCard(
       padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 4),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
             child: _SectionHeader(
               icon: Icons.redeem_rounded,
               title: 'Daily Rewards',
@@ -621,44 +838,79 @@ class DailyRewardsSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 17),
-          ...List.generate(
-  10,
-  (index) {
-    final rewardNumber = index + 1;
-    final rewardCompleted = rewardNumber <= safeCompletedCount;
-    final rewardAvailable =
-        rewardNumber == safeAvailableNumber &&
-        !rewardCompleted &&
-        safeAvailableNumber != 0;
+          ...List.generate(10, (index) {
+            final rewardNumber = index + 1;
+            final rewardCompleted =
+                rewardNumber <= safeCompletedCount;
+            final rewardAvailable =
+                rewardNumber == safeAvailableNumber &&
+                    !rewardCompleted &&
+                    safeAvailableNumber != 0;
 
-    return Padding(
-      padding: EdgeInsets.only(
-        bottom: rewardNumber == 10 ? 0 : 9,
-      ),
-      child: DailyRewardCard(
-        rewardNumber: rewardNumber,
-        status: rewardCompleted
-            ? DailyRewardStatus.completed
-            : rewardAvailable
-                ? DailyRewardStatus.available
-                : DailyRewardStatus.locked,
-        isLoading: rewardAvailable && isRewardAdLoading,
-        onWatch: rewardAvailable
-            ? onWatchAvailableReward
-            : null,
-      ),
-    );
-  },
-),
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: rewardNumber == 10 ? 0 : 9,
+              ),
+              child: DailyRewardCard(
+                rewardNumber: rewardNumber,
+                status: rewardCompleted
+                    ? DailyRewardStatus.completed
+                    : rewardAvailable
+                        ? DailyRewardStatus.available
+                        : DailyRewardStatus.locked,
+                isLoading:
+                    rewardAvailable && isRewardAdLoading,
+                onWatch:
+                    rewardAvailable ? onWatchAvailableReward : null,
+              ),
+            );
+          }),
+          const SizedBox(height: 12),
+
+          // Daily reset is intentionally placed directly below Reward 10.
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 11,
+            ),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: scheme.outlineVariant,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.refresh_rounded,
+                  size: 18,
+                  color: scheme.primary,
+                ),
+                const SizedBox(width: 9),
+                Expanded(
+                  child: Text(
+                    allCompleted
+                        ? 'All 10 rewards completed. Daily rewards refresh at 4:00 AM.'
+                        : 'Daily rewards refresh at 4:00 AM. Completed rewards reset then.',
+                    style: TextStyle(
+                      color: scheme.onSurfaceVariant,
+                      fontSize: 10.5,
+                      height: 1.35,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-/// Presentation state for one daily reward.
-///
-/// The controller determines this state. The UI renders it.
 enum DailyRewardStatus {
   available,
   completed,
@@ -681,32 +933,36 @@ class DailyRewardCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rewardCompleted = status == DailyRewardStatus.completed;
-    final rewardAvailable = status == DailyRewardStatus.available;
+    final scheme = Theme.of(context).colorScheme;
+
+    final rewardCompleted =
+        status == DailyRewardStatus.completed;
+    final rewardAvailable =
+        status == DailyRewardStatus.available;
 
     final background = rewardCompleted
-        ? const Color(0xFFF0FBF4)
+        ? scheme.tertiaryContainer
         : rewardAvailable
-            ? const Color(0xFFF5F0FF)
-            : const Color(0xFFF7F6F9);
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerLow;
 
     final border = rewardCompleted
-        ? const Color(0xFFD7F2DF)
+        ? scheme.tertiaryContainer
         : rewardAvailable
-            ? const Color(0xFFD9C8F8)
-            : const Color(0xFFEAE8EE);
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerHighest;
 
     final iconBackground = rewardCompleted
-        ? const Color(0xFFDDF7E6)
+        ? scheme.tertiaryContainer
         : rewardAvailable
-            ? const Color(0xFFE8DEFF)
-            : const Color(0xFFECEAF0);
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerHighest;
 
     final iconColor = rewardCompleted
-        ? const Color(0xFF16A34A)
+        ? scheme.tertiary
         : rewardAvailable
-            ? const Color(0xFF7C3AED)
-            : const Color(0xFF9B96A5);
+            ? scheme.primary
+            : scheme.onSurfaceVariant;
 
     return Container(
       padding: const EdgeInsets.all(12),
@@ -741,10 +997,10 @@ class DailyRewardCard extends StatelessWidget {
               children: [
                 Text(
                   'Reward $rewardNumber',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF272331),
+                    color: scheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 3),
@@ -756,10 +1012,10 @@ class DailyRewardCard extends StatelessWidget {
                           : 'Complete Reward ${rewardNumber - 1} first',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10.5,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF85808D),
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -799,33 +1055,45 @@ class WatchRewardButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return FilledButton(
       onPressed: loading ? null : onPressed,
       style: FilledButton.styleFrom(
-        backgroundColor: const Color(0xFF7C3AED),
-        foregroundColor: Colors.white,
-        disabledBackgroundColor: const Color(0xFFB7A2DC),
-        disabledForegroundColor: Colors.white,
+        backgroundColor: scheme.primary,
+        foregroundColor: scheme.onPrimary,
+        disabledBackgroundColor:
+            scheme.primary.withValues(alpha: 0.45),
+        disabledForegroundColor: scheme.onSurfaceVariant,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 10,
+        ),
         minimumSize: const Size(0, 38),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
       ),
       child: loading
-          ? const SizedBox(
+          ? SizedBox(
               width: 16,
               height: 16,
               child: CircularProgressIndicator(
                 strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                valueColor:
+                    AlwaysStoppedAnimation<Color>(
+                  scheme.onPrimary,
+                ),
               ),
             )
           : const Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.ondemand_video_rounded, size: 16),
+                Icon(
+                  Icons.ondemand_video_rounded,
+                  size: 16,
+                ),
                 SizedBox(width: 5),
                 Text(
                   'Watch Ad',
@@ -852,6 +1120,7 @@ class RewardStateIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final completed = label == 'Done';
 
     return Row(
@@ -860,9 +1129,8 @@ class RewardStateIndicator extends StatelessWidget {
         Icon(
           icon,
           size: 16,
-          color: completed
-              ? const Color(0xFF16A34A)
-              : const Color(0xFF9B96A5),
+          color:
+              completed ? scheme.tertiary : scheme.onSurfaceVariant,
         ),
         const SizedBox(width: 4),
         Text(
@@ -871,8 +1139,8 @@ class RewardStateIndicator extends StatelessWidget {
             fontSize: 10,
             fontWeight: FontWeight.w800,
             color: completed
-                ? const Color(0xFF16A34A)
-                : const Color(0xFF9B96A5),
+                ? scheme.tertiary
+                : scheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -898,14 +1166,17 @@ class WeeklyBonusCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final goalReached = weeklyCoins >= weeklyGoal;
 
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFFBEB),
+        color: scheme.secondaryContainer,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFF7E5A5)),
+        border: Border.all(
+          color: scheme.outlineVariant,
+        ),
       ),
       child: Row(
         children: [
@@ -913,12 +1184,12 @@ class WeeklyBonusCard extends StatelessWidget {
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: const Color(0xFFFFF0BF),
+              color: scheme.secondaryContainer,
               borderRadius: BorderRadius.circular(15),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.card_giftcard_rounded,
-              color: Color(0xFFD97706),
+              color: scheme.secondary,
               size: 25,
             ),
           ),
@@ -927,10 +1198,10 @@ class WeeklyBonusCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Weekly Bonus',
                   style: TextStyle(
-                    color: Color(0xFF3A3020),
+                    color: scheme.onSecondaryContainer,
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
@@ -944,8 +1215,8 @@ class WeeklyBonusCard extends StatelessWidget {
                           : 'Reach $weeklyGoal coins to unlock +$weeklyBonus',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Color(0xFF8A7751),
+                  style: TextStyle(
+                    color: scheme.onSecondaryContainer,
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
                   ),
@@ -955,17 +1226,18 @@ class WeeklyBonusCard extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           if (claimed)
-            const Icon(
+            Icon(
               Icons.check_circle_rounded,
-              color: Color(0xFF16A34A),
+              color: scheme.tertiary,
             )
           else
             FilledButton(
               onPressed: goalReached ? onClaim : null,
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
-                disabledBackgroundColor: const Color(0xFFE5D9B8),
-                foregroundColor: Colors.white,
+                backgroundColor: scheme.secondary,
+                disabledBackgroundColor:
+                    scheme.secondaryContainer,
+                foregroundColor: scheme.onPrimary,
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -997,36 +1269,38 @@ class HowItWorksSection extends StatelessWidget {
     return _SectionCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _SectionHeader(
+        children: const [
+          _SectionHeader(
             icon: Icons.info_outline_rounded,
             title: 'How It Works',
             subtitle: 'Simple, sequential, and transparent',
           ),
-          const SizedBox(height: 17),
-          const HowItWorksStep(
+          SizedBox(height: 17),
+          HowItWorksStep(
             number: '1',
             icon: Icons.ondemand_video_rounded,
             title: 'Watch a reward ad',
-            description: 'Start with the next available reward.',
+            description:
+                'Start with the next available reward.',
           ),
-          const HowItWorksDivider(),
-          const HowItWorksStep(
+          HowItWorksDivider(),
+          HowItWorksStep(
             number: '2',
             icon: Icons.monetization_on_rounded,
             title: 'Receive 10 coins',
             description:
-                'Coins are added only after the ad completes successfully.',
+                'In test mode, the reward is simulated after the ad completes.',
           ),
-          const HowItWorksDivider(),
-          const HowItWorksStep(
+          HowItWorksDivider(),
+          HowItWorksStep(
             number: '3',
             icon: Icons.lock_open_rounded,
             title: 'Unlock the next reward',
-            description: 'Rewards must be completed in order.',
+            description:
+                'Rewards must be completed in order.',
           ),
-          const HowItWorksDivider(),
-          const HowItWorksStep(
+          HowItWorksDivider(),
+          HowItWorksStep(
             number: '4',
             icon: Icons.emoji_events_rounded,
             title: 'Complete the weekly goal',
@@ -1055,6 +1329,8 @@ class HowItWorksStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1062,13 +1338,13 @@ class HowItWorksStep extends StatelessWidget {
           width: 35,
           height: 35,
           decoration: BoxDecoration(
-            color: const Color(0xFFF0E9FF),
+            color: scheme.primaryContainer,
             borderRadius: BorderRadius.circular(11),
           ),
           child: Icon(
             icon,
             size: 18,
-            color: const Color(0xFF7C3AED),
+            color: scheme.primary,
           ),
         ),
         const SizedBox(width: 11),
@@ -1078,8 +1354,8 @@ class HowItWorksStep extends StatelessWidget {
             children: [
               Text(
                 '$number. $title',
-                style: const TextStyle(
-                  color: Color(0xFF292532),
+                style: TextStyle(
+                  color: scheme.onSurface,
                   fontSize: 12.5,
                   fontWeight: FontWeight.w900,
                 ),
@@ -1087,8 +1363,8 @@ class HowItWorksStep extends StatelessWidget {
               const SizedBox(height: 3),
               Text(
                 description,
-                style: const TextStyle(
-                  color: Color(0xFF85808D),
+                style: TextStyle(
+                  color: scheme.onSurfaceVariant,
                   fontSize: 10.5,
                   height: 1.35,
                   fontWeight: FontWeight.w600,
@@ -1108,66 +1384,18 @@ class HowItWorksDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 17, top: 8, bottom: 8),
+      padding: const EdgeInsets.only(
+        left: 17,
+        top: 8,
+        bottom: 8,
+      ),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Container(
           width: 1,
           height: 13,
-          color: const Color(0xFFE4E0EA),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
-      ),
-    );
-  }
-}
-
-class DailyResetCard extends StatelessWidget {
-  const DailyResetCard({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9),
-        borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: const Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            Icons.refresh_rounded,
-            color: Color(0xFF64748B),
-            size: 20,
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Daily Reset',
-                  style: TextStyle(
-                    color: Color(0xFF334155),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                SizedBox(height: 3),
-                Text(
-                  'Daily reward progress resets each day. Your Total Coins are never removed by the reset.',
-                  style: TextStyle(
-                    color: Color(0xFF64748B),
-                    fontSize: 10.5,
-                    height: 1.35,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -1184,12 +1412,16 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFECE9F1)),
+        border: Border.all(
+          color: scheme.outlineVariant,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: .035),
@@ -1216,6 +1448,8 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1223,12 +1457,12 @@ class _SectionHeader extends StatelessWidget {
           width: 39,
           height: 39,
           decoration: BoxDecoration(
-            color: const Color(0xFFF0E9FF),
+            color: scheme.primaryContainer,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Icon(
             icon,
-            color: const Color(0xFF7C3AED),
+            color: scheme.primary,
             size: 20,
           ),
         ),
@@ -1239,8 +1473,8 @@ class _SectionHeader extends StatelessWidget {
             children: [
               Text(
                 title,
-                style: const TextStyle(
-                  color: Color(0xFF26222E),
+                style: TextStyle(
+                  color: scheme.onSurface,
                   fontSize: 14,
                   fontWeight: FontWeight.w900,
                 ),
@@ -1250,8 +1484,8 @@ class _SectionHeader extends StatelessWidget {
                 subtitle,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Color(0xFF8A8592),
+                style: TextStyle(
+                  color: scheme.onSurfaceVariant,
                   fontSize: 10.5,
                   fontWeight: FontWeight.w600,
                 ),
@@ -1275,10 +1509,15 @@ class _StatusPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 9,
+        vertical: 6,
+      ),
       decoration: BoxDecoration(
-        color: const Color(0xFFF4F1FA),
+        color: scheme.primaryContainer,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
@@ -1287,13 +1526,13 @@ class _StatusPill extends StatelessWidget {
           Icon(
             icon,
             size: 13,
-            color: const Color(0xFF7C3AED),
+            color: scheme.primary,
           ),
           const SizedBox(width: 4),
           Text(
             label,
-            style: const TextStyle(
-              color: Color(0xFF625A70),
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
               fontSize: 9.5,
               fontWeight: FontWeight.w800,
             ),

@@ -14,30 +14,30 @@ class _HelpGuideUiState extends State<HelpGuideUi> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
+        backgroundColor: Theme.of(context).colorScheme.surface,
+        surfaceTintColor: Theme.of(context).colorScheme.surface,
         leading: IconButton(
           tooltip: 'Back',
-          icon: const Icon(Icons.close_rounded,),
-          color: Colors.black,
+          icon: Icon(Icons.close_rounded,),
+          color: Theme.of(context).colorScheme.onSurface,
           onPressed: () => Navigator.of(context).maybePop(),
         ),
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Help & Guide',
           style: TextStyle(
-            color: Colors.green,
+            color: Theme.of(context).colorScheme.primary,
             fontSize: 20,
             fontWeight: FontWeight.w700,
           ),
         ),
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(1),
-          child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E2E2)),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Divider(height: 1, thickness: 1, color: Theme.of(context).colorScheme.surfaceContainerHighest),
         ),
       ),
       body: SafeArea(
@@ -61,11 +61,11 @@ class _HelpGuideUiState extends State<HelpGuideUi> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            const Text(
+                            Text(
                               'Learn how AnimeClip projects, playback, collaboration, backup, and exports work.',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                color: Color(0xFF4C4546),
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 fontSize: 14,
                                 height: 1.45,
                               ),
@@ -128,16 +128,16 @@ class _BackupWarningCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: const Color(0xFFFFF4E5),
-        border: Border.all(color: const Color(0xFFF0C36D)),
+        color: Theme.of(context).colorScheme.tertiaryContainer,
+        border: Border.all(color: Theme.of(context).colorScheme.outline),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(
+          Icon(
             Icons.warning_amber_rounded,
-            color: Color(0xFFBA1A1A),
+            color: Theme.of(context).colorScheme.onTertiaryContainer,
             size: 24,
           ),
           const SizedBox(width: 14),
@@ -145,29 +145,29 @@ class _BackupWarningCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Before You Uninstall or Change Phones',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Theme.of(context).colorScheme.onTertiaryContainer,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                     height: 1.4,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Back up or download all required .ac project files and store them safely in cloud storage before uninstalling AnimeClip or changing your phone. Verify that your backup is accessible.',
                   style: TextStyle(
-                    color: Color(0xFF4C4546),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     height: 1.55,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'You can delete MP4 exports if you do not need the existing rendered videos. On a new device, download or import the backed-up .ac project file and create a brand-new MP4 from the project.',
                   style: TextStyle(
-                    color: Color(0xFF4C4546),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     height: 1.55,
                   ),
@@ -191,10 +191,10 @@ class _DesktopCategoryNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
           left: BorderSide(
-            color: Color(0xFFE2E2E2),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
         ),
       ),
@@ -207,8 +207,8 @@ class _DesktopCategoryNav extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: Text(
                 category.title,
-                style: const TextStyle(
-                  color: Color(0xFF5E5E5E),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -252,8 +252,8 @@ class _FaqList extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 12),
           child: Text(
             category.title,
-            style: const TextStyle(
-              color: Color(0xFF5E5E5E),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
@@ -299,8 +299,8 @@ class _FaqCard extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border.all(color: const Color(0xFFCFC4C5)),
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         borderRadius: BorderRadius.circular(10),
         boxShadow: const [
           BoxShadow(
@@ -329,8 +329,8 @@ class _FaqCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         faq.question,
-                        style: const TextStyle(
-                          color: Colors.black,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 16,
                           height: 1.5,
                         ),
@@ -344,8 +344,8 @@ class _FaqCard extends StatelessWidget {
                       child: Icon(
                         Icons.keyboard_arrow_down,
                         color: faq.isWarning
-                            ? const Color(0xFFBA1A1A)
-                            : const Color(0xFF5E5E5E),
+                            ? Theme.of(context).colorScheme.error
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -379,21 +379,21 @@ class _AnswerContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Divider(height: 1, thickness: 1, color: Color(0xFFE2E2E2)),
+          Divider(height: 1, thickness: 1, color: Theme.of(context).colorScheme.surfaceContainerHighest),
           const SizedBox(height: 16),
           if (faq.isWarning) ...[
             Row(
-              children: const [
+              children: [
                 Icon(
                   Icons.warning_amber_rounded,
                   size: 18,
-                  color: Color(0xFFBA1A1A),
+                  color: Theme.of(context).colorScheme.error,
                 ),
-                SizedBox(width: 8),
+                const SizedBox(width: 8),
                 Text(
                   'Important Backup Warning',
                   style: TextStyle(
-                    color: Color(0xFFBA1A1A),
+                    color: Theme.of(context).colorScheme.error,
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                   ),
@@ -423,8 +423,8 @@ class _AnswerBlock extends StatelessWidget {
       case _AnswerBlockType.heading:
         return Text(
           block.text,
-          style: const TextStyle(
-            color: Colors.black,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 15,
             fontWeight: FontWeight.w700,
             height: 1.45,
@@ -433,8 +433,8 @@ class _AnswerBlock extends StatelessWidget {
       case _AnswerBlockType.paragraph:
         return Text(
           block.text,
-          style: const TextStyle(
-            color: Color(0xFF4C4546),
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             fontSize: 14,
             height: 1.6,
           ),
@@ -443,14 +443,14 @@ class _AnswerBlock extends StatelessWidget {
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(top: 7),
               child: SizedBox(
                 width: 5,
                 height: 5,
                 child: DecoratedBox(
                   decoration: BoxDecoration(
-                    color: Color(0xFF5E5E5E),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -460,8 +460,8 @@ class _AnswerBlock extends StatelessWidget {
             Expanded(
               child: Text(
                 block.text,
-                style: const TextStyle(
-                  color: Color(0xFF4C4546),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
                   height: 1.6,
                 ),
@@ -475,8 +475,8 @@ class _AnswerBlock extends StatelessWidget {
           children: [
             Text(
               '${block.number}.',
-              style: const TextStyle(
-                color: Color(0xFF1A1C1C),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 height: 1.6,
@@ -486,8 +486,8 @@ class _AnswerBlock extends StatelessWidget {
             Expanded(
               child: Text(
                 block.text,
-                style: const TextStyle(
-                  color: Color(0xFF4C4546),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 14,
                   height: 1.6,
                 ),
@@ -500,14 +500,14 @@ class _AnswerBlock extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFFF3F3F4),
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: const Color(0xFFE2E2E2)),
+            border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
           ),
           child: Text(
             block.text,
-            style: const TextStyle(
-              color: Colors.black,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 14,
               fontWeight: FontWeight.w600,
               height: 1.5,
@@ -583,7 +583,7 @@ List<_FaqCategory> _buildCategories() {
               'Anime Series projects are designed for episodic animated content. A series can contain multiple seasons, each season can contain multiple episodes, and each episode can contain many clips. Each clip contains its own animation frames.',
             ),
             const _AnswerBlockData.structure(
-              'Anime Series → Seasons → Episodes → Clips → Frames',
+              'Anime Series â†’ Seasons â†’ Episodes â†’ Clips â†’ Frames',
             ),
             const _AnswerBlockData.paragraph(
               'This structure keeps a long-running anime organized instead of placing the entire series into one enormous timeline.',
@@ -592,19 +592,19 @@ List<_FaqCategory> _buildCategories() {
             const _AnswerBlockData.paragraph(
               'Anime Movie projects are designed for a single long-form animated movie. A movie does not require seasons or episodes; clips are created directly inside the movie. This is useful for movies that can run for a long time, including projects that may be hours long.',
             ),
-            const _AnswerBlockData.structure('Anime Movie → Clips → Frames'),
+            const _AnswerBlockData.structure('Anime Movie â†’ Clips â†’ Frames'),
             const _AnswerBlockData.heading('3. Manga Series'),
             const _AnswerBlockData.paragraph(
               'Manga Series projects are designed for manga containing multiple books. A series can contain multiple books, and each book is organized into screens and pages.',
             ),
             const _AnswerBlockData.structure(
-              'Manga Series → Books → Screens → Pages',
+              'Manga Series â†’ Books â†’ Screens â†’ Pages',
             ),
             const _AnswerBlockData.heading('4. Manga Book'),
             const _AnswerBlockData.paragraph(
               'Manga Book projects are designed for one standalone book. Pages are created directly inside the book. Pages can be organized as sets, with 10 pages forming one page set.',
             ),
-            const _AnswerBlockData.structure('Manga Book → Pages'),
+            const _AnswerBlockData.structure('Manga Book â†’ Pages'),
           ],
         ),
         _FaqItem(
@@ -614,25 +614,25 @@ List<_FaqCategory> _buildCategories() {
           blocks: [
             const _AnswerBlockData.heading('Anime Series'),
             const _AnswerBlockData.structure(
-              'Project → Season → Episode → Clip → Frames',
+              'Project â†’ Season â†’ Episode â†’ Clip â†’ Frames',
             ),
             const _AnswerBlockData.paragraph(
               'Create the Anime Series project, add one or more seasons, create multiple episodes inside each season, and create multiple clips inside each episode. The animation frames are edited inside the clips.',
             ),
             const _AnswerBlockData.heading('Anime Movie'),
-            const _AnswerBlockData.structure('Project → Clips → Frames'),
+            const _AnswerBlockData.structure('Project â†’ Clips â†’ Frames'),
             const _AnswerBlockData.paragraph(
               'Create the movie project and add clips directly. A movie can contain many clips because long-form movies can be divided into manageable production sections.',
             ),
             const _AnswerBlockData.heading('Manga Series'),
             const _AnswerBlockData.structure(
-              'Project → Books → Screens → Pages',
+              'Project â†’ Books â†’ Screens â†’ Pages',
             ),
             const _AnswerBlockData.paragraph(
               'Create the series, add multiple books, and organize each book through screens and pages. This is intended for manga projects containing multiple books or volumes.',
             ),
             const _AnswerBlockData.heading('Manga Book'),
-            const _AnswerBlockData.structure('Project → Pages'),
+            const _AnswerBlockData.structure('Project â†’ Pages'),
             const _AnswerBlockData.paragraph(
               'Create a standalone book and work directly with its pages. Pages can be organized into sets of 10 pages for easier navigation and management.',
             ),
@@ -652,7 +652,7 @@ List<_FaqCategory> _buildCategories() {
               'Episode playback combines all clips belonging to an episode into one continuous playback sequence.',
             ),
             const _AnswerBlockData.structure(
-              'Clip 1 → Clip 2 → Clip 3 → Clip 4',
+              'Clip 1 â†’ Clip 2 â†’ Clip 3 â†’ Clip 4',
             ),
             const _AnswerBlockData.paragraph(
               'The clips are played according to their configured order. The creator does not need to manually open and play every clip separately.',
@@ -688,7 +688,7 @@ List<_FaqCategory> _buildCategories() {
               'A maximum of 5 users can be assigned to a clip. This keeps work organized and prevents too many users from being assigned to the same production unit.',
             ),
             const _AnswerBlockData.structure(
-              'Project → Assigned work → Screens / Clips',
+              'Project â†’ Assigned work â†’ Screens / Clips',
             ),
           ],
         ),
@@ -701,12 +701,12 @@ List<_FaqCategory> _buildCategories() {
               'Yes. AnimeClip is designed to support collaborative production by dividing large projects into manageable production units.',
             ),
             const _AnswerBlockData.heading('Anime production'),
-            const _AnswerBlockData.structure('Seasons → Episodes → Clips'),
+            const _AnswerBlockData.structure('Seasons â†’ Episodes â†’ Clips'),
             const _AnswerBlockData.paragraph(
               'Teams can divide anime production across multiple seasons, episodes, and clips so different users can focus on different parts of a larger production.',
             ),
             const _AnswerBlockData.heading('Manga production'),
-            const _AnswerBlockData.structure('Books → Screens → Pages'),
+            const _AnswerBlockData.structure('Books â†’ Screens â†’ Pages'),
             const _AnswerBlockData.paragraph(
               'Manga projects can similarly be divided across books, screens, and pages.',
             ),
@@ -734,7 +734,7 @@ List<_FaqCategory> _buildCategories() {
             ),
             const _AnswerBlockData.heading('Importing a project'),
             const _AnswerBlockData.structure(
-              'Import Project → Select the .ac file → Import',
+              'Import Project â†’ Select the .ac file â†’ Import',
             ),
             const _AnswerBlockData.paragraph(
               'Cloud Sync is a separate AnimeClip feature available to Go Plus users only. Important projects should still have independent backup copies whenever possible.',
@@ -755,8 +755,8 @@ List<_FaqCategory> _buildCategories() {
             const _AnswerBlockData.paragraph(
               'Final output is intended for the finished result.',
             ),
-            const _AnswerBlockData.bullet('MP4 — for animated/video output.'),
-            const _AnswerBlockData.bullet('PDF — for manga/book output.'),
+            const _AnswerBlockData.bullet('MP4 â€” for animated/video output.'),
+            const _AnswerBlockData.bullet('PDF â€” for manga/book output.'),
             const _AnswerBlockData.paragraph(
               'The key difference is: the project file preserves the editable project, while the final output is intended for viewing or distribution.',
             ),

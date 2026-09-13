@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 class CollaborationsUI extends StatefulWidget {
@@ -11,15 +10,27 @@ class CollaborationsUI extends StatefulWidget {
 class _CollaborationsUIState extends State<CollaborationsUI> {
   bool hasVoted = false;
 
+  // Fake members for UI/testing only.
+  // Replace this list with real backend vote/member data later.
+  final List<_TestVoter> _testVoters = const [
+    _TestVoter(name: 'Revanth', username: '@Revanth'),
+    _TestVoter(name: 'Anirudh', username: '@Anirudh'),
+    _TestVoter(name: 'Sandeep', username: '@Sandeep'),
+    _TestVoter(name: 'Lokesh', username: '@Lokesh'),
+    _TestVoter(name: 'Hruthik', username: '@Hruthik'),
+    _TestVoter(name: 'Dhanush', username: '@Dhanush'),
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.surface,
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(),
-
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -37,99 +48,68 @@ class _CollaborationsUIState extends State<CollaborationsUI> {
     );
   }
 
-  // ============================================================
-  // HEADER
-  // ============================================================
+  Widget _buildHeader() {
+    final scheme = Theme.of(context).colorScheme;
 
-
-Widget _buildHeader() {
-  return Container(
-    height: 72,
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(horizontal: 8),
-    decoration: const BoxDecoration(
-      color: Color(0xFFF9F9F9),
-      border: Border(
-        bottom: BorderSide(
-          color: Color(0xFFE8E8E8),
-          width: 1,
+    return Container(
+      height: 72,
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        border: Border(
+          bottom: BorderSide(
+            color: scheme.surfaceContainerHighest,
+            width: 1,
+          ),
         ),
       ),
-    ),
-    child: Row(
-      children: [
-        // ========================================================
-        // BACK BUTTON
-        // ========================================================
-
-        IconButton(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          icon: const Icon(
-            Icons.close_rounded,
-            color: Color(0xFF1A1C1C),
-            size: 22,
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(
+              Icons.close_rounded,
+              color: scheme.onSurface,
+              size: 22,
+            ),
+            tooltip: 'Back',
           ),
-          tooltip: 'Back',
-        ),
-
-        // ========================================================
-        // CENTERED TITLE
-        // ========================================================
-
-        const Expanded(
-          child: Center(
-            child: Text(
-              'Collaborations',
-              style: TextStyle(
-                color: Colors.orange,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+          Expanded(
+            child: Center(
+              child: Text(
+                'Collaborations',
+                style: TextStyle(
+                  color: scheme.primary,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
-        ),
-
-        // Keeps title centered relative to the back button.
-        const SizedBox(
-          width: 48,
-        ),
-      ],
-    ),
-  );
-}
-
-
-
-  // ============================================================
-  // COMING SOON SECTION
-  // ============================================================
+          const SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
 
   Widget _buildComingSoonSection() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        32,
-        16,
-        0,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 32, 16, 0),
       child: Column(
         children: [
-          // ------------------------------------------------------
-          // COMING SOON BADGE
-          // ------------------------------------------------------
-
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: 17,
               vertical: 7,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F3F4),
+              color: scheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(999),
               border: Border.all(
-                color: const Color(0xFFCFC4C5),
+                color: scheme.outlineVariant,
               ),
               boxShadow: const [
                 BoxShadow(
@@ -139,66 +119,51 @@ Widget _buildHeader() {
                 ),
               ],
             ),
-            child: const Text(
+            child: Text(
               'Coming Soon',
               style: TextStyle(
-                color: Color(0xFF5E5E5E),
+                color: scheme.onSurfaceVariant,
                 fontSize: 12,
               ),
             ),
           ),
-
           const SizedBox(height: 32),
-
-          // ------------------------------------------------------
-          // MAIN COLLABORATION CARD
-          // ------------------------------------------------------
-
           Container(
             width: double.infinity,
             height: 300,
             decoration: BoxDecoration(
-              color: const Color(0xFFF6F6F7),
+              color: scheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFFE5E5E5),
+                color: scheme.outlineVariant,
               ),
             ),
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Background decoration
                 Positioned(
                   top: 24,
                   left: 24,
                   child: _buildBackgroundCircle(75),
                 ),
-
                 Positioned(
                   right: 24,
                   bottom: 24,
                   child: _buildBackgroundCircle(90),
                 ),
-
-                // ------------------------------------------------
-                // ONLY IMAGE ON THIS SCREEN
-                // ------------------------------------------------
-
                 Container(
                   width: 130,
                   height: 130,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: Colors.white,
+                    color: scheme.surface,
                     border: Border.all(
-                      color: Colors.white,
+                      color: scheme.surface,
                       width: 5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(
-                          alpha: 0.10,
-                        ),
+                        color: Colors.black.withValues(alpha: 0.10),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -208,20 +173,21 @@ Widget _buildHeader() {
                     child: Image.asset(
                       'assets/screen12.png',
                       fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => Center(
+                        child: Icon(
+                          Icons.groups_rounded,
+                          size: 54,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-
-                // Small plus decoration
                 Positioned(
                   top: 60,
                   right: 65,
-                  child: _buildFloatingIcon(
-                    Icons.add_rounded,
-                  ),
+                  child: _buildFloatingIcon(Icons.add_rounded),
                 ),
-
-                // Small sparkle decoration
                 Positioned(
                   bottom: 58,
                   left: 65,
@@ -229,14 +195,11 @@ Widget _buildHeader() {
                     Icons.auto_awesome_rounded,
                   ),
                 ),
-
-                // Small decorative dots
                 Positioned(
                   top: 72,
                   left: 72,
                   child: _buildDot(),
                 ),
-
                 Positioned(
                   bottom: 72,
                   right: 72,
@@ -245,222 +208,246 @@ Widget _buildHeader() {
               ],
             ),
           ),
-
           const SizedBox(height: 24),
-
-          // ------------------------------------------------------
-          // TITLE
-          // ------------------------------------------------------
-
-          const Text(
+          Text(
             'Collaborations Coming Soon',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF1A1C1C),
+              color: scheme.onSurface,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
           ),
-
           const SizedBox(height: 12),
-
-          // ------------------------------------------------------
-          // DESCRIPTION
-          // ------------------------------------------------------
-
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               'Vote for ideas and help shape what '
-              'comes next in our creative ecosystem'
-              ' if 1000+ votes reach we build it.',
+              'comes next in our creative ecosystem '
+              'if 1000+ votes reach we build it.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF5E5E5E),
+                color: scheme.onSurfaceVariant,
                 fontSize: 16,
                 height: 1.5,
               ),
             ),
           ),
-
           const SizedBox(height: 64),
         ],
       ),
     );
   }
 
-  // ============================================================
-  // COMMUNITY VOTING
-  // ============================================================
-
   Widget _buildCommunityVotingSection() {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16),
-    child: Column(
-      children: [
-        const Text(
-          'COMMUNITY VOTING',
-          style: TextStyle(
-            color: Color(0xFF5E5E5E),
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            letterSpacing: 0.6,
-          ),
-        ),
+    final scheme = Theme.of(context).colorScheme;
 
-        const SizedBox(height: 32),
-
-        // ------------------------------------------------------
-        // COMMUNITY VOTE COUNT CARD
-        // ------------------------------------------------------
-
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 24,
-            vertical: 28,
-          ),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF6F6F7),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(
-              color: const Color(0xFFE5E5E5),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          Text(
+            'COMMUNITY VOTING',
+            style: TextStyle(
+              color: scheme.onSurfaceVariant,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.6,
             ),
           ),
-          child: Column(
-            children: [
-              // Vote count
-              Text(
-                '1,248',
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Color(0xFF1A1C1C),
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
+          const SizedBox(height: 32),
+
+          // Test-only member list replaces the fake global vote count.
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(20, 22, 20, 10),
+            decoration: BoxDecoration(
+              color: scheme.surfaceContainerLow,
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: scheme.outlineVariant,
               ),
-
-              const SizedBox(height: 6),
-
-              // Vote count label
-              const Text(
-                'PEOPLE VOTED',
-                style: TextStyle(
-                  color: Color(0xFF5E5E5E),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Supporting message
-              const Text(
-                'Your vote helps shape what AnimeClip builds next.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF5E5E5E),
-                  fontSize: 14,
-                  height: 1.4,
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 36),
-
-        // ------------------------------------------------------
-        // VOTE BUTTON
-        // ------------------------------------------------------
-
-        Material(
-          color: hasVoted
-              ? const Color(0xFFEEEEEE)
-              : Colors.black,
-          borderRadius: BorderRadius.circular(999),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(999),
-            onTap: () {
-              setState(() {
-                hasVoted = !hasVoted;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 32,
-                vertical: 14,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    hasVoted
-                        ? Icons.check_rounded
-                        : Icons.how_to_vote_rounded,
-                    size: 18,
-                    color: hasVoted
-                        ? const Color(0xFF1A1C1C)
-                        : Colors.white,
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  Text(
-                    hasVoted ? 'Voted' : 'Vote',
-                    style: TextStyle(
-                      color: hasVoted
-                          ? const Color(0xFF1A1C1C)
-                          : Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Recent voters',
+                        style: TextStyle(
+                          color: scheme.onSurface,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        'Test data',
+                        style: TextStyle(
+                          color: scheme.onSurfaceVariant,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Sample community members shown for UI testing.',
+                  style: TextStyle(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 13,
+                    height: 1.35,
                   ),
-                ],
+                ),
+                const SizedBox(height: 12),
+                ..._testVoters.map(_buildVoterTile),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 36),
+          Material(
+            color: hasVoted
+                ? scheme.surfaceContainerHighest
+                : scheme.primary,
+            borderRadius: BorderRadius.circular(999),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(999),
+              onTap: () {
+                setState(() {
+                  hasVoted = !hasVoted;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 14,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      hasVoted
+                          ? Icons.check_rounded
+                          : Icons.how_to_vote_rounded,
+                      size: 18,
+                      color: hasVoted
+                          ? scheme.onSurface
+                          : scheme.onPrimary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      hasVoted ? 'Voted' : 'Vote',
+                      style: TextStyle(
+                        color: hasVoted
+                            ? scheme.onSurface
+                            : scheme.onPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
+          const SizedBox(height: 64),
+        ],
+      ),
+    );
+  }
 
-        const SizedBox(height: 64),
-      ],
-    ),
-  );
-}
+  Widget _buildVoterTile(_TestVoter voter) {
+    final scheme = Theme.of(context).colorScheme;
 
-  // ============================================================
-  // BACKGROUND CIRCLE
-  // ============================================================
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 21,
+            backgroundColor: scheme.primaryContainer,
+            child: Text(
+              voter.name.substring(0, 1),
+              style: TextStyle(
+                color: scheme.onPrimaryContainer,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  voter.name,
+                  style: TextStyle(
+                    color: scheme.onSurface,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  voter.username,
+                  style: TextStyle(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Icon(
+            Icons.check_circle_rounded,
+            size: 20,
+            color: scheme.primary,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildBackgroundCircle(double size) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       width: size,
       height: size,
-      decoration: const BoxDecoration(
-        color: Color(0xFFEDEDEF),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest,
         shape: BoxShape.circle,
       ),
     );
   }
 
-  // ============================================================
-  // FLOATING ICON
-  // ============================================================
-
   Widget _buildFloatingIcon(IconData icon) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: scheme.surface,
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(
-              alpha: 0.06,
-            ),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -469,29 +456,31 @@ Widget _buildHeader() {
       child: Icon(
         icon,
         size: 20,
-        color: const Color(0xFF5E5E5E),
+        color: scheme.onSurfaceVariant,
       ),
     );
   }
 
-  // ============================================================
-  // DECORATIVE DOT
-  // ============================================================
-
   Widget _buildDot() {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       width: 10,
       height: 10,
-      decoration: const BoxDecoration(
-        color: Color(0xFFD1D1D3),
+      decoration: BoxDecoration(
+        color: scheme.outlineVariant,
         shape: BoxShape.circle,
       ),
     );
   }
-
-  // ============================================================
-  // VOTE CHOICE
-  // ============================================================
-
 }
 
+class _TestVoter {
+  final String name;
+  final String username;
+
+  const _TestVoter({
+    required this.name,
+    required this.username,
+  });
+}

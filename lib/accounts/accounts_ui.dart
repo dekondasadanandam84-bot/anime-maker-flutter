@@ -32,21 +32,21 @@ class AccountsUIState extends State<AccountsUI> {
     }
   }
 
-  TextStyle get _sectionStyle => const TextStyle(
-        color: Color(0xFF5E5E5E),
+  TextStyle get _sectionStyle => TextStyle(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         fontSize: 12,
         fontWeight: FontWeight.w500,
         letterSpacing: 0.3,
       );
 
-  TextStyle get _titleStyle => const TextStyle(
-        color: Color(0xFF1A1C1C),
+  TextStyle get _titleStyle => TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
         fontSize: 24,
         fontWeight: FontWeight.bold,
       );
 
-  TextStyle get _bodyStyle => const TextStyle(
-        color: Color(0xFF5E5E5E),
+  TextStyle get _bodyStyle => TextStyle(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
         fontSize: 15,
         height: 1.4,
       );
@@ -57,7 +57,7 @@ class AccountsUIState extends State<AccountsUI> {
     final otherAccounts = controller.otherAccounts;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -102,11 +102,11 @@ class AccountsUIState extends State<AccountsUI> {
   Widget _buildTopBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 10, 16, 10),
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         border: Border(
           bottom: BorderSide(
-            color: Color(0xFFE8E3E4),
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             width: 1,
           ),
         ),
@@ -116,13 +116,13 @@ class AccountsUIState extends State<AccountsUI> {
           IconButton(
             onPressed: () => Navigator.of(context).maybePop(),
             tooltip: 'Back',
-            icon: const Icon(
+            icon: Icon(
               Icons.close_rounded,
-              color: Colors.black,
+              color: Theme.of(context).colorScheme.onSurface,
               size: 22,
             ),
           ),
-          const Expanded(
+          Expanded(
             child: Text(
               'Accounts',
               textAlign: TextAlign.center,
@@ -169,9 +169,9 @@ class AccountsUIState extends State<AccountsUI> {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border.all(
-          color: const Color(0xFFCFC4C5),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
@@ -198,8 +198,8 @@ class AccountsUIState extends State<AccountsUI> {
                         Expanded(
                           child: Text(
                             account.name,
-                            style: const TextStyle(
-                              color: Color(0xFF1A1C1C),
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
                             ),
@@ -211,8 +211,8 @@ class AccountsUIState extends State<AccountsUI> {
                     const SizedBox(height: 5),
                     Text(
                       account.username,
-                      style: const TextStyle(
-                        color: Color(0xFF5E5E5E),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),
@@ -228,11 +228,11 @@ class AccountsUIState extends State<AccountsUI> {
             width: double.infinity,
             child: OutlinedButton.icon(
               onPressed: () => controller.requestLogout(context),
-              icon: const Icon(Icons.logout_outlined, size: 18),
-              label: const Text('Log Out'),
+              icon: Icon(Icons.logout_outlined, size: 18),
+              label: Text('Log Out'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFFBA1A1A),
-                side: const BorderSide(color: Color(0xFFCFC4C5)),
+                foregroundColor: Theme.of(context).colorScheme.error,
+                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
                 padding: const EdgeInsets.symmetric(vertical: 13),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -253,9 +253,9 @@ class AccountsUIState extends State<AccountsUI> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         border: Border.all(
-          color: const Color(0xFFCFC4C5),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
@@ -280,8 +280,8 @@ class AccountsUIState extends State<AccountsUI> {
                       child: Text(
                         account.name,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFF1A1C1C),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -294,8 +294,8 @@ class AccountsUIState extends State<AccountsUI> {
                 const SizedBox(height: 4),
                 Text(
                   account.username,
-                  style: const TextStyle(
-                    color: Color(0xFF5E5E5E),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 13,
                   ),
                 ),
@@ -306,9 +306,9 @@ class AccountsUIState extends State<AccountsUI> {
 
           PopupMenuButton<AccountsMenuAction>(
             tooltip: 'Account options',
-            icon: const Icon(
+            icon: Icon(
               Icons.more_vert,
-              color: Color(0xFF5E5E5E),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             onSelected: (action) {
               switch (action) {
@@ -320,17 +320,17 @@ class AccountsUIState extends State<AccountsUI> {
                   break;
               }
             },
-            itemBuilder: (context) => const [
-              PopupMenuItem(
+            itemBuilder: (context) => [
+              const PopupMenuItem(
                 value: AccountsMenuAction.switchAccount,
                 child: Text('Switch Account'),
               ),
-              PopupMenuDivider(),
+              const PopupMenuDivider(),
               PopupMenuItem(
                 value: AccountsMenuAction.deleteAccount,
                 child: Text(
                   'Delete Account',
-                  style: TextStyle(color: Color(0xFFBA1A1A)),
+                  style: TextStyle(color: Theme.of(context).colorScheme.error),
                 ),
               ),
             ],
@@ -348,24 +348,24 @@ class AccountsUIState extends State<AccountsUI> {
         vertical: 28,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F3F4),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFCFC4C5),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
-      child: const Column(
+      child: Column(
         children: [
           Icon(
             Icons.account_circle_outlined,
             size: 42,
-            color: Color(0xFF5E5E5E),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           SizedBox(height: 12),
           Text(
             'No other accounts',
             style: TextStyle(
-              color: Color(0xFF1A1C1C),
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 15,
               fontWeight: FontWeight.bold,
             ),
@@ -375,7 +375,7 @@ class AccountsUIState extends State<AccountsUI> {
             'Add another AnimeClip account to quickly switch between accounts.',
             textAlign: TextAlign.center,
             style: TextStyle(
-              color: Color(0xFF5E5E5E),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 13,
               height: 1.4,
             ),
@@ -396,9 +396,9 @@ class AccountsUIState extends State<AccountsUI> {
           vertical: 24,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           border: Border.all(
-            color: const Color(0xFFCFC4C5),
+            color: Theme.of(context).colorScheme.outlineVariant,
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -409,23 +409,23 @@ class AccountsUIState extends State<AccountsUI> {
               height: 48,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: const Color(0xFFF3F3F4),
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.person_add_alt_1_outlined,
-                color: Color(0xFF1A1C1C),
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(width: 16),
-            const Expanded(
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Add Account',
                     style: TextStyle(
-                      color: Color(0xFF1A1C1C),
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                     ),
@@ -434,16 +434,16 @@ class AccountsUIState extends State<AccountsUI> {
                   Text(
                     'Sign in with another AnimeClip account',
                     style: TextStyle(
-                      color: Color(0xFF5E5E5E),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
-              color: Color(0xFF5E5E5E),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ],
         ),
@@ -462,15 +462,15 @@ class AccountsUIState extends State<AccountsUI> {
       height: size,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.black,
+        color: Theme.of(context).colorScheme.onSurface,
         shape: BoxShape.circle,
         border: Border.all(
-          color: const Color(0xFFCFC4C5),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
       child: Icon(
         Icons.movie_outlined,
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         size: large ? 31 : 20,
       ),
     );
@@ -488,13 +488,13 @@ class AccountsUIState extends State<AccountsUI> {
         vertical: 2,
       ),
       decoration: BoxDecoration(
-        color: isPlus ? Colors.black : const Color(0xFFE8E8E8),
+        color: isPlus ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(compact ? 3 : 999),
       ),
       child: Text(
         isPlus ? 'PLUS' : 'FREE',
         style: TextStyle(
-          color: isPlus ? Colors.white : const Color(0xFF5E5E5E),
+          color: isPlus ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurfaceVariant,
           fontSize: compact ? 9 : 10,
           fontWeight: FontWeight.bold,
           letterSpacing: 0.2,
@@ -510,25 +510,25 @@ class AccountsUIState extends State<AccountsUI> {
         vertical: 5,
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F3F4),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(999),
         border: Border.all(
-          color: const Color(0xFFCFC4C5),
+          color: Theme.of(context).colorScheme.outlineVariant,
         ),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(
             Icons.check_circle,
             size: 14,
-            color: Color(0xFF1A1C1C),
+            color: Theme.of(context).colorScheme.onSurface,
           ),
           SizedBox(width: 5),
           Text(
             'Active',
             style: TextStyle(
-              color: Color(0xFF1A1C1C),
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),

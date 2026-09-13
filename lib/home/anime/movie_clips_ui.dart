@@ -131,12 +131,14 @@ class _MovieClipsScreenState
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
-        final colorScheme =
-            Theme.of(dialogContext).colorScheme;
+        
 
         return AlertDialog(
           backgroundColor:
-              colorScheme.surfaceContainer,
+             color: Colors.white,
+border: Border.all(
+  color: colorScheme.outlineVariant,
+),
           title: Text(
             'Delete Clip?',
             style: TextStyle(
@@ -553,7 +555,7 @@ class _MovieClipsScreenState
       index: index,
 
       child: Material(
-        color: colorScheme.surface,
+        color: Colors.white,
 
         child: InkWell(
           onTap: () {

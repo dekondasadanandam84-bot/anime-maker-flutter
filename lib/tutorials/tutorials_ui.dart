@@ -36,7 +36,7 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.only(top: 32),
@@ -68,16 +68,16 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                icon: const Icon(Icons.close_rounded, color: Colors.black),
+                icon: Icon(Icons.close_rounded, color: Theme.of(context).colorScheme.onSurface),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
               ),
-              const Expanded(
+              Expanded(
                 child: Text(
                   'Learn. Animate. Create.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Color(0xFF1A1C1C),
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
@@ -87,7 +87,7 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          const SizedBox(
+          SizedBox(
             width: 353,
             child: Text(
               'Master the art of animation and manga\n'
@@ -95,7 +95,7 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
               'tutorials designed for creators of all levels.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Color(0xFF4C4546),
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 16,
                 height: 1.35,
               ),
@@ -125,9 +125,9 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
               duration: const Duration(milliseconds: 180),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
               decoration: BoxDecoration(
-                color: selected ? Colors.black : const Color(0xFFF9F9F9),
+                color: selected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
                 border: Border.all(
-                  color: selected ? Colors.black : const Color(0xFFE2E2E2),
+                  color: selected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surfaceContainerHighest,
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -136,13 +136,13 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                   Icon(
                     category.icon,
                     size: 16,
-                    color: selected ? Colors.white : const Color(0xFF4C4546),
+                    color: selected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   const SizedBox(width: 7),
                   Text(
                     category.name,
                     style: TextStyle(
-                      color: selected ? Colors.white : const Color(0xFF1A1C1C),
+                      color: selected ? Theme.of(context).colorScheme.onPrimary : Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
                     ),
                   ),
@@ -166,8 +166,8 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                     '12 Principles'
                 ? '12 Principles of Animation'
                 : _controller.categories[_controller.selectedCategory].name,
-            style: const TextStyle(
-              color: Color(0xFF1A1C1C),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -182,8 +182,8 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                       'Animation Techniques'
                 ? 'Practical techniques for creating clear, expressive animation.'
                 : 'Essential manga techniques for characters, pages, and visual storytelling.',
-            style: const TextStyle(
-              color: Color(0xFF4C4546),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 14,
               height: 1.35,
             ),
@@ -199,8 +199,8 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
-        border: Border.all(color: const Color(0xFFE2E2E2)),
-        color: const Color(0xFFF9F9F9),
+        border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
       ),
       clipBehavior: Clip.antiAlias,
@@ -218,8 +218,8 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                     Expanded(
                       child: Text(
                         tutorial.title,
-                        style: const TextStyle(
-                          color: Color(0xFF1A1C1C),
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                         ),
@@ -228,16 +228,16 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                     if (tutorial.completed)
                       _pill(
                         text: 'Completed',
-                        background: Colors.black,
-                        foreground: Colors.white,
+                        background: Theme.of(context).colorScheme.primary,
+                        foreground: Theme.of(context).colorScheme.onPrimary,
                       ),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
                   tutorial.description,
-                  style: const TextStyle(
-                    color: Color(0xFF4C4546),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     height: 1.35,
                   ),
@@ -258,11 +258,11 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
           Container(
             height: 190,
             width: double.infinity,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [Color(0xFFEDEDED), Color(0xFFD7D7D7)],
+                colors: [Theme.of(context).colorScheme.surfaceContainerHighest, Theme.of(context).colorScheme.surfaceContainer,],
               ),
             ),
             child: Stack(
@@ -271,14 +271,14 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                   child: Container(
                     width: 52,
                     height: 52,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.play_arrow_rounded,
                       size: 30,
-                      color: Colors.black,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                 ),
@@ -291,14 +291,14 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                       vertical: 5,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: const Color(0xFFE2E2E2)),
+                      color: Theme.of(context).colorScheme.surface,
+                      border: Border.all(color: Theme.of(context).colorScheme.surfaceContainerHighest),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       _tutorialNumber(tutorial),
-                      style: const TextStyle(
-                        color: Colors.black,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 12,
                         fontWeight: FontWeight.bold,
                       ),
@@ -314,12 +314,12 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.80),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.80),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
                       tutorial.duration,
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      style: TextStyle(color: Theme.of(context).colorScheme.surface, fontSize: 12),
                     ),
                   ),
                 ),
@@ -329,8 +329,8 @@ class _TutorialsScreenState extends State<TutorialsScreen> {
           LinearProgressIndicator(
             value: tutorial.progress / 100,
             minHeight: 4,
-            backgroundColor: const Color(0xFFE2E2E2),
-            valueColor: const AlwaysStoppedAnimation<Color>(Colors.black),
+            backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+            valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
           ),
         ],
       ),

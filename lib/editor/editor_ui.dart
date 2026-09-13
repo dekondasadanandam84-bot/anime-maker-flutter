@@ -196,6 +196,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   animation: Listenable.merge([
                     _controller,
                     _controller.topBarController,
+                    _controller.touchInputController,
                     _controller.leftPanelController,
                     _controller.bottomBarController,
                     _controller.framesViewerController,
@@ -209,11 +210,62 @@ class _EditorScreenState extends State<EditorScreen> {
                       clipBehavior: Clip.hardEdge,
                       children: [
                         Positioned.fill(
-                          child: MiddleUI(
-                            metrics: metrics,
-                            controller: _controller.middleController,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onScaleStart:
+                                _controller.touchInputController.onScaleStart,
+                            onScaleUpdate:
+                                _controller.touchInputController.onScaleUpdate,
+                            onScaleEnd:
+                                _controller.touchInputController.onScaleEnd,
+                            child: MiddleUI(
+                              metrics: metrics,
+                              controller: _controller.middleController,
+                            ),
                           ),
                         ),
+
+                        if (_controller.touchInputController.showFit)
+                          Positioned(
+                            top: metrics.panelGap,
+                            left: 0,
+                            right: 0,
+                            child: Center(
+                              child: Material(
+                                color: colorScheme.surface,
+                                borderRadius: BorderRadius.circular(10),
+                                child: InkWell(
+                                  onTap: _controller.onFitToScreen,
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(7),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Image.asset(
+                                          'assets/fit_screen.png',
+                                          width: metrics.isSmall ? 20 : 24,
+                                          height: metrics.isSmall ? 20 : 24,
+                                          fit: BoxFit.contain,
+                                        ),
+                                        if (!metrics.isSmall)
+                                          Text(
+                                            'Fit',
+                                            style: TextStyle(
+                                              fontSize:
+                                                  metrics.topActionLabelSize,
+                                              fontWeight: FontWeight.w500,
+                                              color:
+                                                  colorScheme.onSurfaceVariant,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
                         if (!leftPanel.paintSheetOpen)
                           Positioned(
                             left: metrics.horizontalInset,
@@ -262,7 +314,8 @@ class _EditorScreenState extends State<EditorScreen> {
                                       child: Row(
                                         children: [
                                           IconButton(
-                                            onPressed: leftPanel.closePaintSheet,
+                                            onPressed:
+                                                leftPanel.closePaintSheet,
                                             icon: Icon(
                                               Icons.arrow_back_rounded,
                                               color: colorScheme.onSurface,
@@ -310,7 +363,8 @@ class _EditorScreenState extends State<EditorScreen> {
                             child: BottomBarUI(
                               metrics: metrics,
                               controller: _controller.bottomBarController,
-                              onPreviousFrame: _controller.onPreviousFramePressed,
+                              onPreviousFrame:
+                                  _controller.onPreviousFramePressed,
                               onPlayPause: _controller.onPlayPausePressed,
                               onNextFrame: _controller.onNextFramePressed,
                               controlsHidden: controlsHidden,
@@ -354,9 +408,7 @@ class _AddFramesSheet extends StatelessWidget {
         padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
         decoration: BoxDecoration(
           color: colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(24),
-          ),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: SingleChildScrollView(
           child: Column(
@@ -384,8 +436,7 @@ class _AddFramesSheet extends StatelessWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: 30,
-                gridDelegate:
-                    const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 6,
                   mainAxisSpacing: 8,
                   crossAxisSpacing: 8,
@@ -422,10 +473,7 @@ class _AddFramesSheet extends StatelessWidget {
 }
 
 class _ShowControlsButton extends StatelessWidget {
-  const _ShowControlsButton({
-    required this.metrics,
-    required this.onTap,
-  });
+  const _ShowControlsButton({required this.metrics, required this.onTap});
 
   final EditorResponsiveData metrics;
   final VoidCallback onTap;

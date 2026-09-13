@@ -8,26 +8,22 @@ import 'top_bar/top_bar_controller.dart';
 import 'bottom_bar/bottom_bar_controller.dart';
 import 'bottom_bar/frames_viewer_controller.dart';
 import 'middle/middle_controller.dart';
+import 'touch_input/touch_input_controller.dart';
 
 class EditorController extends ChangeNotifier {
-  EditorController({
-    required this.projectController,
-    required this.clipId,
-  })  : topBarController = TopBarController(),
-        leftPanelController = LeftPanelController(),
-        bottomBarController = BottomBarController(
-          projectController: projectController,
-          clipId: clipId,
+  EditorController({required this.projectController, required this.clipId})
+    : topBarController = TopBarController(),
+      leftPanelController = LeftPanelController(),
+      bottomBarController = BottomBarController(
+        projectController: projectController,
+        clipId: clipId,
+      ),
+      middleController = MiddleController(
+        aspectRatio: _aspectRatioValue(
+          projectController.currentAspectRatio ?? ProjectAspectRatio.ratio16x9,
         ),
-        middleController = MiddleController(
-          aspectRatio: _aspectRatioValue(
-            projectController.currentAspectRatio ??
-                ProjectAspectRatio.ratio16x9,
-          ),
-          resolution:
-              projectController.currentResolution ??
-                  '1920 × 1080',
-        ) {
+        resolution: projectController.currentResolution ?? '1920 × 1080',
+      ) {
     // ==========================================================
     // FRAMES VIEWER
     // ==========================================================
@@ -41,9 +37,15 @@ class EditorController extends ChangeNotifier {
       bottomBarController: bottomBarController,
     );
 
-    projectController.addListener(
-      _onProjectControllerChanged,
+    touchInputController = TouchInputController(
+      inputMode: TouchInputController.globalInputMode,
     );
+
+    touchInputController.addListener(_onTouchInputChanged);
+
+    middleController.addListener(_onMiddleControllerChanged);
+
+    projectController.addListener(_onProjectControllerChanged);
   }
 
   // ============================================================
@@ -54,16 +56,16 @@ class EditorController extends ChangeNotifier {
 
   final String clipId;
 
+  late final TouchInputController touchInputController;
+
   // ============================================================
   // CURRENT PROJECT DATA
   // ============================================================
 
-  ProjectSettingsModel? get settings =>
-      projectController.currentSettings;
+  ProjectSettingsModel? get settings => projectController.currentSettings;
 
   double get aspectRatio {
-    final ratio =
-        projectController.currentAspectRatio;
+    final ratio = projectController.currentAspectRatio;
 
     if (ratio == null) {
       return 16 / 9;
@@ -72,24 +74,18 @@ class EditorController extends ChangeNotifier {
     return _aspectRatioValue(ratio);
   }
 
-  String get resolution =>
-      projectController.currentResolution ??
-      '1920 × 1080';
+  String get resolution => projectController.currentResolution ?? '1920 × 1080';
 
-  double get fps =>
-      projectController.currentFps ?? 12;
+  double get fps => projectController.currentFps ?? 12;
 
-  String? get projectName =>
-      projectController.currentProjectName;
+  String? get projectName => projectController.currentProjectName;
 
   // ============================================================
   // CURRENT CLIP
   // ============================================================
 
   String? get currentClipName =>
-      projectController
-          .findCurrentClipById(clipId)
-          ?.name;
+      projectController.findCurrentClipById(clipId)?.name;
 
   // ============================================================
   // EDITOR CONTROLLERS
@@ -150,11 +146,16 @@ class EditorController extends ChangeNotifier {
   }
 
   void onFitToScreen() {
+    touchInputController.fitToScreen();
     topBarController.fitToScreen();
   }
 
   void onHidePanels() {
     topBarController.hidePanels();
+
+    if (topBarController.panelsHidden) {
+      touchInputController.onPanelsHidden();
+    }
   }
 
   // ============================================================
@@ -195,8 +196,7 @@ class EditorController extends ChangeNotifier {
     required double fps,
   }) {
     projectController.updateCurrentProjectSettings(
-      aspectRatio:
-          _projectAspectRatio(aspectRatio),
+      aspectRatio: _projectAspectRatio(aspectRatio),
       resolution: resolution,
       fps: fps,
     );
@@ -228,9 +228,7 @@ class EditorController extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await Future<void>.delayed(
-        const Duration(milliseconds: 500),
-      );
+      await Future<void>.delayed(const Duration(milliseconds: 500));
     } finally {
       _isSaving = false;
       notifyListeners();
@@ -241,9 +239,7 @@ class EditorController extends ChangeNotifier {
   // ASPECT RATIO HELPERS
   // ============================================================
 
-  static double _aspectRatioValue(
-    ProjectAspectRatio ratio,
-  ) {
+  static double _aspectRatioValue(ProjectAspectRatio ratio) {
     switch (ratio) {
       case ProjectAspectRatio.ratio16x9:
         return 16 / 9;
@@ -259,9 +255,7 @@ class EditorController extends ChangeNotifier {
     }
   }
 
-  static ProjectAspectRatio _projectAspectRatio(
-    double value,
-  ) {
+  static ProjectAspectRatio _projectAspectRatio(double value) {
     if ((value - (16 / 9)).abs() < 0.001) {
       return ProjectAspectRatio.ratio16x9;
     }
@@ -287,9 +281,7 @@ class EditorController extends ChangeNotifier {
 
   @override
   void dispose() {
-    projectController.removeListener(
-      _onProjectControllerChanged,
-    );
+    projectController.removeListener(_onProjectControllerChanged);
 
     framesViewerController.dispose();
 
@@ -297,7 +289,24 @@ class EditorController extends ChangeNotifier {
     topBarController.dispose();
     bottomBarController.dispose();
     middleController.dispose();
+    touchInputController.removeListener(_onTouchInputChanged);
+
+    middleController.removeListener(_onMiddleControllerChanged);
+
+    touchInputController.dispose();
 
     super.dispose();
+  }
+
+  void _onTouchInputChanged() {
+    middleController.updateViewport(
+      zoom: touchInputController.zoom,
+      panOffset: touchInputController.panOffset,
+      showFit: touchInputController.showFit,
+    );
+  }
+
+  void _onMiddleControllerChanged() {
+    notifyListeners();
   }
 }

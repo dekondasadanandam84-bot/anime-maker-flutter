@@ -1,14 +1,4 @@
-
 import 'package:flutter/material.dart';
-
-// ============================================================================
-// GO PLUS COLORS
-// ============================================================================
-
-const Color _plusPink = Color(0xFFFF2463);
-const Color _textPrimary = Color(0xFF1A1C1C);
-const Color _textSecondary = Color(0xFF4C4546);
-const Color _borderColor = Color(0xFFCFC4C5);
 
 // ============================================================================
 // GO PLUS UI
@@ -27,7 +17,7 @@ class _GoPlusUIState extends State<GoPlusUI> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -86,9 +76,9 @@ Widget _buildHeader() {
         onPressed: () {
           Navigator.pop(context);
         },
-        icon: const Icon(
+        icon: Icon(
           Icons.close_rounded,
-          color: Colors.grey,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
           size: 26,
         ),
       ),
@@ -123,14 +113,14 @@ Widget _buildHeader() {
             return Container(
               height: 180,
               decoration: BoxDecoration(
-                color: const Color(0xFFF5F5F5),
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: const Center(
+              child: Center(
                 child: Icon(
                   Icons.image_outlined,
                   size: 48,
-                  color: Colors.grey,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             );
@@ -206,10 +196,10 @@ Widget _buildHeader() {
       ),
       padding: const EdgeInsets.all(17),
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F3F4),
+        color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0x4DCFC4C5),
+          color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.30),
           width: 1,
         ),
       ),
@@ -223,23 +213,23 @@ Widget _buildHeader() {
               right: 12,
             ),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.info_outline,
               size: 18,
-              color: Colors.grey,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
 
-          const Expanded(
+          Expanded(
             child: Text(
               'Free users can create unlimited local projects.\n'
               'Manual backup is available to File Manager and Google Drive.\n'
               'Earn Coins to unlock premium brushes and fonts for 12 hours.',
               style: TextStyle(
-                color: _textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 12,
                 height: 1.45,
               ),
@@ -304,13 +294,13 @@ Widget _buildHeader() {
                 vertical: 4,
               ),
               decoration: BoxDecoration(
-                color: _plusPink,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(999),
               ),
-              child: const Text(
+              child: Text(
                 'BEST VALUE',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   fontSize: 10,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 0.2,
@@ -351,7 +341,7 @@ Widget _buildHeader() {
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.black,
+                  color: Theme.of(context).colorScheme.onSurface,
                   borderRadius: BorderRadius.circular(999),
                   boxShadow: const [
                     BoxShadow(
@@ -361,11 +351,11 @@ Widget _buildHeader() {
                     ),
                   ],
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
                     'Go Plus',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: Theme.of(context).colorScheme.surface,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -377,10 +367,10 @@ Widget _buildHeader() {
 
           const SizedBox(height: 12),
 
-          const Text(
+          Text(
             'Cancel anytime',
             style: TextStyle(
-              color: _textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontSize: 12,
             ),
           ),
@@ -401,7 +391,7 @@ Widget _buildHeader() {
       ),
       child: Column(
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(
               bottom: 16,
             ),
@@ -411,7 +401,7 @@ Widget _buildHeader() {
               'files locally.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: _textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 12,
                 height: 1.4,
               ),
@@ -422,14 +412,14 @@ Widget _buildHeader() {
             onTap: () {
               // Restore purchase logic later.
             },
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.only(
                 bottom: 16,
               ),
               child: Text(
                 'Restore Purchase',
                 style: TextStyle(
-                  color: Colors.black,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 14,
                   decoration: TextDecoration.underline,
                 ),
@@ -437,13 +427,13 @@ Widget _buildHeader() {
             ),
           ),
 
-          const Row(
+          Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
                 'Privacy Policy',
                 style: TextStyle(
-                  color: _textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                 ),
               ),
@@ -455,7 +445,7 @@ Widget _buildHeader() {
                 child: Text(
                   '•',
                   style: TextStyle(
-                    color: _textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 12,
                   ),
                 ),
@@ -464,7 +454,7 @@ Widget _buildHeader() {
               Text(
                 'Terms of Use',
                 style: TextStyle(
-                  color: _textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontSize: 12,
                 ),
               ),
@@ -510,24 +500,24 @@ class _PlanCard extends StatelessWidget {
         ),
 
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
 
           // SELECTED PLAN = PINK BORDER
           border: Border.all(
             color: selected
-                ? _plusPink
-                : _borderColor,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outlineVariant,
             width: selected ? 2.5 : 1,
           ),
 
           // SELECTED PLAN = PINK SHADOW
           boxShadow: selected
-              ? const [
+              ? [
                   BoxShadow(
-                    color: Color(0x1FFF2463),
+                    color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.12),
                     blurRadius: 12,
-                    offset: Offset(0, 4),
+                    offset: const Offset(0, 4),
                   ),
                 ]
               : const [],
@@ -537,8 +527,8 @@ class _PlanCard extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(
-                color: _textPrimary,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
               ),
@@ -548,8 +538,8 @@ class _PlanCard extends StatelessWidget {
 
             Text(
               price,
-              style: const TextStyle(
-                color: _textPrimary,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -557,8 +547,8 @@ class _PlanCard extends StatelessWidget {
 
             Text(
               period,
-              style: const TextStyle(
-                color: _textSecondary,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 12,
               ),
             ),
@@ -602,13 +592,13 @@ class _BenefitTile extends StatelessWidget {
               right: 16,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFFF7F7F7),
+              color: Theme.of(context).colorScheme.surfaceContainerLow,
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
               icon,
               size: 22,
-              color: const Color(0xFF333333),
+              color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
 
@@ -618,8 +608,8 @@ class _BenefitTile extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    color: _textPrimary,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
@@ -629,8 +619,8 @@ class _BenefitTile extends StatelessWidget {
 
                 Text(
                   description,
-                  style: const TextStyle(
-                    color: _textSecondary,
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     height: 1.35,
                   ),
@@ -643,4 +633,3 @@ class _BenefitTile extends StatelessWidget {
     );
   }
 }
-

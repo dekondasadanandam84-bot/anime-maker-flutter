@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/core/app_media.dart';
 import 'package:flutter_application_1/core/app_theme.dart';
 import 'package:flutter_application_1/goplus/go_plus_ui.dart';
-
-enum InputMode { stylus, finger, both }
+import 'package:flutter_application_1/editor/touch_input/touch_input_controller.dart';
 
 class SettingsUI extends StatefulWidget {
   const SettingsUI({super.key});
@@ -412,6 +411,7 @@ class _SettingsUIState extends State<SettingsUI> {
               setState(() {
                 inputMode = InputMode.stylus;
               });
+              TouchInputController.setGlobalInputMode(InputMode.stylus);
             },
           ),
           _divider(),
@@ -424,6 +424,7 @@ class _SettingsUIState extends State<SettingsUI> {
               setState(() {
                 inputMode = InputMode.finger;
               });
+              TouchInputController.setGlobalInputMode(InputMode.finger);
             },
           ),
           _divider(),
@@ -437,6 +438,7 @@ class _SettingsUIState extends State<SettingsUI> {
               setState(() {
                 inputMode = InputMode.both;
               });
+              TouchInputController.setGlobalInputMode(InputMode.both);
             },
           ),
         ],

@@ -6,13 +6,10 @@ import 'models/project_model.dart';
 import 'models/project_settings_model.dart';
 
 class CreateProjectScreen extends StatefulWidget {
-  const CreateProjectScreen({
-    super.key,
-  });
+  const CreateProjectScreen({super.key});
 
   @override
-  State<CreateProjectScreen> createState() =>
-      _CreateProjectScreenState();
+  State<CreateProjectScreen> createState() => _CreateProjectScreenState();
 }
 
 class _CreateProjectScreenState extends State<CreateProjectScreen> {
@@ -35,14 +32,11 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   // PROJECT CONTROLLER
   // ============================================================
 
-  ProjectController get projectController =>
-      ProjectScope.of(context);
+  ProjectController get projectController => ProjectScope.of(context);
 
-  ProjectFlowType? get flowType =>
-      projectController.projectFlowType;
+  ProjectFlowType? get flowType => projectController.projectFlowType;
 
-  bool get isEditing =>
-      projectController.isEditingProject;
+  bool get isEditing => projectController.isEditingProject;
 
   bool get isAnime =>
       flowType == ProjectFlowType.animeSeries ||
@@ -85,9 +79,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
     _titleController.text = project.name;
 
-    _aspectRatio = _aspectRatioText(
-      project.settings.aspectRatio,
-    );
+    _aspectRatio = _aspectRatioText(project.settings.aspectRatio);
 
     _resolution = project.settings.resolution;
     _fps = project.settings.fps;
@@ -145,8 +137,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       case ProjectFlowType.editCurrentProject:
       case null:
         if (isEditing &&
-            projectController.currentProjectType ==
-                ProjectType.animeMovie) {
+            projectController.currentProjectType == ProjectType.animeMovie) {
           return 'Movie Name';
         }
 
@@ -198,8 +189,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
       case ProjectFlowType.editCurrentProject:
       case null:
-        if (projectController.currentProjectType ==
-            ProjectType.animeMovie) {
+        if (projectController.currentProjectType == ProjectType.animeMovie) {
           return 'Movie → Clips → Frames';
         }
 
@@ -211,9 +201,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
   // ASPECT RATIO
   // ============================================================
 
-  ProjectAspectRatio _parseAspectRatio(
-    String value,
-  ) {
+  ProjectAspectRatio _parseAspectRatio(String value) {
     switch (value) {
       case '9:16':
         return ProjectAspectRatio.ratio9x16;
@@ -230,9 +218,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     }
   }
 
-  String _aspectRatioText(
-    ProjectAspectRatio ratio,
-  ) {
+  String _aspectRatioText(ProjectAspectRatio ratio) {
     switch (ratio) {
       case ProjectAspectRatio.ratio16x9:
         return '16:9';
@@ -257,11 +243,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
     if (name.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Please enter the ${nameLabel.toLowerCase()}.',
-          ),
-        ),
+        SnackBar(content: Text('Please enter the ${nameLabel.toLowerCase()}.')),
       );
 
       return;
@@ -278,28 +260,20 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
       if (currentProject == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'No current project found.',
-            ),
-          ),
+          const SnackBar(content: Text('No current project found.')),
         );
 
         return;
       }
 
-      final updatedSettings =
-          currentProject.settings.copyWith(
+      final updatedSettings = currentProject.settings.copyWith(
         aspectRatio: _parseAspectRatio(_aspectRatio),
         resolution: _resolution,
         fps: _fps.roundToDouble(),
         quality: _quality,
       );
 
-      controller.updateCurrentProject(
-        name: name,
-        settings: updatedSettings,
-      );
+      controller.updateCurrentProject(name: name, settings: updatedSettings);
 
       controller.clearProjectFlow();
 
@@ -315,9 +289,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     if (isManga) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            'Manga project models are not implemented yet.',
-          ),
+          content: Text('Manga project models are not implemented yet.'),
         ),
       );
 
@@ -376,11 +348,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
     // ==========================================================
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Please select a project type.',
-        ),
-      ),
+      const SnackBar(content: Text('Please select a project type.')),
     );
   }
 
@@ -421,10 +389,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
             Navigator.of(context).maybePop();
           },
-          icon: Icon(
-            Icons.close_rounded,
-            color: colorScheme.onSurface,
-          ),
+          icon: Icon(Icons.close_rounded, color: colorScheme.onSurface),
         ),
 
         title: Text(
@@ -449,25 +414,16 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
       body: SafeArea(
         top: false,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            20,
-            26,
-            20,
-            32,
-          ),
+          padding: const EdgeInsets.fromLTRB(20, 26, 20, 32),
           child: Center(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 720,
-              ),
+              constraints: const BoxConstraints(maxWidth: 720),
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const _SectionHeader(
                     title: 'Project Details',
-                    subtitle:
-                        'Enter the basic information for your project.',
+                    subtitle: 'Enter the basic information for your project.',
                   ),
 
                   const SizedBox(height: 18),
@@ -486,8 +442,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                   if (isAnime) ...[
                     const _SectionHeader(
                       title: 'Anime Settings',
-                      subtitle:
-                          'Configure the basic animation settings.',
+                      subtitle: 'Configure the basic animation settings.',
                     ),
 
                     const SizedBox(height: 20),
@@ -495,12 +450,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     _SimpleDropdown<String>(
                       label: 'Aspect Ratio',
                       value: _aspectRatio,
-                      items: const [
-                        '16:9',
-                        '9:16',
-                        '1:1',
-                        '4:1',
-                      ],
+                      items: const ['16:9', '9:16', '1:1', '4:1'],
                       onChanged: (value) {
                         if (value == null) {
                           return;
@@ -551,16 +501,13 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
                     const SizedBox(height: 28),
 
-                    _StructureSection(
-                      value: projectStructure,
-                    ),
+                    _StructureSection(value: projectStructure),
                   ],
 
                   if (isManga) ...[
                     const _SectionHeader(
                       title: 'Manga Settings',
-                      subtitle:
-                          'Configure the basic manga settings.',
+                      subtitle: 'Configure the basic manga settings.',
                     ),
 
                     const SizedBox(height: 20),
@@ -568,14 +515,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     _SimpleDropdown<String>(
                       label: 'Paper Size',
                       value: _paperSize,
-                      items: const [
-                        'A4',
-                        'A5',
-                        'A3',
-                        'B5',
-                        'Letter',
-                        'Legal',
-                      ],
+                      items: const ['A4', 'A5', 'A3', 'B5', 'Letter', 'Legal'],
                       onChanged: (value) {
                         if (value == null) {
                           return;
@@ -592,12 +532,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                     _SimpleDropdown<String>(
                       label: 'Quality',
                       value: _quality,
-                      items: const [
-                        'Draft',
-                        'Medium',
-                        'High',
-                        'Maximum',
-                      ],
+                      items: const ['Draft', 'Medium', 'High', 'Maximum'],
                       onChanged: (value) {
                         if (value == null) {
                           return;
@@ -611,9 +546,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
 
                     const SizedBox(height: 28),
 
-                    _StructureSection(
-                      value: projectStructure,
-                    ),
+                    _StructureSection(value: projectStructure),
                   ],
 
                   const SizedBox(height: 34),
@@ -627,8 +560,7 @@ class _CreateProjectScreenState extends State<CreateProjectScreen> {
                         foregroundColor: colorScheme.onPrimary,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                       ),
                       child: Text(
@@ -660,10 +592,7 @@ class _SectionHeader extends StatelessWidget {
   final String title;
   final String subtitle;
 
-  const _SectionHeader({
-    required this.title,
-    required this.subtitle,
-  });
+  const _SectionHeader({required this.title, required this.subtitle});
 
   @override
   Widget build(BuildContext context) {
@@ -715,38 +644,55 @@ class _TitleField extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return TextField(
-      controller: controller,
-      textCapitalization: TextCapitalization.sentences,
-      decoration: InputDecoration(
-        prefixIcon: Icon(
-          icon,
-          color: colorScheme.onSurfaceVariant,
-        ),
-        labelText: label,
-        hintText: hint,
-        filled: true,
-        fillColor: colorScheme.surfaceContainerHighest,
-        labelStyle: TextStyle(
-          color: colorScheme.onSurfaceVariant,
-        ),
-        hintStyle: TextStyle(
-          color: colorScheme.onSurfaceVariant,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: colorScheme.outlineVariant,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
           ),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: colorScheme.primary,
-            width: 1.2,
+
+        const SizedBox(height: 8),
+
+        TextField(
+          controller: controller,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+              fontSize: 14,
+            ),
+            prefixIcon: Icon(
+              icon,
+              size: 21,
+              color: colorScheme.onSurfaceVariant,
+            ),
+
+            // No input-field background color.
+            filled: false,
+            fillColor: Colors.transparent,
+
+            // No border/card around the field.
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+
+            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+          ),
+          style: TextStyle(
+            color: colorScheme.onSurface,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
           ),
         ),
-      ),
+
+        Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
+      ],
     );
   }
 }
@@ -790,20 +736,15 @@ class _SimpleDropdown<T> extends StatelessWidget {
             borderRadius: BorderRadius.circular(12),
             dropdownColor: colorScheme.surfaceContainer,
             iconEnabledColor: colorScheme.primary,
-            items: items.map(
-              (item) {
-                return DropdownMenuItem<T>(
-                  value: item,
-                  child: Text(
-                    item.toString(),
-                    style: TextStyle(
-                      color: colorScheme.onSurface,
-                      fontSize: 14,
-                    ),
-                  ),
-                );
-              },
-            ).toList(),
+            items: items.map((item) {
+              return DropdownMenuItem<T>(
+                value: item,
+                child: Text(
+                  item.toString(),
+                  style: TextStyle(color: colorScheme.onSurface, fontSize: 14),
+                ),
+              );
+            }).toList(),
             onChanged: onChanged,
           ),
         ),
@@ -837,12 +778,13 @@ class _SliderSetting extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    const sliderColor = Color(0xFFE91E63);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment:
-              MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
               label,
@@ -862,31 +804,66 @@ class _SliderSetting extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
-        Slider(
-          value: value,
-          min: min,
-          max: max,
-          divisions: 29,
-          label: valueText,
-          activeColor: colorScheme.primary,
-          inactiveColor: colorScheme.surfaceContainerHighest,
-          thumbColor: colorScheme.primary,
-          onChanged: onChanged,
+
+        const SizedBox(height: 8),
+
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            // Very thin track.
+            trackHeight: 1.5,
+
+            // Pink active portion.
+            activeTrackColor: sliderColor,
+
+            // Light inactive portion.
+            inactiveTrackColor: colorScheme.outlineVariant,
+
+            // Large WHITE thumb.
+            thumbColor: Colors.white,
+
+            // Subtle pink interaction area.
+            overlayColor: sliderColor.withValues(alpha: 0.08),
+
+            // Bigger thumb.
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 11),
+
+            // Slightly larger touch feedback.
+            overlayShape: const RoundSliderOverlayShape(overlayRadius: 17),
+
+            // No dots/tick marks.
+            activeTickMarkColor: Colors.transparent,
+            inactiveTickMarkColor: Colors.transparent,
+
+            // IMPORTANT:
+            // Do not use RoundedRectSliderTrackShape.
+            // This gives us a straight thin track.
+            trackShape: const RectangularSliderTrackShape(),
+
+            // Remove extra visual padding around the track.
+            minThumbSeparation: 0,
+          ),
+          child: Slider(
+            value: value.clamp(min, max),
+            min: min,
+            max: max,
+            divisions: (max - min).round(),
+            label: valueText,
+            onChanged: onChanged,
+          ),
         ),
+
         Row(
-          mainAxisAlignment:
-              MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '1 FPS',
+              '${min.round()} FPS',
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
                 fontSize: 11,
               ),
             ),
             Text(
-              '30 FPS',
+              '${max.round()} FPS',
               style: TextStyle(
                 color: colorScheme.onSurfaceVariant,
                 fontSize: 11,
@@ -894,6 +871,10 @@ class _SliderSetting extends StatelessWidget {
             ),
           ],
         ),
+
+        const SizedBox(height: 4),
+
+        Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
       ],
     );
   }
@@ -906,9 +887,7 @@ class _SliderSetting extends StatelessWidget {
 class _StructureSection extends StatelessWidget {
   final String value;
 
-  const _StructureSection({
-    required this.value,
-  });
+  const _StructureSection({required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -935,11 +914,7 @@ class _StructureSection extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 14),
-        Divider(
-          height: 1,
-          thickness: 1,
-          color: colorScheme.outlineVariant,
-        ),
+        Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
       ],
     );
   }

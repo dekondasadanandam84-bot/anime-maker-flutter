@@ -42,20 +42,30 @@ class MiddleUI extends StatelessWidget {
                   final canvasHeight = canvasWidth / aspectRatio;
 
                   return Center(
-                    child: SizedBox(
-                      width: canvasWidth,
-                      height: canvasHeight,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(color: Colors.black26, width: 1),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              offset: Offset(0, 4),
+                    child: Transform.translate(
+                      offset: controller.panOffset,
+                      child: Transform.scale(
+                        scale: controller.zoom,
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: canvasWidth,
+                          height: canvasHeight,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              border: Border.all(
+                                color: Colors.black26,
+                                width: 1,
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 10,
+                                  offset: Offset(0, 4),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
                     ),

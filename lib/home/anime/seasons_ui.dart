@@ -438,12 +438,12 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        border: Border.all(
-          color: colorScheme.outlineVariant,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
+  color: Colors.white,
+  border: Border.all(
+    color: colorScheme.outlineVariant,
+  ),
+  borderRadius: BorderRadius.circular(12),
+),
       clipBehavior: Clip.antiAlias,
       child: seasons.isEmpty
           ? Padding(
@@ -510,7 +510,7 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
     final colorScheme = theme.colorScheme;
 
     return Material(
-      color: colorScheme.surfaceContainer,
+      color: Colors.white,
       child: InkWell(
         onTap: () {
           if (!projectController.selectSeason(
@@ -542,8 +542,10 @@ class _SeasonsScreenState extends State<SeasonsScreen> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color:
-                      colorScheme.primaryContainer,
+                  color: Colors.white,
+border: Border.all(
+  color: colorScheme.outlineVariant,
+),
                   borderRadius:
                       BorderRadius.circular(10),
                 ),

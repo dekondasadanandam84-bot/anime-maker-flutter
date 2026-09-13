@@ -3,6 +3,7 @@ import 'package:flutter_application_1/core/app_media.dart';
 import 'follow_us_controller.dart';
 
 /// AnimeClip Follow Us screen.
+///
 /// UI only; platform-opening logic belongs to FollowUsController.
 class FollowUsUI extends StatefulWidget {
   const FollowUsUI({super.key});
@@ -28,49 +29,73 @@ class _FollowUsUIState extends State<FollowUsUI> {
   }
 
   void _refresh() {
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     AppMedia.init(context);
 
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scheme.surface,
       body: SafeArea(
         child: Column(
           children: [
             const _FollowUsAppBar(),
-            const Divider(height: 1, thickness: 1, color: Color(0xFFEAEAEA)),
+
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: scheme.outlineVariant,
+            ),
+
             Expanded(
               child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 padding: EdgeInsets.fromLTRB(
-                  AppMedia.w(16),
+                  AppMedia.w(14),
+                  AppMedia.h(14),
+                  AppMedia.w(14),
                   AppMedia.h(20),
-                  AppMedia.w(16),
-                  AppMedia.h(28),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const _FollowUsHeader(),
-                    SizedBox(height: AppMedia.h(20)),
-                    const _PremiumCommunityPrompt(),
-                    SizedBox(height: AppMedia.h(28)),
-                    const _OfficialPlatformsHeader(),
+
                     SizedBox(height: AppMedia.h(14)),
+
+                    const _PremiumCommunityPrompt(),
+
+                    SizedBox(height: AppMedia.h(20)),
+
+                    const _OfficialPlatformsHeader(),
+
+                    SizedBox(height: AppMedia.h(10)),
+
                     ...FollowUsController.platforms.map(
                       (platform) => Padding(
-                        padding: EdgeInsets.only(bottom: AppMedia.h(10)),
+                        padding: EdgeInsets.only(
+                          bottom: AppMedia.h(8),
+                        ),
                         child: SocialPlatformCard(
                           data: platform,
-                          state: controller.stateFor(platform.platform),
-                          onFollow: () =>
-                              controller.followPlatform(platform.platform),
+                          state: controller.stateFor(
+                            platform.platform,
+                          ),
+                          onFollow: () => controller.followPlatform(
+                            platform.platform,
+                          ),
                         ),
                       ),
                     ),
-                    SizedBox(height: AppMedia.h(14)),
+
+                    SizedBox(height: AppMedia.h(8)),
+
                     const _FollowUsFooter(),
                   ],
                 ),
@@ -83,35 +108,67 @@ class _FollowUsUIState extends State<FollowUsUI> {
   }
 }
 
+// ============================================================================
+// TOP BAR
+// ============================================================================
+
 class _FollowUsAppBar extends StatelessWidget {
   const _FollowUsAppBar();
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final width = MediaQuery.sizeOf(context).width;
+
+    final titleSize = width < 360 ? 17.0 : 19.0;
+    final iconSize = width < 360 ? 21.0 : 22.0;
+
     return SizedBox(
-      height: AppMedia.h(58),
+      height: 52,
+      width: double.infinity,
       child: Stack(
-        alignment: Alignment.center,
+        fit: StackFit.expand,
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: IconButton(
-              tooltip: 'Back',
-              onPressed: () => Navigator.pop(context),
-              icon: Icon(
-                Icons.close_rounded,
-                color: Colors.black87,
-                size: AppMedia.icon(24),
+            child: SizedBox(
+              width: 44,
+              height: 44,
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 44,
+                  minHeight: 44,
+                ),
+                onPressed: () => Navigator.pop(context),
+                tooltip: 'Back',
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: scheme.onSurface,
+                  size: iconSize,
+                ),
               ),
             ),
           ),
-          Text(
-            'Follow Us',
-            style: TextStyle(
-              fontSize: AppMedia.sp(20),
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-              letterSpacing: -0.2,
+
+          Positioned.fill(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 54),
+                child: Text(
+                  'Follow Us',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: titleSize,
+                    fontWeight: FontWeight.bold,
+                    color: scheme.primary,
+                    letterSpacing: -0.15,
+                    height: 1.1,
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -119,50 +176,65 @@ class _FollowUsAppBar extends StatelessWidget {
     );
   }
 }
+
+// ============================================================================
+// HEADER
+// ============================================================================
 
 class _FollowUsHeader extends StatelessWidget {
   const _FollowUsHeader();
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Center(
       child: Column(
         children: [
           Container(
-            width: AppMedia.w(42),
-            height: AppMedia.w(42),
+            width: AppMedia.w(36),
+            height: AppMedia.w(36),
             decoration: BoxDecoration(
-              color: const Color(0xFFF0ECFF),
-              borderRadius: BorderRadius.circular(AppMedia.r(14)),
+              color: scheme.primaryContainer,
+              borderRadius: BorderRadius.circular(
+                AppMedia.r(11),
+              ),
             ),
             alignment: Alignment.center,
             child: Icon(
               Icons.groups_rounded,
-              color: const Color(0xFF6D4AFF),
-              size: AppMedia.icon(24),
+              color: scheme.primary,
+              size: AppMedia.icon(20),
             ),
           ),
-          SizedBox(height: AppMedia.h(10)),
+
+          SizedBox(height: AppMedia.h(7)),
+
           Text(
             'Follow AnimeClip',
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: AppMedia.sp(23),
+              fontSize: AppMedia.sp(20),
               fontWeight: FontWeight.bold,
-              color: Colors.black,
-              letterSpacing: -0.3,
+              color: scheme.onSurface,
+              letterSpacing: -0.2,
+              height: 1.15,
             ),
           ),
-          SizedBox(height: AppMedia.h(6)),
+
+          SizedBox(height: AppMedia.h(4)),
+
           ConstrainedBox(
-            constraints: BoxConstraints(maxWidth: AppMedia.w(290)),
+            constraints: BoxConstraints(
+              maxWidth: AppMedia.w(270),
+            ),
             child: Text(
-              'Stay connected with AnimeClip across our official platforms.',
+              'Connect with AnimeClip on our official platforms.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: AppMedia.sp(14),
-                height: 1.35,
-                color: const Color(0xFF4C4546),
+                fontSize: AppMedia.sp(12),
+                height: 1.3,
+                color: scheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -172,25 +244,35 @@ class _FollowUsHeader extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// COMMUNITY PROMPT
+// ============================================================================
+
 class _PremiumCommunityPrompt extends StatelessWidget {
   const _PremiumCommunityPrompt();
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(
-        horizontal: AppMedia.w(16),
-        vertical: AppMedia.h(14),
+        horizontal: AppMedia.w(12),
+        vertical: AppMedia.h(10),
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFFF6F3FF),
-        borderRadius: BorderRadius.circular(AppMedia.r(16)),
-        border: Border.all(color: const Color(0xFFE6DEFF)),
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(
+          AppMedia.r(13),
+        ),
+        border: Border.all(
+          color: scheme.outlineVariant,
+        ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 8,
+            color: Color(0x06000000),
+            blurRadius: 6,
             offset: Offset(0, 2),
           ),
         ],
@@ -199,16 +281,25 @@ class _PremiumCommunityPrompt extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: AppMedia.w(34),
-            height: AppMedia.w(34),
+            width: AppMedia.w(30),
+            height: AppMedia.w(30),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppMedia.r(11)),
+              color: scheme.surface,
+              borderRadius: BorderRadius.circular(
+                AppMedia.r(9),
+              ),
             ),
             alignment: Alignment.center,
-            child: Text('✨', style: TextStyle(fontSize: AppMedia.sp(18))),
+            child: Text(
+              '✨',
+              style: TextStyle(
+                fontSize: AppMedia.sp(15),
+              ),
+            ),
           ),
-          SizedBox(width: AppMedia.w(12)),
+
+          SizedBox(width: AppMedia.w(9)),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,18 +307,20 @@ class _PremiumCommunityPrompt extends StatelessWidget {
                 Text(
                   'Be part of AnimeClip',
                   style: TextStyle(
-                    fontSize: AppMedia.sp(14),
+                    fontSize: AppMedia.sp(13),
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1C1C),
+                    color: scheme.onSurface,
                   ),
                 ),
-                SizedBox(height: AppMedia.h(4)),
+
+                SizedBox(height: AppMedia.h(2)),
+
                 Text(
-                  'Follow us for exclusive updates, creative tips, new features, and community announcements.',
+                  'Get updates, tips, features, and community news.',
                   style: TextStyle(
-                    fontSize: AppMedia.sp(13),
-                    height: 1.35,
-                    color: const Color(0xFF4C4546),
+                    fontSize: AppMedia.sp(11),
+                    height: 1.3,
+                    color: scheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -239,34 +332,47 @@ class _PremiumCommunityPrompt extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// OFFICIAL PLATFORMS HEADER
+// ============================================================================
+
 class _OfficialPlatformsHeader extends StatelessWidget {
   const _OfficialPlatformsHeader();
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Official Platforms',
           style: TextStyle(
-            fontSize: AppMedia.sp(20),
+            fontSize: AppMedia.sp(17),
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: scheme.onSurface,
+            height: 1.15,
           ),
         ),
-        SizedBox(height: AppMedia.h(4)),
+
+        SizedBox(height: AppMedia.h(2)),
+
         Text(
-          'Follow us for updates and announcements.',
+          'Updates and announcements.',
           style: TextStyle(
-            fontSize: AppMedia.sp(14),
-            color: const Color(0xFF4C4546),
+            fontSize: AppMedia.sp(11),
+            color: scheme.onSurfaceVariant,
           ),
         ),
       ],
     );
   }
 }
+
+// ============================================================================
+// SOCIAL PLATFORM CARD
+// ============================================================================
 
 class SocialPlatformCard extends StatelessWidget {
   final SocialPlatformData data;
@@ -282,62 +388,95 @@ class SocialPlatformCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     final accentColor = Color(data.colorValue);
     final iconBackground = Color(data.iconBackgroundValue);
 
     return Container(
       width: double.infinity,
-      constraints: BoxConstraints(minHeight: AppMedia.h(66)),
+      constraints: const BoxConstraints(
+        minHeight: 56,
+      ),
       padding: EdgeInsets.symmetric(
-        horizontal: AppMedia.w(13),
-        vertical: AppMedia.h(12),
+        horizontal: AppMedia.w(10),
+        vertical: AppMedia.h(7),
       ),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F9),
-        borderRadius: BorderRadius.circular(AppMedia.r(16)),
-        border: Border.all(color: const Color(0xFFE2E2E2)),
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(
+          AppMedia.r(13),
+        ),
+        border: Border.all(
+          color: scheme.surfaceContainerHighest,
+        ),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x08000000),
-            blurRadius: 8,
+            color: Color(0x05000000),
+            blurRadius: 6,
             offset: Offset(0, 2),
           ),
         ],
       ),
-      child: Row(
-        children: [
-          _PlatformIconBadge(
-            platform: data.platform,
-            backgroundColor: iconBackground,
-            iconColor: accentColor,
-          ),
-          SizedBox(width: AppMedia.w(12)),
-          Expanded(
-            child: Text(
-              data.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontSize: AppMedia.sp(15),
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1A1C1C),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 280;
+
+          return Row(
+            children: [
+              _PlatformIconBadge(
+                platform: data.platform,
+                backgroundColor: iconBackground,
+                iconColor: accentColor,
               ),
-            ),
-          ),
-          SizedBox(width: AppMedia.w(10)),
-          _PlatformFollowButton(
-            label: state == SocialPlatformState.unavailable
-                ? 'Retry'
-                : data.actionLabel,
-            color: accentColor,
-            isLoading: state == SocialPlatformState.opening,
-            onPressed: state == SocialPlatformState.opening ? null : onFollow,
-          ),
-        ],
+
+              SizedBox(width: AppMedia.w(8)),
+
+              Expanded(
+                child: Text(
+                  data.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: AppMedia.sp(13),
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface,
+                    height: 1.15,
+                  ),
+                ),
+              ),
+
+              SizedBox(width: AppMedia.w(6)),
+
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  minWidth: compact ? 62 : 72,
+                  maxWidth: compact ? 78 : 92,
+                ),
+                child: _PlatformFollowButton(
+                  label: state == SocialPlatformState.unavailable
+                      ? 'Retry'
+                      : data.actionLabel,
+                  color: accentColor,
+                  isLoading:
+                      state == SocialPlatformState.opening,
+                  onPressed:
+                      state == SocialPlatformState.opening
+                          ? null
+                          : onFollow,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
 }
+
+// ============================================================================
+// PLATFORM ICON
+// ============================================================================
 
 class _PlatformIconBadge extends StatelessWidget {
   final SocialPlatform platform;
@@ -353,34 +492,45 @@ class _PlatformIconBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: AppMedia.w(40),
-      height: AppMedia.w(40),
+      width: AppMedia.w(34),
+      height: AppMedia.w(34),
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: BorderRadius.circular(AppMedia.r(12)),
+        borderRadius: BorderRadius.circular(
+          AppMedia.r(10),
+        ),
       ),
       alignment: Alignment.center,
       child: Icon(
         _iconForPlatform(platform),
         color: iconColor,
-        size: AppMedia.icon(22),
+        size: AppMedia.icon(19),
       ),
     );
   }
 
-  IconData _iconForPlatform(SocialPlatform platform) {
+  IconData _iconForPlatform(
+    SocialPlatform platform,
+  ) {
     switch (platform) {
       case SocialPlatform.youtube:
         return Icons.play_circle_filled_rounded;
+
       case SocialPlatform.instagram:
         return Icons.camera_alt_rounded;
+
       case SocialPlatform.facebook:
         return Icons.facebook;
+
       case SocialPlatform.whatsapp:
         return Icons.chat_rounded;
     }
   }
 }
+
+// ============================================================================
+// FOLLOW BUTTON
+// ============================================================================
 
 class _PlatformFollowButton extends StatelessWidget {
   final String label;
@@ -397,36 +547,54 @@ class _PlatformFollowButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return SizedBox(
-      height: AppMedia.h(36),
+      height: 32,
+      width: double.infinity,
       child: FilledButton(
         onPressed: onPressed,
         style: FilledButton.styleFrom(
           backgroundColor: color,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: color.withValues(alpha: 0.75),
-          disabledForegroundColor: Colors.white,
+          foregroundColor: scheme.onPrimary,
+          disabledBackgroundColor:
+              color.withValues(alpha: 0.75),
+          disabledForegroundColor:
+              scheme.onSurfaceVariant,
           elevation: 0,
-          padding: EdgeInsets.symmetric(horizontal: AppMedia.w(15)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppMedia.r(11)),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 6,
           ),
+          minimumSize: const Size(0, 32),
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(
+              AppMedia.r(9),
+            ),
+          ),
         ),
         child: isLoading
             ? SizedBox(
-                width: AppMedia.w(15),
-                height: AppMedia.w(15),
-                child: const CircularProgressIndicator(
+                width: 13,
+                height: 13,
+                child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(
+                    scheme.onPrimary,
+                  ),
                 ),
               )
-            : Text(
-                label,
-                style: TextStyle(
-                  fontSize: AppMedia.sp(12),
-                  fontWeight: FontWeight.w700,
+            : FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  softWrap: false,
+                  style: TextStyle(
+                    fontSize: AppMedia.sp(10),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
       ),
@@ -434,15 +602,21 @@ class _PlatformFollowButton extends StatelessWidget {
   }
 }
 
+// ============================================================================
+// FOOTER
+// ============================================================================
+
 class _FollowUsFooter extends StatelessWidget {
   const _FollowUsFooter();
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: EdgeInsets.only(
-        top: AppMedia.h(12),
-        bottom: AppMedia.h(4),
+        top: AppMedia.h(6),
+        bottom: AppMedia.h(2),
       ),
       child: Center(
         child: Column(
@@ -450,18 +624,20 @@ class _FollowUsFooter extends StatelessWidget {
             Text(
               'Stay Connected ❤️',
               style: TextStyle(
-                fontSize: AppMedia.sp(14),
+                fontSize: AppMedia.sp(12),
                 fontWeight: FontWeight.w600,
-                color: Colors.black,
+                color: scheme.onSurface,
               ),
             ),
-            SizedBox(height: AppMedia.h(4)),
+
+            SizedBox(height: AppMedia.h(2)),
+
             Text(
-              'Follow AnimeClip and never miss an update.',
+              'Never miss an AnimeClip update.',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: AppMedia.sp(13),
-                color: const Color(0xFF4C4546),
+                fontSize: AppMedia.sp(11),
+                color: scheme.onSurfaceVariant,
               ),
             ),
           ],
